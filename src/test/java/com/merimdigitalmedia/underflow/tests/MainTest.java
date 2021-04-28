@@ -13,7 +13,7 @@ public class MainTest {
     public static void main(final String[] args) {
         final Undertow server = Undertow.builder()
                 .addHttpListener(8080, "localhost")
-                .setHandler(new MyHandler())
+                .setHandler(new TestHandler())
                 .build();
         server.start();
     }

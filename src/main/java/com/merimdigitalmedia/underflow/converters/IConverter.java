@@ -7,7 +7,7 @@ package com.merimdigitalmedia.underflow.converters;
  * @author Pierre Adam
  * @since 21.04.27
  */
-public interface FlowConverter<T> {
+public interface IConverter<T> {
 
     /**
      * Bind t.

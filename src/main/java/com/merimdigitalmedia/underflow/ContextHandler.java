@@ -3,6 +3,8 @@ package com.merimdigitalmedia.underflow;
 import com.merimdigitalmedia.underflow.annotation.method.*;
 import com.merimdigitalmedia.underflow.annotation.routing.Name;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
+import com.merimdigitalmedia.underflow.annotation.routing.Query;
+import com.merimdigitalmedia.underflow.converters.Converters;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
 
@@ -26,9 +28,8 @@ public class ContextHandler {
     private final Object handler;
 
     private final HttpServerExchange exchange;
-
+    private QueryParameter queryParameter;
     private Method method;
-
     private PathMatcher pathMatcher;
 
     public ContextHandler(final Object handler, final HttpServerExchange exchange) {
@@ -36,6 +37,7 @@ public class ContextHandler {
         this.exchange = exchange;
         this.method = null;
         this.pathMatcher = null;
+        this.queryParameter = null;
     }
 
     public boolean isValid() {
@@ -47,6 +49,8 @@ public class ContextHandler {
                 if (pathMatcher.find()) {
                     this.method = method;
                     this.pathMatcher = pathMatcher;
+                    this.queryParameter = this.hasQueryParameter(this.exchange, method);
+
                     return true;
                 }
             }
@@ -69,11 +73,12 @@ public class ContextHandler {
 
             if (pClass.isAssignableFrom(HttpServerExchange.class)) {
                 methodArgs.add(this.exchange);
-            } else {
-                final String groupName = pName.value();
-                final String value = this.pathMatcher.getGroup(groupName);
-
-                methodArgs.add(FlowConverters.convert(pClass, value));
+            } else if (this.pathMatcher.hasGroup(pName.value())) {
+                final String value = this.pathMatcher.getGroup(pName.value());
+                methodArgs.add(Converters.convert(pClass, value));
+            } else if (this.queryParameter.hasParameter(pName.value())) {
+                final String value = this.queryParameter.getParameter(pName.value());
+                methodArgs.add(Converters.convert(pClass, value));
             }
         }
         try {
@@ -97,6 +102,15 @@ public class ContextHandler {
         }
 
         return PathMatcher.noMatch();
+    }
+
+    private QueryParameter hasQueryParameter(final HttpServerExchange exchange, final Method method) {
+        if (method.isAnnotationPresent(Query.class)) {
+            final Query query = method.getAnnotation(Query.class);
+            return new QueryParameter(exchange);
+        }
+
+        return QueryParameter.noParameters();
     }
 
     /**

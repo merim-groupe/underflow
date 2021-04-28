@@ -1,4 +1,6 @@
-package com.merimdigitalmedia.underflow.converters;
+package com.merimdigitalmedia.underflow.converters.standards;
+
+import com.merimdigitalmedia.underflow.converters.IConverter;
 
 /**
  * IntegerConverter.
@@ -6,7 +8,7 @@ package com.merimdigitalmedia.underflow.converters;
  * @author Pierre Adam
  * @since 21.04.27
  */
-public class IntegerConverter implements FlowConverter<Integer> {
+public class IntegerConverter implements IConverter<Integer> {
 
     @Override
     public Integer bind(final String representation) {

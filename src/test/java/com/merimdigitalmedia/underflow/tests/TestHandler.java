@@ -11,7 +11,7 @@ import io.undertow.server.HttpServerExchange;
  * @author Pierre Adam
  * @since 21.04.27
  */
-public class MyHandler extends FlowHandler {
+public class TestHandler extends FlowHandler {
 
     /**
      * Simply get my page.
@@ -20,9 +20,9 @@ public class MyHandler extends FlowHandler {
      * @throws Exception the exception
      */
     @GET
-    @Path("/foo")
+    @Path("/root")
     public void simplyGetMyPage(final HttpServerExchange exchange) throws Exception {
-        System.out.println("ROOT HANDLER !");
-        new MySubHandler().handleRequest(exchange);
+        System.out.printf("Call came in %s", this.getClass().getName());
+        new SubTestHandler().handleRequest(exchange);
     }
 }

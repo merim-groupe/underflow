@@ -16,19 +16,18 @@ public class PathMatcher {
      */
     private static final PathMatcher NO_MATCH;
 
+    static {
+        NO_MATCH = new PathMatcher("", Pattern.compile("notFound"));
+    }
+
     /**
      * The Relative path.
      */
     private final String relativePath;
-
     /**
      * The Matcher.
      */
     private final Matcher matcher;
-
-    static {
-        NO_MATCH = new PathMatcher("", Pattern.compile("notFound"));
-    }
 
     /**
      * Instantiates a new Path matcher.
@@ -85,5 +84,14 @@ public class PathMatcher {
      */
     public String getGroup(final String name) {
         return this.matcher.group(name);
+    }
+
+    public boolean hasGroup(final String name) {
+        try {
+            this.matcher.group(name);
+            return true;
+        } catch (final IllegalArgumentException ignore) {
+            return false;
+        }
     }
 }
