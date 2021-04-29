@@ -17,6 +17,24 @@
         <java.release>8</java.release>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>gitlab-bk</id>
+            <!-- 151 is gitlab project ID of bkpackages-->
+            <url>https://gitlab.reboot-qsr.com/api/v4/projects/152/packages/maven</url> 
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>gitlab-bk</id>
+            <url>https://gitlab.reboot-qsr.com/api/v4/projects/152/packages/maven</url>
+        </repository>
+        <snapshotRepository>
+            <id>gitlab-bk</id>
+            <url>https://gitlab.reboot-qsr.com/api/v4/projects/152/packages/maven</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <!-- Java version to use -->
