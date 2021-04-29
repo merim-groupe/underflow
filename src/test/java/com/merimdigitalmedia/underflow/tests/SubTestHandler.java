@@ -10,20 +10,37 @@ import io.undertow.server.HttpServerExchange;
 import java.util.UUID;
 
 /**
- * MyHandler.
+ * The Sub test handler.
  *
  * @author Pierre Adam
  * @since 21.04.27
  */
 public class SubTestHandler extends FlowHandler {
 
+    /**
+     * GET example with parameters in the path.
+     *
+     * @param exchange the exchange
+     * @param uuid     the uuid parameter from path
+     */
     @GET
-    @Path("/(?<uid>[0-9a-f-]+)")
-    @Query(parameters = "name")
-    public void simplyGetMyPage(final HttpServerExchange exchange,
-                                @Name("name") final String name,
-                                @Name("uid") final UUID uid) {
-        System.out.printf("Call came in %s", this.getClass().getName());
-        exchange.getResponseSender().send("You called uid:" + uid.toString() + " and name: " + name);
+    @Path("/(?<uuid>[0-9a-f]{8}-(?>[0-9a-f]{4}-){3}[0-9a-f]{12})")
+    public void path(final HttpServerExchange exchange,
+                     @Name("uuid") final UUID uuid) {
+        exchange.getResponseSender().send("You called " + exchange.getRequestPath() + " with path parameter: " + uuid.toString());
+    }
+
+    /**
+     * GET example with parameters in the query string.
+     *
+     * @param exchange the exchange
+     * @param bar      the bar parameter from query string
+     */
+    @GET
+    @Path("")
+    @Query(parameters = "bar")
+    public void pathWithQuery(final HttpServerExchange exchange,
+                              @Name("bar") final String bar) {
+        exchange.getResponseSender().send("You called " + exchange.getRequestPath() + " with query parameter: " + bar);
     }
 }

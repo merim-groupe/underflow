@@ -24,6 +24,7 @@ public class PathMatcher {
      * The Relative path.
      */
     private final String relativePath;
+
     /**
      * The Matcher.
      */
@@ -35,15 +36,16 @@ public class PathMatcher {
      * @param relativePath the relative path
      * @param pattern      the pattern
      */
-    public PathMatcher(final String relativePath, final Pattern pattern) {
+    public PathMatcher(final String relativePath,
+                       final Pattern pattern) {
         this.relativePath = relativePath;
         this.matcher = pattern.matcher(relativePath);
     }
 
     /**
-     * No match path matcher.
+     * Gets no match instance.
      *
-     * @return the path matcher
+     * @return the no match path matcher
      */
     public static PathMatcher noMatch() {
         return PathMatcher.NO_MATCH;
@@ -59,39 +61,45 @@ public class PathMatcher {
     }
 
     /**
-     * Gets match.
+     * Gets the full match.
      *
      * @return the match
      */
-    public String getMatch() {
+    public String getFullMatch() {
         return this.matcher.group();
     }
 
     /**
-     * Gets remaining.
+     * Gets the remaining path.
      *
-     * @return the remaining
+     * @return the remaining path
      */
-    public String getRemaining() {
+    public String getRemainingPath() {
         return this.relativePath.substring(this.matcher.end());
     }
 
     /**
-     * Gets group.
+     * Check if the matcher contains the given group.
      *
-     * @param name the name
-     * @return the group
+     * @param groupName the group name
+     * @return the boolean
      */
-    public String getGroup(final String name) {
-        return this.matcher.group(name);
-    }
-
-    public boolean hasGroup(final String name) {
+    public boolean hasGroup(final String groupName) {
         try {
-            this.matcher.group(name);
+            this.matcher.group(groupName);
             return true;
         } catch (final IllegalArgumentException ignore) {
             return false;
         }
+    }
+
+    /**
+     * Gets the value matched in the given group.
+     *
+     * @param groupName the group name
+     * @return the group
+     */
+    public String getGroup(final String groupName) {
+        return this.matcher.group(groupName);
     }
 }

@@ -25,14 +25,39 @@ import java.util.regex.Pattern;
  */
 public class ContextHandler {
 
+    /**
+     * The Handler.
+     */
     private final Object handler;
 
+    /**
+     * The Exchange.
+     */
     private final HttpServerExchange exchange;
-    private QueryParameter queryParameter;
+
+    /**
+     * The Method.
+     */
     private Method method;
+
+    /**
+     * The Path matcher.
+     */
     private PathMatcher pathMatcher;
 
-    public ContextHandler(final Object handler, final HttpServerExchange exchange) {
+    /**
+     * The Query parameter.
+     */
+    private QueryParameter queryParameter;
+
+    /**
+     * Instantiates a new Context handler.
+     *
+     * @param handler  the handler
+     * @param exchange the exchange
+     */
+    public ContextHandler(final Object handler,
+                          final HttpServerExchange exchange) {
         this.handler = handler;
         this.exchange = exchange;
         this.method = null;
@@ -40,6 +65,11 @@ public class ContextHandler {
         this.queryParameter = null;
     }
 
+    /**
+     * Check that there is a valid method to handle the call.
+     *
+     * @return true if there is a valid method
+     */
     public boolean isValid() {
         final Class<? extends Annotation> annotationForMethod = this.getAnnotationForMethod(this.exchange.getRequestMethod());
 
@@ -47,11 +77,15 @@ public class ContextHandler {
             if (this.methodMatch(this.exchange, method, annotationForMethod)) {
                 final PathMatcher pathMatcher = this.routingMatch(this.exchange, method);
                 if (pathMatcher.find()) {
-                    this.method = method;
-                    this.pathMatcher = pathMatcher;
-                    this.queryParameter = this.hasQueryParameter(this.exchange, method);
+                    final QueryParameter queryParameter = this.hasQueryParameter(this.exchange, method);
 
-                    return true;
+                    if (queryParameter.arePresents()) {
+                        this.method = method;
+                        this.pathMatcher = pathMatcher;
+                        this.queryParameter = queryParameter;
+
+                        return true;
+                    }
                 }
             }
         }
@@ -60,10 +94,10 @@ public class ContextHandler {
     }
 
     /**
-     * Execute.
+     * Resolve the arguments and execute de method.
      */
     void execute() {
-        this.exchange.setRelativePath(this.pathMatcher.getRemaining());
+        this.exchange.setRelativePath(this.pathMatcher.getRemainingPath());
         final List<Object> methodArgs = new ArrayList<>();
 
         final Parameter[] parameters = this.method.getParameters();
@@ -89,13 +123,14 @@ public class ContextHandler {
     }
 
     /**
-     * Routing match path matcher.
+     * Gets path matcher for the given path pattern.
      *
      * @param exchange the exchange
      * @param method   the method
      * @return the path matcher
      */
-    private PathMatcher routingMatch(final HttpServerExchange exchange, final Method method) {
+    private PathMatcher routingMatch(final HttpServerExchange exchange,
+                                     final Method method) {
         if (method.isAnnotationPresent(Path.class)) {
             final Path path = method.getAnnotation(Path.class);
             return new PathMatcher(exchange.getRelativePath(), Pattern.compile(String.format("^%s", path.value())));
@@ -104,17 +139,26 @@ public class ContextHandler {
         return PathMatcher.noMatch();
     }
 
-    private QueryParameter hasQueryParameter(final HttpServerExchange exchange, final Method method) {
-        if (method.isAnnotationPresent(Query.class)) {
+    /**
+     * Has query parameter query parameter.
+     *
+     * @param exchange the exchange
+     * @param method   the method
+     * @return the query parameter
+     */
+    private QueryParameter hasQueryParameter(final HttpServerExchange exchange,
+                                             final Method method) {
+        if (method.isAnnotationPresent(Query.class)
+                && method.getAnnotation(Query.class).parameters().length > 0) {
             final Query query = method.getAnnotation(Query.class);
-            return new QueryParameter(exchange);
+            return new QueryParameter(exchange.getQueryParameters(), query.parameters());
         }
 
         return QueryParameter.noParameters();
     }
 
     /**
-     * Method match boolean.
+     * Is.
      *
      * @param exchange            the exchange
      * @param method              the method

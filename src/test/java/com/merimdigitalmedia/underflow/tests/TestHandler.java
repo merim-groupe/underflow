@@ -6,7 +6,7 @@ import com.merimdigitalmedia.underflow.annotation.routing.Path;
 import io.undertow.server.HttpServerExchange;
 
 /**
- * MyHandler.
+ * The Test handler.
  *
  * @author Pierre Adam
  * @since 21.04.27
@@ -14,15 +14,14 @@ import io.undertow.server.HttpServerExchange;
 public class TestHandler extends FlowHandler {
 
     /**
-     * Simply get my page.
+     * Simple GET example.
      *
      * @param exchange the exchange
      * @throws Exception the exception
      */
     @GET
-    @Path("/root")
-    public void simplyGetMyPage(final HttpServerExchange exchange) throws Exception {
-        System.out.printf("Call came in %s", this.getClass().getName());
+    @Path("/foo")
+    public void foo(final HttpServerExchange exchange) throws Exception {
         new SubTestHandler().handleRequest(exchange);
     }
 }
