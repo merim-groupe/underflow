@@ -2,7 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
   <servers>
     <server>
-      <id>gitlab-maven</id>
+      <id>gitlab-bk</id>
       <username>${env.PACKAGES_DEPLOY_USERNAME}</username>
       <password>${env.PACKAGES_DEPLOY_TOKEN}</password>
     </server>
