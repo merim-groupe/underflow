@@ -1,7 +1,9 @@
+.idea
+.idea_modules
+.gradle
+*.iml
 *.class
 *.java~
-.idea/
-*.iml
 *.jar
-target/
-.gradle
+target
+dist
