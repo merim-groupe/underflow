@@ -1,8 +1,10 @@
 package com.merimdigitalmedia.underflow;
 
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
+import com.merimdigitalmedia.underflow.annotation.routing.Query;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.*;
 
 /**
  * QueryParameter.
@@ -13,15 +15,6 @@ import java.util.Map;
 public class QueryParameter {
 
     /**
-     * The constant NO_PARAMETERS.
-     */
-    private static final QueryParameter NO_PARAMETERS;
-
-    static {
-        NO_PARAMETERS = new QueryParameter(new HashMap<>(), new String[]{});
-    }
-
-    /**
      * The Query parameters.
      */
     private final Map<String, Deque<String>> queryParameters;
@@ -29,27 +22,26 @@ public class QueryParameter {
     /**
      * The Parameters.
      */
-    private final String[] parameters;
+    private final List<Query> parameters;
 
     /**
      * Instantiates a new Query parameter.
      *
-     * @param queryParameters the query parameters
-     * @param parameters      the parameters
+     * @param pathParameters the query parameters
+     * @param method         the method
      */
-    public QueryParameter(final Map<String, Deque<String>> queryParameters,
-                          final String[] parameters) {
-        this.queryParameters = queryParameters;
-        this.parameters = parameters;
-    }
+    public QueryParameter(final Map<String, Deque<String>> pathParameters,
+                          final Method method) {
+        this.queryParameters = new HashMap<>();
+        this.parameters = new ArrayList<>();
 
-    /**
-     * Gets no query parameter instance.
-     *
-     * @return the query parameter
-     */
-    public static QueryParameter noParameters() {
-        return QueryParameter.NO_PARAMETERS;
+        for (final Parameter parameter : method.getParameters()) {
+            if (parameter.isAnnotationPresent(Query.class)) {
+                final Query query = parameter.getAnnotation(Query.class);
+                this.parameters.add(query);
+                this.queryParameters.put(query.value(), pathParameters.get(query.value()));
+            }
+        }
     }
 
     /**
@@ -57,9 +49,10 @@ public class QueryParameter {
      *
      * @return true if all requested parameters are persent
      */
-    public boolean arePresents() {
-        for (final String parameter : this.parameters) {
-            if (!this.queryParameters.containsKey(parameter)) {
+    public boolean checkRequired() {
+        for (final Query parameter : this.parameters) {
+            if (parameter.required()
+                    && this.queryParameters.get(parameter.value()) == null) {
                 return false;
             }
         }
@@ -84,6 +77,7 @@ public class QueryParameter {
      * @return the parameter
      */
     public String getParameter(final String parameterName) {
-        return this.queryParameters.get(parameterName).element();
+        final Deque<String> value = this.queryParameters.get(parameterName);
+        return value == null ? null : value.element();
     }
 }

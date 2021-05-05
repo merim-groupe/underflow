@@ -26,8 +26,9 @@ public class SubTestHandler extends FlowHandler {
     @GET
     @Path("/(?<uuid>[0-9a-f]{8}-(?>[0-9a-f]{4}-){3}[0-9a-f]{12})")
     public void path(final HttpServerExchange exchange,
-                     @Name("uuid") final UUID uuid) {
-        exchange.getResponseSender().send("You called " + exchange.getRequestPath() + " with path parameter: " + uuid.toString());
+                     @Name("uuid") final UUID uuid,
+                     @Query(value = "bar", required = true) final String bar) {
+        exchange.getResponseSender().send("You called " + exchange.getRequestPath() + " with path parameter: " + uuid.toString() + " and query parameter: " + bar);
     }
 
     /**
@@ -38,9 +39,8 @@ public class SubTestHandler extends FlowHandler {
      */
     @GET
     @Path("")
-    @Query(parameters = "bar")
     public void pathWithQuery(final HttpServerExchange exchange,
-                              @Name("bar") final String bar) {
+                              @Query(value = "bar", required = true) final String bar) {
         exchange.getResponseSender().send("You called " + exchange.getRequestPath() + " with query parameter: " + bar);
     }
 }

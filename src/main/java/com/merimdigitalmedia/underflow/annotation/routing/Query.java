@@ -11,8 +11,10 @@ import java.lang.annotation.Target;
  * @author Lucas Stadelmann
  * @since 21.04.28
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Query {
-    String[] parameters() default {};
+    String value();
+
+    boolean required() default false;
 }

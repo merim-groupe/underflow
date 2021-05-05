@@ -73,19 +73,16 @@ public class ContextHandler {
     public boolean isValid() {
         final Class<? extends Annotation> annotationForMethod = this.getAnnotationForMethod(this.exchange.getRequestMethod());
 
-        for (final Method method : this.handler.getClass().getMethods()) {
-            if (this.methodMatch(this.exchange, method, annotationForMethod)) {
-                final PathMatcher pathMatcher = this.routingMatch(this.exchange, method);
-                if (pathMatcher.find()) {
-                    final QueryParameter queryParameter = this.hasQueryParameter(this.exchange, method);
+        for (final Method classMethod : this.handler.getClass().getMethods()) {
+            if (this.methodMatch(this.exchange, classMethod, annotationForMethod)) {
+                final PathMatcher matcher = this.routingMatch(this.exchange, classMethod);
+                final QueryParameter parameter = new QueryParameter(this.exchange.getQueryParameters(), classMethod);
+                if (matcher.find() && parameter.checkRequired()) {
+                    this.method = classMethod;
+                    this.pathMatcher = matcher;
+                    this.queryParameter = parameter;
 
-                    if (queryParameter.arePresents()) {
-                        this.method = method;
-                        this.pathMatcher = pathMatcher;
-                        this.queryParameter = queryParameter;
-
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
@@ -100,18 +97,18 @@ public class ContextHandler {
         this.exchange.setRelativePath(this.pathMatcher.getRemainingPath());
         final List<Object> methodArgs = new ArrayList<>();
 
-        final Parameter[] parameters = this.method.getParameters();
-        for (final Parameter parameter : parameters) {
+        for (final Parameter parameter : this.method.getParameters()) {
             final Class<?> pClass = parameter.getType();
             final Name pName = parameter.getAnnotation(Name.class);
+            final Query pQuery = parameter.getAnnotation(Query.class);
 
             if (pClass.isAssignableFrom(HttpServerExchange.class)) {
                 methodArgs.add(this.exchange);
-            } else if (this.pathMatcher.hasGroup(pName.value())) {
+            } else if (pName != null && this.pathMatcher.hasGroup(pName.value())) {
                 final String value = this.pathMatcher.getGroup(pName.value());
                 methodArgs.add(Converters.convert(pClass, value));
-            } else if (this.queryParameter.hasParameter(pName.value())) {
-                final String value = this.queryParameter.getParameter(pName.value());
+            } else if (pQuery != null && this.queryParameter.hasParameter(pQuery.value())) {
+                final String value = this.queryParameter.getParameter(pQuery.value());
                 methodArgs.add(Converters.convert(pClass, value));
             }
         }
@@ -133,28 +130,13 @@ public class ContextHandler {
                                      final Method method) {
         if (method.isAnnotationPresent(Path.class)) {
             final Path path = method.getAnnotation(Path.class);
+            if (path.value().isEmpty()) {
+                return new PathMatcher(exchange.getRelativePath(), Pattern.compile("^$"));
+            }
             return new PathMatcher(exchange.getRelativePath(), Pattern.compile(String.format("^%s", path.value())));
         }
 
         return PathMatcher.noMatch();
-    }
-
-    /**
-     * Has query parameter query parameter.
-     *
-     * @param exchange the exchange
-     * @param method   the method
-     * @return the query parameter
-     */
-    private QueryParameter hasQueryParameter(final HttpServerExchange exchange,
-                                             final Method method) {
-        if (method.isAnnotationPresent(Query.class)
-                && method.getAnnotation(Query.class).parameters().length > 0) {
-            final Query query = method.getAnnotation(Query.class);
-            return new QueryParameter(exchange.getQueryParameters(), query.parameters());
-        }
-
-        return QueryParameter.noParameters();
     }
 
     /**
