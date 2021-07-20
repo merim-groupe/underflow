@@ -26,7 +26,6 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 /**
  * HandlerContext.
@@ -163,7 +162,7 @@ public class ContextHandler {
      */
     private PathMatcher makePathMatcher(final Path path) {
         if (path.value().isEmpty()) {
-            return new PathMatcher(this.exchange.getRelativePath(), Pattern.compile("^$"));
+            return new PathMatcher(this.exchange.getRelativePath(), "");
         }
         // (?:/|$) <- non capturing group testing for a / or the end of the string !
         return new PathMatcher(this.exchange.getRelativePath(), path.value());

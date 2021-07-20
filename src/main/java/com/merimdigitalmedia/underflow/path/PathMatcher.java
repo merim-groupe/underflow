@@ -17,7 +17,7 @@ public class PathMatcher {
     private static final PathMatcher NO_MATCH;
 
     static {
-        NO_MATCH = new PathMatcher("", Pattern.compile("notFound"));
+        NO_MATCH = new PathMatcher("", Pattern.compile("(?<pathCapture>notFound)"));
     }
 
     /**
