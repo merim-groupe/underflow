@@ -1,10 +1,21 @@
 package com.merimdigitalmedia.underflow;
 
-import com.merimdigitalmedia.underflow.annotation.method.*;
+import com.merimdigitalmedia.underflow.annotation.method.ALL;
+import com.merimdigitalmedia.underflow.annotation.method.CUSTOM;
+import com.merimdigitalmedia.underflow.annotation.method.DELETE;
+import com.merimdigitalmedia.underflow.annotation.method.GET;
+import com.merimdigitalmedia.underflow.annotation.method.OPTION;
+import com.merimdigitalmedia.underflow.annotation.method.PATCH;
+import com.merimdigitalmedia.underflow.annotation.method.POST;
+import com.merimdigitalmedia.underflow.annotation.method.PUT;
 import com.merimdigitalmedia.underflow.annotation.routing.Name;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
+import com.merimdigitalmedia.underflow.annotation.routing.Paths;
 import com.merimdigitalmedia.underflow.annotation.routing.Query;
 import com.merimdigitalmedia.underflow.converters.Converters;
+import com.merimdigitalmedia.underflow.path.PathMatcher;
+import com.merimdigitalmedia.underflow.path.PathMatcherBundle;
+import com.merimdigitalmedia.underflow.path.QueryParameter;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
 
@@ -75,7 +86,8 @@ public class ContextHandler {
 
         for (final Method classMethod : this.handler.getClass().getMethods()) {
             if (this.methodMatch(this.exchange, classMethod, annotationForMethod)) {
-                final PathMatcher matcher = this.routingMatch(this.exchange, classMethod);
+                final PathMatcherBundle pathMatcherBundle = this.routingMatch(this.exchange, classMethod);
+                final PathMatcher matcher = pathMatcherBundle.find();
                 final QueryParameter parameter = new QueryParameter(this.exchange.getQueryParameters(), classMethod);
                 if (matcher.find() && parameter.checkRequired()) {
                     this.method = classMethod;
@@ -126,17 +138,35 @@ public class ContextHandler {
      * @param method   the method
      * @return the path matcher
      */
-    private PathMatcher routingMatch(final HttpServerExchange exchange,
-                                     final Method method) {
+    private PathMatcherBundle routingMatch(final HttpServerExchange exchange,
+                                           final Method method) {
+        final PathMatcherBundle pathMatcherBundle = new PathMatcherBundle();
+
         if (method.isAnnotationPresent(Path.class)) {
             final Path path = method.getAnnotation(Path.class);
-            if (path.value().isEmpty()) {
-                return new PathMatcher(exchange.getRelativePath(), Pattern.compile("^$"));
+            pathMatcherBundle.addMatcher(this.makePathMatcher(path));
+        } else if (method.isAnnotationPresent(Paths.class)) {
+            final Paths paths = method.getAnnotation(Paths.class);
+            for (final Path path : paths.value()) {
+                pathMatcherBundle.addMatcher(this.makePathMatcher(path));
             }
-            return new PathMatcher(exchange.getRelativePath(), Pattern.compile(String.format("^%s", path.value())));
         }
 
-        return PathMatcher.noMatch();
+        return pathMatcherBundle;
+    }
+
+    /**
+     * Make path matcher path matcher.
+     *
+     * @param path the path
+     * @return the path matcher
+     */
+    private PathMatcher makePathMatcher(final Path path) {
+        if (path.value().isEmpty()) {
+            return new PathMatcher(this.exchange.getRelativePath(), Pattern.compile("^$"));
+        }
+        // (?:/|$) <- non capturing group testing for a / or the end of the string !
+        return new PathMatcher(this.exchange.getRelativePath(), path.value());
     }
 
     /**

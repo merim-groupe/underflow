@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow;
+package com.merimdigitalmedia.underflow.path;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +43,16 @@ public class PathMatcher {
     }
 
     /**
+     * Instantiates a new Path matcher.
+     *
+     * @param relativePath the relative path
+     * @param value        the value
+     */
+    public PathMatcher(final String relativePath, final String value) {
+        this(relativePath, Pattern.compile(String.format("^(?<pathCapture>%s)(?:/|$)", value)));
+    }
+
+    /**
      * Gets no match instance.
      *
      * @return the no match path matcher
@@ -75,7 +85,7 @@ public class PathMatcher {
      * @return the remaining path
      */
     public String getRemainingPath() {
-        return this.relativePath.substring(this.matcher.end());
+        return this.relativePath.substring(this.matcher.group("pathCapture").length());
     }
 
     /**
@@ -101,5 +111,12 @@ public class PathMatcher {
      */
     public String getGroup(final String groupName) {
         return this.matcher.group(groupName);
+    }
+
+    /**
+     * Reset the matcher.
+     */
+    public void reset() {
+        this.matcher.reset();
     }
 }

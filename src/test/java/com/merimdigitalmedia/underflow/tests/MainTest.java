@@ -15,6 +15,7 @@ public class MainTest {
                 .addHttpListener(8080, "localhost")
                 .setHandler(new TestHandler())
                 .build();
+        System.out.println("Starting !");
         server.start();
     }
 }

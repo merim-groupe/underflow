@@ -24,4 +24,30 @@ public class TestHandler extends FlowHandler {
     public void foo(final HttpServerExchange exchange) throws Exception {
         new SubTestHandler().handleRequest(exchange);
     }
+
+    /**
+     * Simple GET example.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
+    @GET
+    @Path("/bar1")
+    @Path("/bar2")
+    public void bar(final HttpServerExchange exchange) throws Exception {
+        new SubTestHandler().handleRequest(exchange);
+    }
+
+    /**
+     * Simple GET example.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
+    @GET
+    @Path("/status")
+    @Path("/statusBis")
+    public void status(final HttpServerExchange exchange) throws Exception {
+        exchange.getResponseSender().send("OK !");
+    }
 }

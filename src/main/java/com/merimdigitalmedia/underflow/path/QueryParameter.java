@@ -1,10 +1,14 @@
-package com.merimdigitalmedia.underflow;
+package com.merimdigitalmedia.underflow.path;
 
 import com.merimdigitalmedia.underflow.annotation.routing.Query;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * QueryParameter.
