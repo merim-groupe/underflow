@@ -14,7 +14,17 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Query {
+    /**
+     * Value string.
+     *
+     * @return the string
+     */
     String value();
 
+    /**
+     * Required boolean.
+     *
+     * @return the boolean
+     */
     boolean required() default false;
 }

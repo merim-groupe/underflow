@@ -14,7 +14,6 @@ import com.merimdigitalmedia.underflow.annotation.routing.Paths;
 import com.merimdigitalmedia.underflow.annotation.routing.Query;
 import com.merimdigitalmedia.underflow.converters.Converters;
 import com.merimdigitalmedia.underflow.path.PathMatcher;
-import com.merimdigitalmedia.underflow.path.PathMatcherBundle;
 import com.merimdigitalmedia.underflow.path.QueryParameter;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
@@ -84,9 +83,8 @@ public class ContextHandler {
         final Class<? extends Annotation> annotationForMethod = this.getAnnotationForMethod(this.exchange.getRequestMethod());
 
         for (final Method classMethod : this.handler.getClass().getMethods()) {
-            if (this.methodMatch(this.exchange, classMethod, annotationForMethod)) {
-                final PathMatcherBundle pathMatcherBundle = this.routingMatch(this.exchange, classMethod);
-                final PathMatcher matcher = pathMatcherBundle.find();
+            if (this.methodMatch(classMethod, annotationForMethod)) {
+                final PathMatcher matcher = this.getPathMatcher(classMethod);
                 final QueryParameter parameter = new QueryParameter(this.exchange.getQueryParameters(), classMethod);
                 if (matcher.find() && parameter.checkRequired()) {
                     this.method = classMethod;
@@ -133,51 +131,34 @@ public class ContextHandler {
     /**
      * Gets path matcher for the given path pattern.
      *
-     * @param exchange the exchange
-     * @param method   the method
+     * @param method the method
      * @return the path matcher
      */
-    private PathMatcherBundle routingMatch(final HttpServerExchange exchange,
-                                           final Method method) {
-        final PathMatcherBundle pathMatcherBundle = new PathMatcherBundle();
-
+    private PathMatcher getPathMatcher(final Method method) {
         if (method.isAnnotationPresent(Path.class)) {
             final Path path = method.getAnnotation(Path.class);
-            pathMatcherBundle.addMatcher(this.makePathMatcher(path));
+            return new PathMatcher(this.exchange.getRelativePath(), path);
         } else if (method.isAnnotationPresent(Paths.class)) {
             final Paths paths = method.getAnnotation(Paths.class);
             for (final Path path : paths.value()) {
-                pathMatcherBundle.addMatcher(this.makePathMatcher(path));
+                final PathMatcher pathMatcher = new PathMatcher(this.exchange.getRelativePath(), path);
+                if (pathMatcher.find()) {
+                    pathMatcher.reset();
+                    return pathMatcher;
+                }
             }
         }
-
-        return pathMatcherBundle;
-    }
-
-    /**
-     * Make path matcher path matcher.
-     *
-     * @param path the path
-     * @return the path matcher
-     */
-    private PathMatcher makePathMatcher(final Path path) {
-        if (path.value().isEmpty()) {
-            return new PathMatcher(this.exchange.getRelativePath(), "");
-        }
-        // (?:/|$) <- non capturing group testing for a / or the end of the string !
-        return new PathMatcher(this.exchange.getRelativePath(), path.value());
+        return PathMatcher.noMatch();
     }
 
     /**
      * Is.
      *
-     * @param exchange            the exchange
      * @param method              the method
      * @param annotationForMethod the annotation for method
      * @return the boolean
      */
-    private boolean methodMatch(final HttpServerExchange exchange,
-                                final Method method,
+    private boolean methodMatch(final Method method,
                                 final Class<? extends Annotation> annotationForMethod) {
         if ((annotationForMethod != null && method.isAnnotationPresent(annotationForMethod))
                 || method.isAnnotationPresent(ALL.class)) {
@@ -185,7 +166,7 @@ public class ContextHandler {
         }
         if (method.isAnnotationPresent(CUSTOM.class)) {
             final CUSTOM httpMethod = method.getAnnotation(CUSTOM.class);
-            return httpMethod.value().equals(exchange.getRequestMethod().toString());
+            return httpMethod.value().equals(this.exchange.getRequestMethod().toString());
         }
         return false;
     }

@@ -38,7 +38,7 @@ public class SubTestHandler extends FlowHandler {
      * @param bar      the bar parameter from query string
      */
     @GET
-    @Path("")
+    @Path("/")
     public void pathWithQuery(final HttpServerExchange exchange,
                               @Query(value = "bar", required = true) final String bar) {
         exchange.getResponseSender().send("You called " + exchange.getRequestPath() + " with query parameter: " + bar);

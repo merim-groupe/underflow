@@ -20,6 +20,22 @@ public class TestHandler extends FlowHandler {
      * @throws Exception the exception
      */
     @GET
+    @Path("")
+    public void home(final HttpServerExchange exchange) throws Exception {
+        this.dispatchAndBlock(exchange, () -> {
+            this.ok(exchange, sender -> {
+                sender.send("Hello Underflow !");
+            });
+        });
+    }
+
+    /**
+     * Simple GET example.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
+    @GET
     @Path("/foo")
     public void foo(final HttpServerExchange exchange) throws Exception {
         new SubTestHandler().handleRequest(exchange);

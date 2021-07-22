@@ -14,5 +14,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Paths {
+    /**
+     * Value path [ ].
+     *
+     * @return the path [ ]
+     */
     Path[] value();
 }

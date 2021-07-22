@@ -1,5 +1,7 @@
 package com.merimdigitalmedia.underflow.path;
 
+import com.merimdigitalmedia.underflow.annotation.routing.Path;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +19,7 @@ public class PathMatcher {
     private static final PathMatcher NO_MATCH;
 
     static {
-        NO_MATCH = new PathMatcher("", Pattern.compile("(?<pathCapture>notFound)"));
+        NO_MATCH = new PathMatcher("", "notFound", false);
     }
 
     /**
@@ -34,10 +36,26 @@ public class PathMatcher {
      * Instantiates a new Path matcher.
      *
      * @param relativePath the relative path
-     * @param pattern      the pattern
+     * @param searchValue  the search value
+     * @param ignoreCase   the ignore case
      */
-    public PathMatcher(final String relativePath,
-                       final Pattern pattern) {
+    public PathMatcher(final String relativePath, final String searchValue, final boolean ignoreCase) {
+        String search = searchValue;
+
+        // Add / in front of the search because the slash after the previous search is not captured.
+        if (!search.startsWith("/")) {
+            search = "/" + search;
+        }
+
+        // If the relative path is empty, removing the leading / to allow for @Path("") to work.
+        if (relativePath.isEmpty() && search.startsWith("/")) {
+            search = search.substring(1);
+        }
+
+        final String format = String.format("^(?<pathCapture>%s)(?:/|$)", search);
+        final int patternFlag = ignoreCase ? Pattern.CASE_INSENSITIVE : 0;
+        final Pattern pattern = Pattern.compile(format, patternFlag);
+
         this.relativePath = relativePath;
         this.matcher = pattern.matcher(relativePath);
     }
@@ -46,10 +64,10 @@ public class PathMatcher {
      * Instantiates a new Path matcher.
      *
      * @param relativePath the relative path
-     * @param value        the value
+     * @param path         the path
      */
-    public PathMatcher(final String relativePath, final String value) {
-        this(relativePath, Pattern.compile(String.format("^(?<pathCapture>%s)(?:/|$)", value)));
+    public PathMatcher(final String relativePath, final Path path) {
+        this(relativePath, path.value(), path.ignoreCase());
     }
 
     /**
