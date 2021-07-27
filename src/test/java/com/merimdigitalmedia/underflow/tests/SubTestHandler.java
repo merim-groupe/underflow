@@ -2,6 +2,7 @@ package com.merimdigitalmedia.underflow.tests;
 
 import com.merimdigitalmedia.underflow.FlowHandler;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
+import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
 import com.merimdigitalmedia.underflow.annotation.routing.Name;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
 import com.merimdigitalmedia.underflow.annotation.routing.Query;
@@ -42,5 +43,17 @@ public class SubTestHandler extends FlowHandler {
     public void pathWithQuery(final HttpServerExchange exchange,
                               @Query(value = "bar", required = true) final String bar) {
         exchange.getResponseSender().send("You called " + exchange.getRequestPath() + " with query parameter: " + bar);
+    }
+
+    /**
+     * Simple GET fallback example.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
+    @GET
+    @Fallback
+    public void fallback(final HttpServerExchange exchange) throws Exception {
+        this.ok(exchange, sender -> sender.send("Fallback"));
     }
 }

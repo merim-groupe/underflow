@@ -2,6 +2,7 @@ package com.merimdigitalmedia.underflow.tests;
 
 import com.merimdigitalmedia.underflow.FlowHandler;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
+import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
 import io.undertow.server.HttpServerExchange;
 
@@ -65,5 +66,17 @@ public class TestHandler extends FlowHandler {
     @Path("/statusBis")
     public void status(final HttpServerExchange exchange) throws Exception {
         exchange.getResponseSender().send("OK !");
+    }
+
+    /**
+     * Simple GET fallback example.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
+    @GET
+    @Fallback
+    public void fallback(final HttpServerExchange exchange) throws Exception {
+        this.ok(exchange, sender -> sender.send("Fallback"));
     }
 }

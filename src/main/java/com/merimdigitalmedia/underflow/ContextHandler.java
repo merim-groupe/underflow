@@ -1,17 +1,7 @@
 package com.merimdigitalmedia.underflow;
 
-import com.merimdigitalmedia.underflow.annotation.method.ALL;
-import com.merimdigitalmedia.underflow.annotation.method.CUSTOM;
-import com.merimdigitalmedia.underflow.annotation.method.DELETE;
-import com.merimdigitalmedia.underflow.annotation.method.GET;
-import com.merimdigitalmedia.underflow.annotation.method.OPTION;
-import com.merimdigitalmedia.underflow.annotation.method.PATCH;
-import com.merimdigitalmedia.underflow.annotation.method.POST;
-import com.merimdigitalmedia.underflow.annotation.method.PUT;
-import com.merimdigitalmedia.underflow.annotation.routing.Name;
-import com.merimdigitalmedia.underflow.annotation.routing.Path;
-import com.merimdigitalmedia.underflow.annotation.routing.Paths;
-import com.merimdigitalmedia.underflow.annotation.routing.Query;
+import com.merimdigitalmedia.underflow.annotation.method.*;
+import com.merimdigitalmedia.underflow.annotation.routing.*;
 import com.merimdigitalmedia.underflow.converters.Converters;
 import com.merimdigitalmedia.underflow.path.PathMatcher;
 import com.merimdigitalmedia.underflow.path.QueryParameter;
@@ -86,6 +76,32 @@ public class ContextHandler {
             if (this.methodMatch(classMethod, annotationForMethod)) {
                 final PathMatcher matcher = this.getPathMatcher(classMethod);
                 final QueryParameter parameter = new QueryParameter(this.exchange.getQueryParameters(), classMethod);
+                if (matcher.find() && parameter.checkRequired()) {
+                    this.method = classMethod;
+                    this.pathMatcher = matcher;
+                    this.queryParameter = parameter;
+
+                    return true;
+                }
+            }
+        }
+
+        return hasFallbackMethod(this.handler.getClass());
+    }
+
+    /**
+     * Check that there is a fallback method for the call.
+     *
+     * @param aClass the a class
+     * @return the boolean
+     */
+    private boolean hasFallbackMethod(final Class<?> aClass) {
+        for (final Method classMethod : aClass.getMethods()) {
+            if (classMethod.isAnnotationPresent(Fallback.class)) {
+
+                final PathMatcher matcher = new PathMatcher(this.exchange.getRelativePath(), ".*", true);
+                final QueryParameter parameter = new QueryParameter(this.exchange.getQueryParameters(), classMethod);
+
                 if (matcher.find() && parameter.checkRequired()) {
                     this.method = classMethod;
                     this.pathMatcher = matcher;
