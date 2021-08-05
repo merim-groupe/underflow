@@ -47,7 +47,7 @@ public class PathMatcher {
             search = "/" + search;
         }
 
-        // If the relative path is empty, removing the leading / to allow for @Path("") to work.
+        // If the relative path is empty, removing the leading / to allow for @Path("") and @Path("/") to work.
         if (relativePath.isEmpty() && search.startsWith("/")) {
             search = search.substring(1);
         }

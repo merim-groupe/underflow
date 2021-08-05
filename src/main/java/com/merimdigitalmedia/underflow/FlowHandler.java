@@ -3,6 +3,8 @@ package com.merimdigitalmedia.underflow;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
@@ -13,6 +15,11 @@ import java.util.function.Consumer;
  * @since 21.04.27
  */
 public class FlowHandler implements HttpHandler {
+
+    /**
+     * The Logger.
+     */
+    final protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {

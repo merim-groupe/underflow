@@ -2,6 +2,7 @@ package com.merimdigitalmedia.underflow.tests;
 
 import com.merimdigitalmedia.underflow.FlowHandler;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
+import com.merimdigitalmedia.underflow.annotation.method.POST;
 import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
 import com.merimdigitalmedia.underflow.annotation.routing.Name;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
@@ -23,6 +24,7 @@ public class SubTestHandler extends FlowHandler {
      *
      * @param exchange the exchange
      * @param uuid     the uuid parameter from path
+     * @param bar      the bar
      */
     @GET
     @Path("/(?<uuid>[0-9a-f]{8}-(?>[0-9a-f]{4}-){3}[0-9a-f]{12})")
@@ -55,5 +57,27 @@ public class SubTestHandler extends FlowHandler {
     @Fallback
     public void fallback(final HttpServerExchange exchange) throws Exception {
         this.ok(exchange, sender -> sender.send("Fallback"));
+    }
+
+    /**
+     * GET example with parameters in the query string.
+     *
+     * @param exchange the exchange
+     */
+    @GET
+    @Path("/ping")
+    public void getPing(final HttpServerExchange exchange) {
+        this.dispatch(exchange, () -> this.ok(exchange, sender -> sender.send("OK GET !")));
+    }
+
+    /**
+     * GET example with parameters in the query string.
+     *
+     * @param exchange the exchange
+     */
+    @POST
+    @Path("/ping")
+    public void postPing(final HttpServerExchange exchange) {
+        this.dispatch(exchange, () -> this.ok(exchange, sender -> sender.send("OK POST !")));
     }
 }

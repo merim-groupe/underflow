@@ -1,7 +1,19 @@
 package com.merimdigitalmedia.underflow;
 
-import com.merimdigitalmedia.underflow.annotation.method.*;
-import com.merimdigitalmedia.underflow.annotation.routing.*;
+import com.merimdigitalmedia.underflow.annotation.method.ALL;
+import com.merimdigitalmedia.underflow.annotation.method.CUSTOM;
+import com.merimdigitalmedia.underflow.annotation.method.DELETE;
+import com.merimdigitalmedia.underflow.annotation.method.GET;
+import com.merimdigitalmedia.underflow.annotation.method.HEAD;
+import com.merimdigitalmedia.underflow.annotation.method.OPTIONS;
+import com.merimdigitalmedia.underflow.annotation.method.PATCH;
+import com.merimdigitalmedia.underflow.annotation.method.POST;
+import com.merimdigitalmedia.underflow.annotation.method.PUT;
+import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
+import com.merimdigitalmedia.underflow.annotation.routing.Name;
+import com.merimdigitalmedia.underflow.annotation.routing.Path;
+import com.merimdigitalmedia.underflow.annotation.routing.Paths;
+import com.merimdigitalmedia.underflow.annotation.routing.Query;
 import com.merimdigitalmedia.underflow.converters.Converters;
 import com.merimdigitalmedia.underflow.path.PathMatcher;
 import com.merimdigitalmedia.underflow.path.QueryParameter;
@@ -86,7 +98,7 @@ public class ContextHandler {
             }
         }
 
-        return hasFallbackMethod(this.handler.getClass());
+        return this.hasFallbackMethod(this.handler.getClass());
     }
 
     /**
@@ -203,10 +215,12 @@ public class ContextHandler {
                 return PATCH.class;
             case "PUT":
                 return PUT.class;
-            case "OPTION":
-                return OPTION.class;
             case "DELETE":
                 return DELETE.class;
+            case "OPTIONS":
+                return OPTIONS.class;
+            case "HEAD":
+                return HEAD.class;
             default:
                 return null;
         }
