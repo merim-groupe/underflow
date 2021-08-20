@@ -1,7 +1,14 @@
 package com.merimdigitalmedia.underflow.tests;
 
 import com.merimdigitalmedia.underflow.FlowHandler;
+import com.merimdigitalmedia.underflow.annotation.method.ALL;
+import com.merimdigitalmedia.underflow.annotation.method.DELETE;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
+import com.merimdigitalmedia.underflow.annotation.method.HEAD;
+import com.merimdigitalmedia.underflow.annotation.method.OPTIONS;
+import com.merimdigitalmedia.underflow.annotation.method.PATCH;
+import com.merimdigitalmedia.underflow.annotation.method.POST;
+import com.merimdigitalmedia.underflow.annotation.method.PUT;
 import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
 import io.undertow.server.HttpServerExchange;
@@ -18,16 +25,77 @@ public class TestHandler extends FlowHandler {
      * Simple GET example.
      *
      * @param exchange the exchange
-     * @throws Exception the exception
      */
     @GET
     @Path("")
-    public void home(final HttpServerExchange exchange) throws Exception {
-        this.dispatchAndBlock(exchange, () -> {
-            this.ok(exchange, sender -> {
-                sender.send("Hello Underflow !");
-            });
-        });
+    public void home(final HttpServerExchange exchange) {
+        this.dispatchAndBlock(exchange, () -> this.ok(exchange, sender -> sender.send("Hello Underflow !")));
+    }
+
+    /**
+     * Post home.
+     *
+     * @param exchange the exchange
+     */
+    @POST
+    @Path("")
+    public void postHome(final HttpServerExchange exchange) {
+        this.dispatchAndBlock(exchange, () -> this.ok(exchange, sender -> sender.send("POST from Underflow")));
+    }
+
+    /**
+     * Put home.
+     *
+     * @param exchange the exchange
+     */
+    @PUT
+    @Path("")
+    public void putHome(final HttpServerExchange exchange) {
+        this.dispatchAndBlock(exchange, () -> this.ok(exchange, sender -> sender.send("PUT from Underflow")));
+    }
+
+    /**
+     * Patch home.
+     *
+     * @param exchange the exchange
+     */
+    @PATCH
+    @Path("")
+    public void patchHome(final HttpServerExchange exchange) {
+        this.dispatchAndBlock(exchange, () -> this.ok(exchange, sender -> sender.send("PATCH from Underflow")));
+    }
+
+    /**
+     * Option home.
+     *
+     * @param exchange the exchange
+     */
+    @OPTIONS
+    @Path("")
+    public void optionHome(final HttpServerExchange exchange) {
+        this.dispatchAndBlock(exchange, () -> this.ok(exchange, sender -> sender.send("OPTION from Underflow")));
+    }
+
+    /**
+     * Delete home.
+     *
+     * @param exchange the exchange
+     */
+    @DELETE
+    @Path("")
+    public void deleteHome(final HttpServerExchange exchange) {
+        this.dispatchAndBlock(exchange, () -> this.ok(exchange, sender -> sender.send("DELETE from Underflow")));
+    }
+
+    /**
+     * Delete home.
+     *
+     * @param exchange the exchange
+     */
+    @HEAD
+    @Path("")
+    public void headHome(final HttpServerExchange exchange) {
+        this.dispatchAndBlock(exchange, () -> this.ok(exchange, sender -> sender.send("HEAD from Underflow")));
     }
 
     /**
@@ -36,7 +104,7 @@ public class TestHandler extends FlowHandler {
      * @param exchange the exchange
      * @throws Exception the exception
      */
-    @GET
+    @ALL
     @Path("/foo")
     public void foo(final HttpServerExchange exchange) throws Exception {
         new SubTestHandler().handleRequest(exchange);
