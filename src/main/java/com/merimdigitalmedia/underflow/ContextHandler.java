@@ -1,19 +1,7 @@
 package com.merimdigitalmedia.underflow;
 
-import com.merimdigitalmedia.underflow.annotation.method.ALL;
-import com.merimdigitalmedia.underflow.annotation.method.CUSTOM;
-import com.merimdigitalmedia.underflow.annotation.method.DELETE;
-import com.merimdigitalmedia.underflow.annotation.method.GET;
-import com.merimdigitalmedia.underflow.annotation.method.HEAD;
-import com.merimdigitalmedia.underflow.annotation.method.OPTIONS;
-import com.merimdigitalmedia.underflow.annotation.method.PATCH;
-import com.merimdigitalmedia.underflow.annotation.method.POST;
-import com.merimdigitalmedia.underflow.annotation.method.PUT;
-import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
-import com.merimdigitalmedia.underflow.annotation.routing.Name;
-import com.merimdigitalmedia.underflow.annotation.routing.Path;
-import com.merimdigitalmedia.underflow.annotation.routing.Paths;
-import com.merimdigitalmedia.underflow.annotation.routing.Query;
+import com.merimdigitalmedia.underflow.annotation.method.*;
+import com.merimdigitalmedia.underflow.annotation.routing.*;
 import com.merimdigitalmedia.underflow.converters.Converters;
 import com.merimdigitalmedia.underflow.path.PathMatcher;
 import com.merimdigitalmedia.underflow.path.QueryParameter;
@@ -138,6 +126,7 @@ public class ContextHandler {
             final Class<?> pClass = parameter.getType();
             final Name pName = parameter.getAnnotation(Name.class);
             final Query pQuery = parameter.getAnnotation(Query.class);
+            final DefaultValue pDefaultValue = parameter.getAnnotation(DefaultValue.class);
 
             if (pClass.isAssignableFrom(HttpServerExchange.class)) {
                 methodArgs.add(this.exchange);
@@ -145,7 +134,10 @@ public class ContextHandler {
                 final String value = this.pathMatcher.getGroup(pName.value());
                 methodArgs.add(Converters.convert(pClass, value));
             } else if (pQuery != null && this.queryParameter.hasParameter(pQuery.value())) {
-                final String value = this.queryParameter.getParameter(pQuery.value());
+                String value = this.queryParameter.getParameter(pQuery.value());
+                if (value == null && pDefaultValue != null) {
+                    value = pDefaultValue.value();
+                }
                 methodArgs.add(Converters.convert(pClass, value));
             }
         }
