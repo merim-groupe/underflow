@@ -6,7 +6,7 @@
 
     <groupId>com.merimdigitalmedia.underflow</groupId>
     <artifactId>Underflow</artifactId>
-    <version>21.08u3</version>
+    <version>21.08u4</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
