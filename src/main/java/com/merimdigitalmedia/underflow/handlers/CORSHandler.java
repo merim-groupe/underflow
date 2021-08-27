@@ -4,9 +4,8 @@
  * Proprietary and confidential
  */
 
-package com.merimdigitalmedia.bkclerkmaster.handlers.http;
+package com.merimdigitalmedia.underflow.handlers;
 
-import com.merimdigitalmedia.underflow.handlers.HeaderHandler;
 import io.undertow.server.HttpHandler;
 
 import java.util.HashMap;
@@ -25,10 +24,21 @@ public class CORSHandler extends HeaderHandler {
      * @param underlying               the underlying
      * @param accessControlAllowOrigin the access control allow origin
      */
-    public CORSHandler(final HttpHandler underlying, final String accessControlAllowOrigin) {
+    public CORSHandler(final HttpHandler underlying, final String accessControlAllowOrigin, final String accessControlAllowMethods) {
         super(underlying, new HashMap<String, String>() {{
             this.put("Access-Control-Allow-Origin", accessControlAllowOrigin);
+            this.put("Access-Control-Allow-Methods", accessControlAllowMethods);
         }});
+    }
+
+    /**
+     * Instantiates a new Cors handler.
+     *
+     * @param underlying               the underlying
+     * @param accessControlAllowOrigin the access control allow origin
+     */
+    public CORSHandler(final HttpHandler underlying, final String accessControlAllowOrigin) {
+        this(underlying, accessControlAllowOrigin, "GET,POST,PUT,PATCH,DELETE,OPTIONS,HEAD");
     }
 
     /**
