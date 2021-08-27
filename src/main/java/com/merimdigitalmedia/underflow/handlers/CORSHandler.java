@@ -54,11 +54,13 @@ public class CORSHandler extends HeaderHandler {
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
+        this.interceptRequest(exchange);
+
         if (exchange.getRequestMethod().toString().toUpperCase(Locale.ROOT).equals("OPTIONS")) {
             exchange.setStatusCode(200);
             exchange.endExchange();
         } else {
-            super.handleRequest(exchange);
+            this.underlying.handleRequest(exchange);
         }
     }
 }
