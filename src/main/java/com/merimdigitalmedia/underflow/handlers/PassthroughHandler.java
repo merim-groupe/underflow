@@ -32,9 +32,13 @@ public abstract class PassthroughHandler implements HttpHandler {
      */
     protected abstract void interceptRequest(final HttpServerExchange exchange);
 
+    protected void callUnderlying(final HttpServerExchange exchange) throws Exception {
+        this.underlying.handleRequest(exchange);
+    }
+
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
         this.interceptRequest(exchange);
-        this.underlying.handleRequest(exchange);
+        this.callUnderlying(exchange);
     }
 }
