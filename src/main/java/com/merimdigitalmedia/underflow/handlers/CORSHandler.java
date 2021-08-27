@@ -7,8 +7,10 @@
 package com.merimdigitalmedia.underflow.handlers;
 
 import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * CORSHandler.
@@ -48,5 +50,15 @@ public class CORSHandler extends HeaderHandler {
      */
     public CORSHandler(final HttpHandler underlying) {
         this(underlying, "*");
+    }
+
+    @Override
+    public void handleRequest(final HttpServerExchange exchange) throws Exception {
+        if (exchange.getRequestMethod().toString().toUpperCase(Locale.ROOT).equals("OPTIONS")) {
+            exchange.setStatusCode(200);
+            exchange.endExchange();
+        } else {
+            super.handleRequest(exchange);
+        }
     }
 }
