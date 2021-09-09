@@ -26,7 +26,18 @@ public class FlowHandler implements HttpHandler {
         final ContextHandler context = new ContextHandler(this, exchange);
 
         if (context.isValid()) {
-            context.execute();
+            try {
+                context.execute();
+            } catch (final Exception e) {
+                this.logger.error("An uncaught error occurred.", e);
+            } finally {
+                if (!exchange.isDispatched() && !exchange.isComplete()) {
+                    if (!exchange.isResponseStarted()) {
+                        exchange.setStatusCode(500);
+                    }
+                    exchange.endExchange();
+                }
+            }
         } else {
             exchange.setStatusCode(404)
                     .endExchange();
@@ -43,6 +54,9 @@ public class FlowHandler implements HttpHandler {
                             final Runnable runnable) {
         if (exchange.isInIoThread()) {
             exchange.dispatch(runnable);
+            if (!exchange.isComplete()) {
+                exchange.endExchange();
+            }
         }
     }
 
