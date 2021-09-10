@@ -45,18 +45,44 @@ public class FlowHandler implements HttpHandler {
     }
 
     /**
-     * Dispatch to a worker thread.
+     * Dispatch.
      *
      * @param exchange the exchange
      * @param runnable the runnable
      */
     protected void dispatch(final HttpServerExchange exchange,
                             final Runnable runnable) {
+        this.dispatch(exchange, runnable, true);
+    }
+
+    /**
+     * Dispatch unsafe.
+     *
+     * @param exchange the exchange
+     * @param runnable the runnable
+     */
+    protected void dispatchUnsafe(final HttpServerExchange exchange,
+                                  final Runnable runnable) {
+        this.dispatch(exchange, runnable, false);
+    }
+
+    /**
+     * Dispatch to a worker thread.
+     *
+     * @param exchange      the exchange
+     * @param runnable      the runnable
+     * @param closeExchange the close exchange
+     */
+    private void dispatch(final HttpServerExchange exchange,
+                          final Runnable runnable,
+                          final boolean closeExchange) {
         if (exchange.isInIoThread()) {
-            exchange.dispatch(runnable);
-            if (!exchange.isComplete()) {
-                exchange.endExchange();
-            }
+            exchange.dispatch(() -> {
+                runnable.run();
+                if (closeExchange && !exchange.isComplete()) {
+                    exchange.endExchange();
+                }
+            });
         }
     }
 
@@ -83,6 +109,17 @@ public class FlowHandler implements HttpHandler {
     protected void dispatchAndBlock(final HttpServerExchange exchange,
                                     final Runnable runnable) {
         this.dispatch(exchange, () -> this.block(exchange, runnable));
+    }
+
+    /**
+     * Dispatch and block.
+     *
+     * @param exchange the exchange
+     * @param runnable the runnable
+     */
+    protected void dispatchUnsafeAndBlock(final HttpServerExchange exchange,
+                                          final Runnable runnable) {
+        this.dispatchUnsafe(exchange, () -> this.block(exchange, runnable));
     }
 
     /**
