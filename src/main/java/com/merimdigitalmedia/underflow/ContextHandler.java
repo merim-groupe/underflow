@@ -104,7 +104,7 @@ public class ContextHandler {
     /**
      * Check that there is a fallback method for the call.
      *
-     * @param aClass the a class
+     * @param aClass the class of the controller
      * @return the boolean
      */
     private boolean hasFallbackMethod(final Class<?> aClass) {
