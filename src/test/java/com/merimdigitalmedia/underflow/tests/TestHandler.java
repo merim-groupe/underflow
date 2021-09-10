@@ -1,14 +1,7 @@
 package com.merimdigitalmedia.underflow.tests;
 
 import com.merimdigitalmedia.underflow.FlowHandler;
-import com.merimdigitalmedia.underflow.annotation.method.ALL;
-import com.merimdigitalmedia.underflow.annotation.method.DELETE;
-import com.merimdigitalmedia.underflow.annotation.method.GET;
-import com.merimdigitalmedia.underflow.annotation.method.HEAD;
-import com.merimdigitalmedia.underflow.annotation.method.OPTIONS;
-import com.merimdigitalmedia.underflow.annotation.method.PATCH;
-import com.merimdigitalmedia.underflow.annotation.method.POST;
-import com.merimdigitalmedia.underflow.annotation.method.PUT;
+import com.merimdigitalmedia.underflow.annotation.method.*;
 import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
 import io.undertow.server.HttpServerExchange;
@@ -145,6 +138,8 @@ public class TestHandler extends FlowHandler {
     @GET
     @Fallback
     public void fallback(final HttpServerExchange exchange) throws Exception {
-        this.ok(exchange, sender -> sender.send("Fallback"));
+        this.dispatchAndBlock(exchange, () -> {
+        });
+//        this.ok(exchange, sender -> sender.send("Fallback"));
     }
 }

@@ -3,10 +3,7 @@ package com.merimdigitalmedia.underflow.tests;
 import com.merimdigitalmedia.underflow.FlowHandler;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
 import com.merimdigitalmedia.underflow.annotation.method.POST;
-import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
-import com.merimdigitalmedia.underflow.annotation.routing.Name;
-import com.merimdigitalmedia.underflow.annotation.routing.Path;
-import com.merimdigitalmedia.underflow.annotation.routing.Query;
+import com.merimdigitalmedia.underflow.annotation.routing.*;
 import io.undertow.server.HttpServerExchange;
 
 import java.util.UUID;
@@ -43,7 +40,7 @@ public class SubTestHandler extends FlowHandler {
     @GET
     @Path("/")
     public void pathWithQuery(final HttpServerExchange exchange,
-                              @Query(value = "bar", required = true) final String bar) {
+                              @Query(value = "bar") @DefaultValue(value = "Titi") final String bar) {
         exchange.getResponseSender().send("You called " + exchange.getRequestPath() + " with query parameter: " + bar);
     }
 

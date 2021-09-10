@@ -40,6 +40,9 @@ public class Converters {
      */
     public static Object convert(final Class<?> pClass,
                                  final String value) {
+        if (value == null) {
+            return null;
+        }
         if (Converters.converters.containsKey(pClass)) {
             return Converters.converters.get(pClass).bind(value);
         } else {
