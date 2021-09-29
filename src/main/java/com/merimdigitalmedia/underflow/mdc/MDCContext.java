@@ -1,12 +1,9 @@
 package com.merimdigitalmedia.underflow.mdc;
 
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.ServerConnection;
 import org.slf4j.MDC;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * MDCServer.
@@ -15,26 +12,6 @@ import java.util.UUID;
  * @since 21.09.28
  */
 public interface MDCContext {
-
-    /**
-     * Intercept request.
-     *
-     * @param exchange the exchange
-     */
-    default void addMDCServerContext(final HttpServerExchange exchange) {
-        if (MDC.getMDCAdapter() != null && !this.getMDC(MDCKeys.Connection.IO_THREAD).isPresent()) {
-            final ServerConnection connection = exchange.getConnection();
-
-            this.putMDC(MDCKeys.Connection.IO_THREAD, connection.getIoThread().toString());
-            this.putMDC(MDCKeys.Connection.PEER_ADDRESS, connection.getPeerAddress().toString());
-            this.putMDC(MDCKeys.Request.UID, UUID.randomUUID().toString());
-            this.putMDC(MDCKeys.Request.METHOD, exchange.getRequestMethod().toString());
-            this.putMDC(MDCKeys.Request.URL, exchange.getRequestURL());
-            this.putMDC(MDCKeys.Request.QUERY_STRING, exchange.getQueryString());
-            this.putMDC(MDCKeys.Request.HOST_NAME, exchange.getHostName());
-            this.putMDC(MDCKeys.Request.HOST_PORT, String.format("%d", exchange.getHostPort()));
-        }
-    }
 
     /**
      * Extract and clear mdc map.

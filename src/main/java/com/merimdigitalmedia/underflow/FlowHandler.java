@@ -1,6 +1,7 @@
 package com.merimdigitalmedia.underflow;
 
 import com.merimdigitalmedia.underflow.mdc.MDCContext;
+import com.merimdigitalmedia.underflow.mdc.MDCInterceptor;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -25,7 +26,7 @@ public class FlowHandler implements HttpHandler, MDCContext {
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
-        this.addMDCServerContext(exchange);
+        MDCInterceptor.getInstance().accept(exchange);
         final ContextHandler context = new ContextHandler(this, exchange);
 
         if (context.isValid()) {

@@ -1,6 +1,7 @@
 package com.merimdigitalmedia.underflow.handlers;
 
 import com.merimdigitalmedia.underflow.mdc.MDCContext;
+import com.merimdigitalmedia.underflow.mdc.MDCInterceptor;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
@@ -33,13 +34,19 @@ public abstract class PassthroughsHandler implements HttpHandler, MDCContext {
      */
     protected abstract void interceptRequest(final HttpServerExchange exchange);
 
+    /**
+     * Call underlying.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
     protected void callUnderlying(final HttpServerExchange exchange) throws Exception {
         this.underlying.handleRequest(exchange);
     }
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
-        this.addMDCServerContext(exchange);
+        MDCInterceptor.getInstance().accept(exchange);
         this.interceptRequest(exchange);
         this.callUnderlying(exchange);
     }
