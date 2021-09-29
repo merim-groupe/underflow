@@ -13,7 +13,7 @@ import java.util.Map;
  * @author Pierre Adam
  * @since 21.07.22
  */
-public class HeaderHandler extends PassthroughHandler {
+public class HeaderHandler extends PassthroughsHandler {
 
     /**
      * The Headers.

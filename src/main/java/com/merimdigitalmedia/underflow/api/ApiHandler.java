@@ -6,6 +6,7 @@ import com.merimdigitalmedia.underflow.FlowHandler;
 import com.merimdigitalmedia.underflow.api.entities.ApiForm;
 import com.merimdigitalmedia.underflow.api.entities.ApiFormWithPayload;
 import com.merimdigitalmedia.underflow.api.entities.ServerError;
+import com.merimdigitalmedia.underflow.mdc.MDCContext;
 import com.merimdigitalmedia.underflow.utils.SmartGZipBodyInput;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
@@ -20,7 +21,7 @@ import java.util.function.Consumer;
  * @author Pierre Adam
  * @since 21.08.05
  */
-public class ApiHandler extends FlowHandler {
+public class ApiHandler extends FlowHandler implements MDCContext {
 
     /**
      * The Object mapper.

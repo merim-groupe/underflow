@@ -1,5 +1,8 @@
 package com.merimdigitalmedia.underflow.api.entities;
 
+import com.merimdigitalmedia.underflow.mdc.MDCContext;
+import com.merimdigitalmedia.underflow.mdc.MDCKeys;
+
 /**
  * ServerError.
  *
@@ -7,6 +10,11 @@ package com.merimdigitalmedia.underflow.api.entities;
  * @since 21.08.05
  */
 public class ServerError {
+
+    /**
+     * The Request id.
+     */
+    private final String requestUid;
 
     /**
      * The Type.
@@ -31,6 +39,7 @@ public class ServerError {
      * @param cause   the cause
      */
     public ServerError(final String type, final String message, final String cause) {
+        this.requestUid = MDCContext.getInstance().getMDC(MDCKeys.Request.UID).orElse("Unavailable");
         this.type = type;
         this.message = message;
         this.cause = cause;
@@ -53,6 +62,15 @@ public class ServerError {
      */
     public ServerError(final String type) {
         this(type, "", "");
+    }
+
+    /**
+     * Gets request uid.
+     *
+     * @return the request uid
+     */
+    public String getRequestUid() {
+        return this.requestUid;
     }
 
     /**

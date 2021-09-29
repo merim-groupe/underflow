@@ -1,11 +1,13 @@
 package com.merimdigitalmedia.underflow;
 
+import com.merimdigitalmedia.underflow.mdc.MDCContext;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -14,7 +16,7 @@ import java.util.function.Consumer;
  * @author Pierre Adam
  * @since 21.04.27
  */
-public class FlowHandler implements HttpHandler {
+public class FlowHandler implements HttpHandler, MDCContext {
 
     /**
      * The Logger.
@@ -23,6 +25,7 @@ public class FlowHandler implements HttpHandler {
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
+        this.addMDCServerContext(exchange);
         final ContextHandler context = new ContextHandler(this, exchange);
 
         if (context.isValid()) {
@@ -77,12 +80,15 @@ public class FlowHandler implements HttpHandler {
                           final Runnable runnable,
                           final boolean closeExchange) {
         if (exchange.isInIoThread()) {
-            exchange.dispatch(() -> {
-                runnable.run();
-                if (closeExchange && !exchange.isComplete()) {
-                    exchange.endExchange();
-                }
-            });
+            final Map<String, String> mdcContext = this.popMDCContext();
+            exchange.dispatch(() ->
+                    this.withMDCContext(mdcContext, () -> {
+                        runnable.run();
+                        if (closeExchange && !exchange.isComplete()) {
+                            exchange.endExchange();
+                        }
+                    })
+            );
         }
     }
 
