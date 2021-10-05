@@ -1,9 +1,18 @@
 package com.merimdigitalmedia.underflow.tests;
 
 import com.merimdigitalmedia.underflow.FlowHandler;
-import com.merimdigitalmedia.underflow.annotation.method.*;
+import com.merimdigitalmedia.underflow.annotation.method.ALL;
+import com.merimdigitalmedia.underflow.annotation.method.DELETE;
+import com.merimdigitalmedia.underflow.annotation.method.GET;
+import com.merimdigitalmedia.underflow.annotation.method.HEAD;
+import com.merimdigitalmedia.underflow.annotation.method.OPTIONS;
+import com.merimdigitalmedia.underflow.annotation.method.PATCH;
+import com.merimdigitalmedia.underflow.annotation.method.POST;
+import com.merimdigitalmedia.underflow.annotation.method.PUT;
 import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
+import com.merimdigitalmedia.underflow.forms.WebForm;
+import com.merimdigitalmedia.underflow.tests.entities.TestForm;
 import io.undertow.server.HttpServerExchange;
 
 /**
@@ -12,7 +21,7 @@ import io.undertow.server.HttpServerExchange;
  * @author Pierre Adam
  * @since 21.04.27
  */
-public class TestHandler extends FlowHandler {
+public class TestHandler extends FlowHandler implements WebForm {
 
     /**
      * Simple GET example.
@@ -127,6 +136,24 @@ public class TestHandler extends FlowHandler {
     @Path("/statusBis")
     public void status(final HttpServerExchange exchange) throws Exception {
         exchange.getResponseSender().send("OK !");
+    }
+
+    /**
+     * Simple GET fallback example.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
+    @POST
+    @Path("/webform")
+    public void webForm(final HttpServerExchange exchange) throws Exception {
+        this.dispatchAndBlock(exchange, () -> {
+            this.getForm(exchange, TestForm.class, form -> {
+                this.logger.error("GOT : {}", form.getName());
+            }, exception -> {
+                this.logger.error("OH NO ! ... Anyway ...", exception);
+            });
+        });
     }
 
     /**
