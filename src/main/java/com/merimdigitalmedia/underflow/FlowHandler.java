@@ -30,18 +30,7 @@ public class FlowHandler implements HttpHandler, MDCContext {
         final ContextHandler context = new ContextHandler(this, exchange);
 
         if (context.isValid()) {
-            try {
-                context.execute();
-            } catch (final Exception e) {
-                this.logger.error("An uncaught error occurred.", e);
-            } finally {
-                if (!exchange.isDispatched() && !exchange.isComplete()) {
-                    if (!exchange.isResponseStarted()) {
-                        exchange.setStatusCode(500);
-                    }
-                    exchange.endExchange();
-                }
-            }
+            this.exchangeDelegation(exchange, context::execute);
         } else {
             exchange.setStatusCode(404)
                     .endExchange();
@@ -83,12 +72,15 @@ public class FlowHandler implements HttpHandler, MDCContext {
         if (exchange.isInIoThread()) {
             final Map<String, String> mdcContext = this.popMDCContext();
             exchange.dispatch(() ->
-                    this.withMDCContext(mdcContext, () -> {
-                        runnable.run();
-                        if (closeExchange && !exchange.isComplete()) {
-                            exchange.endExchange();
-                        }
-                    })
+                    this.exchangeDelegation(exchange, () ->
+                            this.withMDCContext(mdcContext, () -> {
+                                        runnable.run();
+                                        if (closeExchange && !exchange.isComplete()) {
+                                            exchange.endExchange();
+                                        }
+                                    }
+                            )
+                    )
             );
         }
     }
@@ -220,5 +212,27 @@ public class FlowHandler implements HttpHandler, MDCContext {
         exchange.setStatusCode(code);
         exchangeData.accept(exchange.getResponseSender());
         exchange.endExchange();
+    }
+
+    /**
+     * Delegate the handling to the exchange to the runnable.
+     * If an exception is thrown, the exchange will be closed.
+     *
+     * @param exchange the exchange
+     * @param runnable the runnable
+     */
+    private void exchangeDelegation(final HttpServerExchange exchange, final Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (final Exception e) {
+            this.logger.error("An uncaught error occurred.", e);
+        } finally {
+            if (!exchange.isDispatched() && !exchange.isComplete()) {
+                if (!exchange.isResponseStarted()) {
+                    exchange.setStatusCode(500);
+                }
+                exchange.endExchange();
+            }
+        }
     }
 }
