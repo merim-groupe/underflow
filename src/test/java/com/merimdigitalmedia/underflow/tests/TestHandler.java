@@ -166,7 +166,7 @@ public class TestHandler extends FlowHandler implements WebForm {
     @Fallback
     public void fallback(final HttpServerExchange exchange) throws Exception {
         this.dispatchAndBlock(exchange, () -> {
+            this.ok(exchange, sender -> sender.send("Fallback"));
         });
-//        this.ok(exchange, sender -> sender.send("Fallback"));
     }
 }
