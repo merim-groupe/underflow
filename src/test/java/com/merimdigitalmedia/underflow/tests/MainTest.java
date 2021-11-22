@@ -1,6 +1,7 @@
 package com.merimdigitalmedia.underflow.tests;
 
 import io.undertow.Undertow;
+import io.undertow.server.handlers.PathHandler;
 
 /**
  * MainTest.
@@ -11,10 +12,16 @@ import io.undertow.Undertow;
 public class MainTest {
 
     public static void main(final String[] args) {
+        final PathHandler handler = new PathHandler();
+
+        handler.addPrefixPath("/test", new TestHandler());
+        handler.addPrefixPath("/event", new ServerEventTestHandler());
+
         final Undertow server = Undertow.builder()
                 .addHttpListener(8080, "localhost")
-                .setHandler(new TestHandler())
+                .setHandler(handler)
                 .build();
+
         System.out.println("Starting !");
         server.start();
     }

@@ -45,7 +45,7 @@ public class FlowHandler implements HttpHandler, MDCContext {
      */
     protected void dispatch(final HttpServerExchange exchange,
                             final Runnable runnable) {
-        this.dispatch(exchange, runnable, true);
+        this.dispatch(exchange, true, runnable);
     }
 
     /**
@@ -56,23 +56,23 @@ public class FlowHandler implements HttpHandler, MDCContext {
      */
     protected void dispatchUnsafe(final HttpServerExchange exchange,
                                   final Runnable runnable) {
-        this.dispatch(exchange, runnable, false);
+        this.dispatch(exchange, false, runnable);
     }
 
     /**
      * Dispatch to a worker thread.
      *
      * @param exchange      the exchange
-     * @param runnable      the runnable
      * @param closeExchange the close exchange
+     * @param runnable      the runnable
      */
     private void dispatch(final HttpServerExchange exchange,
-                          final Runnable runnable,
-                          final boolean closeExchange) {
+                          final boolean closeExchange,
+                          final Runnable runnable) {
         if (exchange.isInIoThread()) {
             final Map<String, String> mdcContext = this.popMDCContext();
             exchange.dispatch(() ->
-                    this.exchangeDelegation(exchange, () ->
+                    this.exchangeDelegation(exchange, closeExchange, () ->
                             this.withMDCContext(mdcContext, () -> {
                                         runnable.run();
                                         if (closeExchange && !exchange.isComplete()) {
@@ -222,12 +222,23 @@ public class FlowHandler implements HttpHandler, MDCContext {
      * @param runnable the runnable
      */
     private void exchangeDelegation(final HttpServerExchange exchange, final Runnable runnable) {
+        this.exchangeDelegation(exchange, true, runnable);
+    }
+
+    /**
+     * Delegate the handling to the exchange to the runnable.
+     * If an exception is thrown, the exchange will be closed.
+     *
+     * @param exchange the exchange
+     * @param runnable the runnable
+     */
+    private void exchangeDelegation(final HttpServerExchange exchange, final boolean closeExchange, final Runnable runnable) {
         try {
             runnable.run();
         } catch (final Exception e) {
             this.logger.error("An uncaught error occurred.", e);
         } finally {
-            if (!exchange.isDispatched() && !exchange.isComplete()) {
+            if (!exchange.isDispatched() && !exchange.isComplete() && closeExchange) {
                 if (!exchange.isResponseStarted()) {
                     exchange.setStatusCode(500);
                 }
