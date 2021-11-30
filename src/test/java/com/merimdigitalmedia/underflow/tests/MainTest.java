@@ -14,7 +14,7 @@ public class MainTest {
     public static void main(final String[] args) {
         final PathHandler handler = new PathHandler();
 
-        handler.addPrefixPath("/test", new TestHandler());
+        handler.addPrefixPath("/", new TestHandler());
         handler.addPrefixPath("/event", new ServerEventTestHandler());
 
         final Undertow server = Undertow.builder()
