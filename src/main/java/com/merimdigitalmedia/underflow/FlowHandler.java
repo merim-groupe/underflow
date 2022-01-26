@@ -236,7 +236,7 @@ public class FlowHandler implements HttpHandler, MDCContext {
         try {
             runnable.run();
         } catch (final Exception e) {
-            this.logger.error("An uncaught error occurred.", e);
+            this.logger.error("An uncaught error occurred on the handler method and escalated to Underflow.", e);
         } finally {
             if (!exchange.isDispatched() && !exchange.isComplete() && closeExchange) {
                 if (!exchange.isResponseStarted()) {
