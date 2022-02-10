@@ -11,6 +11,7 @@ import com.merimdigitalmedia.underflow.annotation.method.POST;
 import com.merimdigitalmedia.underflow.annotation.method.PUT;
 import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
+import com.merimdigitalmedia.underflow.annotation.routing.Query;
 import com.merimdigitalmedia.underflow.forms.WebForm;
 import com.merimdigitalmedia.underflow.tests.entities.TestForm;
 import io.undertow.server.HttpServerExchange;
@@ -152,6 +153,23 @@ public class TestHandler extends FlowHandler implements WebForm {
                 this.logger.error("GOT : {}", form.getName());
             }, exception -> {
                 this.logger.error("OH NO ! ... Anyway ...", exception);
+            });
+        });
+    }
+
+    /**
+     * Simple GET fallback example.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
+    @GET
+    @Path("/enum")
+    public void webForm(final HttpServerExchange exchange,
+                        @Query(value = "state", required = true) final StateEnum state) throws Exception {
+        this.dispatchAndBlock(exchange, () -> {
+            this.ok(exchange, sender -> {
+                sender.send("State is : " + state.name());
             });
         });
     }
