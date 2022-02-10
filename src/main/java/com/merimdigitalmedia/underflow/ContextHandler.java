@@ -1,7 +1,21 @@
 package com.merimdigitalmedia.underflow;
 
-import com.merimdigitalmedia.underflow.annotation.method.*;
-import com.merimdigitalmedia.underflow.annotation.routing.*;
+import com.merimdigitalmedia.underflow.annotation.method.ALL;
+import com.merimdigitalmedia.underflow.annotation.method.CUSTOM;
+import com.merimdigitalmedia.underflow.annotation.method.DELETE;
+import com.merimdigitalmedia.underflow.annotation.method.GET;
+import com.merimdigitalmedia.underflow.annotation.method.HEAD;
+import com.merimdigitalmedia.underflow.annotation.method.OPTIONS;
+import com.merimdigitalmedia.underflow.annotation.method.PATCH;
+import com.merimdigitalmedia.underflow.annotation.method.POST;
+import com.merimdigitalmedia.underflow.annotation.method.PUT;
+import com.merimdigitalmedia.underflow.annotation.routing.DefaultValue;
+import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
+import com.merimdigitalmedia.underflow.annotation.routing.Name;
+import com.merimdigitalmedia.underflow.annotation.routing.Path;
+import com.merimdigitalmedia.underflow.annotation.routing.Paths;
+import com.merimdigitalmedia.underflow.annotation.routing.Query;
+import com.merimdigitalmedia.underflow.annotation.routing.QueryListProperty;
 import com.merimdigitalmedia.underflow.converters.Converters;
 import com.merimdigitalmedia.underflow.path.PathMatcher;
 import com.merimdigitalmedia.underflow.path.QueryParameter;
@@ -138,7 +152,20 @@ public class ContextHandler {
                 if (value == null && pDefaultValue != null) {
                     value = pDefaultValue.value();
                 }
-                methodArgs.add(Converters.convert(pClass, value));
+                if (pQuery.listProperty().backedType() != QueryListProperty.NoBackedType.class) {
+                    final Class<?> backedType = pQuery.listProperty().backedType();
+                    final List<Object> list = new ArrayList<>();
+
+                    if (value != null) {
+                        for (final String v : value.split(pQuery.listProperty().separator())) {
+                            list.add(Converters.convert(backedType, v));
+                        }
+                    }
+
+                    methodArgs.add(list);
+                } else {
+                    methodArgs.add(Converters.convert(pClass, value));
+                }
             }
         }
         try {

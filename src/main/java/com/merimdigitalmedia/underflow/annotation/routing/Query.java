@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Query {
+
     /**
      * Value string.
      *
@@ -27,4 +28,11 @@ public @interface Query {
      * @return the boolean
      */
     boolean required() default false;
+
+    /**
+     * List property query list.
+     *
+     * @return the query list
+     */
+    QueryListProperty listProperty() default @QueryListProperty();
 }

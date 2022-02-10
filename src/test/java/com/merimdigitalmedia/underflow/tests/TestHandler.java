@@ -12,9 +12,12 @@ import com.merimdigitalmedia.underflow.annotation.method.PUT;
 import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
 import com.merimdigitalmedia.underflow.annotation.routing.Query;
+import com.merimdigitalmedia.underflow.annotation.routing.QueryListProperty;
 import com.merimdigitalmedia.underflow.forms.WebForm;
 import com.merimdigitalmedia.underflow.tests.entities.TestForm;
 import io.undertow.server.HttpServerExchange;
+
+import java.util.List;
 
 /**
  * The Test handler.
@@ -170,6 +173,28 @@ public class TestHandler extends FlowHandler implements WebForm {
         this.dispatchAndBlock(exchange, () -> {
             this.ok(exchange, sender -> {
                 sender.send("State is : " + state.name());
+            });
+        });
+    }
+
+    /**
+     * Simple GET fallback example.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
+    @GET
+    @Path("/enums")
+    public void webForm(final HttpServerExchange exchange,
+                        @Query(value = "state", required = true,
+                                listProperty = @QueryListProperty(backedType = StateEnum.class)) final List<StateEnum> states) throws Exception {
+        this.dispatchAndBlock(exchange, () -> {
+            this.ok(exchange, sender -> {
+                final StringBuilder s = new StringBuilder("State are :");
+                for (final StateEnum state : states) {
+                    s.append("\n").append(state.name());
+                }
+                sender.send(s.toString());
             });
         });
     }
