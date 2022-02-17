@@ -7,7 +7,7 @@ package com.merimdigitalmedia.underflow.api.entities;
  * @author Pierre Adam
  * @since 21.08.05
  */
-public abstract class ApiFormWithPayload<T> {
+public interface ApiFormWithPayload<T> {
 
     /**
      * Validate the form. If a server error is returned, the server will return an error.
@@ -16,5 +16,5 @@ public abstract class ApiFormWithPayload<T> {
      * @param payload the payload
      * @return a server error or null
      */
-    public abstract ServerError isValid(T payload);
+    ServerError isValid(T payload);
 }

@@ -12,5 +12,4 @@ import io.undertow.server.handlers.form.FormData;
 public interface Form {
 
     void accept(final HttpServerExchange exchange, final FormData formData) throws Exception;
-
 }
