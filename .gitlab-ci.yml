@@ -2,3 +2,6 @@
 include:
   - project: 'devops/ci-template'
     file: '/JavaLib-Pipelines.gitlab-ci.yml'
+
+variables:
+  MAVEN_CLI_OPTS: "-P release"
