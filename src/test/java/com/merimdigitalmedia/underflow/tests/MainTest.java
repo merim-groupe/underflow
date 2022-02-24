@@ -17,6 +17,7 @@ public class MainTest {
         final PathHandler handler = new PathHandler();
 
         handler.addPrefixPath("/", new TestHandler());
+        handler.addPrefixPath("/api", new ApiTestHandler());
         handler.addPrefixPath("/CORS/Legacy", new CORSLegacyAllowHandler(new TestHandler(), true));
         handler.addPrefixPath("/CORS", new CORSHandler(new TestHandler()));
         handler.addPrefixPath("/event", new ServerEventTestHandler());
