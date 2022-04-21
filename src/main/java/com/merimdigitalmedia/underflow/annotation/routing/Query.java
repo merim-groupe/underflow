@@ -35,4 +35,11 @@ public @interface Query {
      * @return the query list
      */
     QueryListProperty listProperty() default @QueryListProperty();
+
+    /**
+     * The default value.
+     *
+     * @return the default value
+     */
+    DefaultValue defaultValue() default @DefaultValue();
 }

@@ -4,9 +4,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Query.
+ * QueryListProperty.
  *
- * @author Lucas Stadelmann
+ * @author Pierre Adam
  * @since 21.04.28
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -24,11 +24,4 @@ public @interface QueryListProperty {
      * @return the class
      */
     Class<?> backedType() default NoBackedType.class;
-
-    /**
-     * Separator string.
-     *
-     * @return the string
-     */
-    String separator() default ",";
 }

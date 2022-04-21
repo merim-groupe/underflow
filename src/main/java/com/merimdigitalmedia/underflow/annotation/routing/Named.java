@@ -6,14 +6,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Parameter.
+ * Named.
  *
  * @author Pierre Adam
  * @since 21.04.27
  */
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Name {
+public @interface Named {
     /**
      * Value string.
      *

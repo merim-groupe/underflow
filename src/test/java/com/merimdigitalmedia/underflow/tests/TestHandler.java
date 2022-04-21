@@ -1,18 +1,8 @@
 package com.merimdigitalmedia.underflow.tests;
 
 import com.merimdigitalmedia.underflow.FlowHandler;
-import com.merimdigitalmedia.underflow.annotation.method.ALL;
-import com.merimdigitalmedia.underflow.annotation.method.DELETE;
-import com.merimdigitalmedia.underflow.annotation.method.GET;
-import com.merimdigitalmedia.underflow.annotation.method.HEAD;
-import com.merimdigitalmedia.underflow.annotation.method.OPTIONS;
-import com.merimdigitalmedia.underflow.annotation.method.PATCH;
-import com.merimdigitalmedia.underflow.annotation.method.POST;
-import com.merimdigitalmedia.underflow.annotation.method.PUT;
-import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
-import com.merimdigitalmedia.underflow.annotation.routing.Path;
-import com.merimdigitalmedia.underflow.annotation.routing.Query;
-import com.merimdigitalmedia.underflow.annotation.routing.QueryListProperty;
+import com.merimdigitalmedia.underflow.annotation.method.*;
+import com.merimdigitalmedia.underflow.annotation.routing.*;
 import com.merimdigitalmedia.underflow.forms.WebForm;
 import com.merimdigitalmedia.underflow.tests.entities.TestForm;
 import io.undertow.server.HttpServerExchange;
@@ -185,9 +175,9 @@ public class TestHandler extends FlowHandler implements WebForm {
      */
     @GET
     @Path("/enums")
-    public void webForm(final HttpServerExchange exchange,
-                        @Query(value = "state", required = true,
-                                listProperty = @QueryListProperty(backedType = StateEnum.class)) final List<StateEnum> states) throws Exception {
+    public void enums(final HttpServerExchange exchange,
+                      @Query(value = "state",
+                              listProperty = @QueryListProperty(backedType = StateEnum.class)) final List<StateEnum> states) throws Exception {
         this.dispatchAndBlock(exchange, () -> {
             this.ok(exchange, sender -> {
                 final StringBuilder s = new StringBuilder("State are :");
@@ -197,6 +187,22 @@ public class TestHandler extends FlowHandler implements WebForm {
                 sender.send(s.toString());
             });
         });
+    }
+
+    /**
+     * Simple GET fallback example.
+     *
+     * @param exchange the exchange
+     * @throws Exception the exception
+     */
+    @GET
+    @Path("/enums-default")
+    public void enumsDefault(final HttpServerExchange exchange,
+                             @Query(value = "state",
+                                     listProperty = @QueryListProperty(backedType = StateEnum.class),
+                                     defaultValue = @DefaultValue({"DONE", "PENDING"})
+                             ) final List<StateEnum> states) throws Exception {
+        this.enums(exchange, states);
     }
 
     /**

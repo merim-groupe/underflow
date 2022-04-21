@@ -1,24 +1,10 @@
 package com.merimdigitalmedia.underflow;
 
-import com.merimdigitalmedia.underflow.annotation.method.ALL;
-import com.merimdigitalmedia.underflow.annotation.method.CUSTOM;
-import com.merimdigitalmedia.underflow.annotation.method.DELETE;
-import com.merimdigitalmedia.underflow.annotation.method.GET;
-import com.merimdigitalmedia.underflow.annotation.method.HEAD;
-import com.merimdigitalmedia.underflow.annotation.method.OPTIONS;
-import com.merimdigitalmedia.underflow.annotation.method.PATCH;
-import com.merimdigitalmedia.underflow.annotation.method.POST;
-import com.merimdigitalmedia.underflow.annotation.method.PUT;
-import com.merimdigitalmedia.underflow.annotation.routing.DefaultValue;
-import com.merimdigitalmedia.underflow.annotation.routing.Fallback;
-import com.merimdigitalmedia.underflow.annotation.routing.Name;
-import com.merimdigitalmedia.underflow.annotation.routing.Path;
-import com.merimdigitalmedia.underflow.annotation.routing.Paths;
-import com.merimdigitalmedia.underflow.annotation.routing.Query;
-import com.merimdigitalmedia.underflow.annotation.routing.QueryListProperty;
+import com.merimdigitalmedia.underflow.annotation.method.*;
+import com.merimdigitalmedia.underflow.annotation.routing.*;
 import com.merimdigitalmedia.underflow.converters.Converters;
 import com.merimdigitalmedia.underflow.path.PathMatcher;
-import com.merimdigitalmedia.underflow.path.QueryParameter;
+import com.merimdigitalmedia.underflow.path.QueryString;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
 
@@ -26,9 +12,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * HandlerContext.
@@ -61,7 +46,7 @@ public class ContextHandler {
     /**
      * The Query parameter.
      */
-    private QueryParameter queryParameter;
+    private QueryString queryString;
 
     /**
      * Instantiates a new Context handler.
@@ -75,7 +60,7 @@ public class ContextHandler {
         this.exchange = exchange;
         this.method = null;
         this.pathMatcher = null;
-        this.queryParameter = null;
+        this.queryString = null;
     }
 
     /**
@@ -89,11 +74,11 @@ public class ContextHandler {
         for (final Method classMethod : this.handler.getClass().getMethods()) {
             if (this.methodMatch(classMethod, annotationForMethod)) {
                 final PathMatcher matcher = this.getPathMatcher(classMethod);
-                final QueryParameter parameter = new QueryParameter(this.exchange.getQueryParameters(), classMethod);
+                final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), classMethod);
                 if (matcher.find() && parameter.checkRequired()) {
                     this.method = classMethod;
                     this.pathMatcher = matcher;
-                    this.queryParameter = parameter;
+                    this.queryString = parameter;
 
                     return true;
                 }
@@ -114,12 +99,12 @@ public class ContextHandler {
             if (classMethod.isAnnotationPresent(Fallback.class)) {
 
                 final PathMatcher matcher = new PathMatcher(this.exchange.getRelativePath(), ".*", true);
-                final QueryParameter parameter = new QueryParameter(this.exchange.getQueryParameters(), classMethod);
+                final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), classMethod);
 
                 if (matcher.find() && parameter.checkRequired()) {
                     this.method = classMethod;
                     this.pathMatcher = matcher;
-                    this.queryParameter = parameter;
+                    this.queryString = parameter;
 
                     return true;
                 }
@@ -138,33 +123,25 @@ public class ContextHandler {
 
         for (final Parameter parameter : this.method.getParameters()) {
             final Class<?> pClass = parameter.getType();
-            final Name pName = parameter.getAnnotation(Name.class);
+            final Named pNamed = parameter.getAnnotation(Named.class);
             final Query pQuery = parameter.getAnnotation(Query.class);
-            final DefaultValue pDefaultValue = parameter.getAnnotation(DefaultValue.class);
 
             if (pClass.isAssignableFrom(HttpServerExchange.class)) {
                 methodArgs.add(this.exchange);
-            } else if (pName != null && this.pathMatcher.hasGroup(pName.value())) {
-                final String value = this.pathMatcher.getGroup(pName.value());
+            } else if (pNamed != null && this.pathMatcher.hasGroup(pNamed.value())) {
+                final String value = this.pathMatcher.getGroup(pNamed.value());
                 methodArgs.add(Converters.convert(pClass, value));
-            } else if (pQuery != null && this.queryParameter.hasParameter(pQuery.value())) {
-                String value = this.queryParameter.getParameter(pQuery.value());
-                if (value == null && pDefaultValue != null) {
-                    value = pDefaultValue.value();
+            } else if (pQuery != null) {
+                final Deque<String> values = this.queryString.getValuesFor(pQuery.value());
+                if (values.isEmpty() && pQuery.defaultValue().value().length > 0) {
+                    values.addAll(Arrays.asList(pQuery.defaultValue().value()));
                 }
                 if (pQuery.listProperty().backedType() != QueryListProperty.NoBackedType.class) {
                     final Class<?> backedType = pQuery.listProperty().backedType();
-                    final List<Object> list = new ArrayList<>();
-
-                    if (value != null) {
-                        for (final String v : value.split(pQuery.listProperty().separator())) {
-                            list.add(Converters.convert(backedType, v));
-                        }
-                    }
-
+                    final List<Object> list = values.stream().map(v -> Converters.convert(backedType, v)).collect(Collectors.toList());
                     methodArgs.add(list);
                 } else {
-                    methodArgs.add(Converters.convert(pClass, value));
+                    methodArgs.add(Converters.convert(pClass, values.getFirst()));
                 }
             }
         }
