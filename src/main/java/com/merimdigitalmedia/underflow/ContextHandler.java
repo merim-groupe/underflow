@@ -141,7 +141,11 @@ public class ContextHandler {
                     final List<Object> list = values.stream().map(v -> Converters.convert(backedType, v)).collect(Collectors.toList());
                     methodArgs.add(list);
                 } else {
-                    methodArgs.add(Converters.convert(pClass, values.getFirst()));
+                    if (values.isEmpty()) {
+                        methodArgs.add(null);
+                    } else {
+                        methodArgs.add(Converters.convert(pClass, values.getFirst()));
+                    }
                 }
             }
         }
