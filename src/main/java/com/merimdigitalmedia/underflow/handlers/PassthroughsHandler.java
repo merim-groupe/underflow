@@ -50,4 +50,16 @@ public abstract class PassthroughsHandler implements HttpHandler, MDCContext {
         this.interceptRequest(exchange);
         this.callUnderlying(exchange);
     }
+
+    /**
+     * Gets backed handler.
+     *
+     * @return the backed handler
+     */
+    protected HttpHandler getFinalBackedHandler() {
+        if (this.underlying instanceof PassthroughsHandler) {
+            return ((PassthroughsHandler) this.underlying).getFinalBackedHandler();
+        }
+        return this.underlying;
+    }
 }

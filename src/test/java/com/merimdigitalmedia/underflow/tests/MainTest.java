@@ -2,6 +2,7 @@ package com.merimdigitalmedia.underflow.tests;
 
 import com.merimdigitalmedia.underflow.handlers.CORSHandler;
 import com.merimdigitalmedia.underflow.handlers.CORSLegacyAllowHandler;
+import com.merimdigitalmedia.underflow.handlers.http.RequestLoggerHandler;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
 
@@ -16,11 +17,11 @@ public class MainTest {
     public static void main(final String[] args) {
         final PathHandler handler = new PathHandler();
 
-        handler.addPrefixPath("/", new TestHandler());
-        handler.addPrefixPath("/api", new ApiTestHandler());
-        handler.addPrefixPath("/CORS/Legacy", new CORSLegacyAllowHandler(new TestHandler(), true));
-        handler.addPrefixPath("/CORS", new CORSHandler(new TestHandler()));
-        handler.addPrefixPath("/event", new ServerEventTestHandler());
+        handler.addPrefixPath("/", new RequestLoggerHandler(new TestHandler()));
+        handler.addPrefixPath("/api", new RequestLoggerHandler(new ApiTestHandler()));
+        handler.addPrefixPath("/CORS/Legacy", new RequestLoggerHandler(new CORSLegacyAllowHandler(new TestHandler(), true)));
+        handler.addPrefixPath("/CORS", new RequestLoggerHandler(new CORSHandler(new TestHandler())));
+        handler.addPrefixPath("/event", new RequestLoggerHandler(new ServerEventTestHandler()));
 
         final Undertow server = Undertow.builder()
                 .addHttpListener(8080, "localhost")
