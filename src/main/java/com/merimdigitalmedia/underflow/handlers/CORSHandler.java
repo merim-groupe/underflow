@@ -23,10 +23,11 @@ public class CORSHandler extends HeaderHandler {
     /**
      * Instantiates a new Cors handler.
      *
-     * @param underlying                the underlying
-     * @param accessControlAllowOrigin  the access control allow origin
-     * @param accessControlAllowMethods the access control allow methods
-     * @param accessControlAllowHeaders the access control allow headers
+     * @param underlying                    the underlying
+     * @param accessControlAllowOrigin      the access control allow origin
+     * @param accessControlAllowMethods     the access control allow methods
+     * @param accessControlAllowHeaders     the access control allow headers
+     * @param accessControlAllowCredentials the access control allow credentials
      */
     public CORSHandler(final HttpHandler underlying,
                        final String accessControlAllowOrigin,
