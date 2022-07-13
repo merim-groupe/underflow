@@ -147,6 +147,9 @@ public class ContextHandler {
                         methodArgs.add(Converters.convert(pClass, values.getFirst()));
                     }
                 }
+            } else {
+                final String value = this.pathMatcher.getGroup(parameter.getName());
+                methodArgs.add(Converters.convert(pClass, value));
             }
         }
         try {
