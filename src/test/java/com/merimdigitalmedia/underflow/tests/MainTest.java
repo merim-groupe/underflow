@@ -1,7 +1,7 @@
 package com.merimdigitalmedia.underflow.tests;
 
-import com.merimdigitalmedia.underflow.handlers.CORSHandler;
-import com.merimdigitalmedia.underflow.handlers.CORSLegacyAllowHandler;
+import com.merimdigitalmedia.underflow.handlers.http.CORSHandler;
+import com.merimdigitalmedia.underflow.handlers.http.CORSLegacyAllowHandler;
 import com.merimdigitalmedia.underflow.handlers.http.RequestLoggerHandler;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;

@@ -1,5 +1,6 @@
-package com.merimdigitalmedia.underflow.handlers;
+package com.merimdigitalmedia.underflow.handlers.http;
 
+import com.merimdigitalmedia.underflow.handlers.PassthroughsHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;

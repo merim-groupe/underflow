@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow;
+package com.merimdigitalmedia.underflow.handlers.context;
 
 import com.merimdigitalmedia.underflow.annotation.method.*;
 import com.merimdigitalmedia.underflow.annotation.routing.*;
@@ -117,7 +117,7 @@ public class ContextHandler {
     /**
      * Resolve the arguments and execute de method.
      */
-    void execute() {
+    public void execute() {
         this.exchange.setRelativePath(this.pathMatcher.getRemainingPath());
         final List<Object> methodArgs = new ArrayList<>();
 

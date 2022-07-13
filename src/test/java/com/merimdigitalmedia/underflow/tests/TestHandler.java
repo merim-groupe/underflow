@@ -1,13 +1,18 @@
 package com.merimdigitalmedia.underflow.tests;
 
-import com.merimdigitalmedia.underflow.FlowHandler;
 import com.merimdigitalmedia.underflow.annotation.method.*;
 import com.merimdigitalmedia.underflow.annotation.routing.*;
 import com.merimdigitalmedia.underflow.forms.WebForm;
+import com.merimdigitalmedia.underflow.handlers.flows.FlowTemplateHandler;
 import com.merimdigitalmedia.underflow.tests.entities.TestForm;
+import freemarker.template.Template;
 import io.undertow.server.HttpServerExchange;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The Test handler.
@@ -15,7 +20,14 @@ import java.util.List;
  * @author Pierre Adam
  * @since 21.04.27
  */
-public class TestHandler extends FlowHandler implements WebForm {
+public class TestHandler extends FlowTemplateHandler implements WebForm {
+
+    /**
+     * Instantiates a new Test handler.
+     */
+    public TestHandler() {
+        super("/templates");
+    }
 
     /**
      * Simple GET example.
@@ -25,7 +37,16 @@ public class TestHandler extends FlowHandler implements WebForm {
     @GET
     @Path("")
     public void home(final HttpServerExchange exchange) {
-        this.dispatchAndBlock(exchange, () -> this.ok(exchange, sender -> sender.send("Hello Underflow !")));
+        this.dispatchAndBlock(exchange, () -> {
+            final Map<String, Object> dataModel = new HashMap<>();
+            final Template template = this.getTemplate("home.html");
+
+            final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            final LocalDateTime now = LocalDateTime.now();
+            dataModel.put("currentDate", dtf.format(now));
+
+            this.ok(exchange, template, dataModel);
+        });
     }
 
     /**
@@ -154,6 +175,7 @@ public class TestHandler extends FlowHandler implements WebForm {
      * Simple GET fallback example.
      *
      * @param exchange the exchange
+     * @param state    the state
      * @throws Exception the exception
      */
     @GET
@@ -171,6 +193,7 @@ public class TestHandler extends FlowHandler implements WebForm {
      * Simple GET fallback example.
      *
      * @param exchange the exchange
+     * @param states   the states
      * @throws Exception the exception
      */
     @GET
@@ -193,6 +216,7 @@ public class TestHandler extends FlowHandler implements WebForm {
      * Simple GET fallback example.
      *
      * @param exchange the exchange
+     * @param states   the states
      * @throws Exception the exception
      */
     @GET

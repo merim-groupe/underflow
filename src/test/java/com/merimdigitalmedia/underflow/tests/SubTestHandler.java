@@ -1,9 +1,9 @@
 package com.merimdigitalmedia.underflow.tests;
 
-import com.merimdigitalmedia.underflow.FlowHandler;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
 import com.merimdigitalmedia.underflow.annotation.method.POST;
 import com.merimdigitalmedia.underflow.annotation.routing.*;
+import com.merimdigitalmedia.underflow.handlers.flows.FlowHandler;
 import io.undertow.server.HttpServerExchange;
 
 import java.util.UUID;

@@ -1,5 +1,8 @@
-package com.merimdigitalmedia.underflow;
+package com.merimdigitalmedia.underflow.handlers.flows;
 
+import com.merimdigitalmedia.underflow.handlers.context.ContextHandler;
+import com.merimdigitalmedia.underflow.handlers.flows.answers.FlowSenderAnswer;
+import com.merimdigitalmedia.underflow.handlers.flows.answers.FlowStandardAnswer;
 import com.merimdigitalmedia.underflow.mdc.MDCContext;
 import com.merimdigitalmedia.underflow.mdc.MDCInterceptor;
 import io.undertow.io.Sender;
@@ -17,12 +20,19 @@ import java.util.function.Consumer;
  * @author Pierre Adam
  * @since 21.04.27
  */
-public class FlowHandler implements HttpHandler, MDCContext {
+public class FlowHandler implements HttpHandler, MDCContext, FlowSenderAnswer, FlowStandardAnswer {
 
     /**
      * The Logger.
      */
-    final protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    final protected Logger logger;
+
+    /**
+     * Instantiates a new Flow handler.
+     */
+    public FlowHandler() {
+        this.logger = LoggerFactory.getLogger(this.getClass());
+    }
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
@@ -122,99 +132,6 @@ public class FlowHandler implements HttpHandler, MDCContext {
     }
 
     /**
-     * End the request with a status 200 OK.
-     *
-     * @param exchange     the exchange
-     * @param exchangeData the exchange data
-     */
-    protected void ok(final HttpServerExchange exchange, final Consumer<Sender> exchangeData) {
-        this.result(exchange, 200, exchangeData);
-    }
-
-    /**
-     * End the request with a status 201 Created.
-     *
-     * @param exchange     the exchange
-     * @param exchangeData the exchange data
-     */
-    protected void created(final HttpServerExchange exchange, final Consumer<Sender> exchangeData) {
-        this.result(exchange, 201, exchangeData);
-    }
-
-    /**
-     * End the request with a status 204 No Content.
-     *
-     * @param exchange the exchange
-     */
-    protected void noContent(final HttpServerExchange exchange) {
-        this.result(exchange, 204, sender -> {
-        });
-    }
-
-    /**
-     * End the request with a status 400 Bad Request.
-     *
-     * @param exchange     the exchange
-     * @param exchangeData the exchange data
-     */
-    protected void badRequest(final HttpServerExchange exchange, final Consumer<Sender> exchangeData) {
-        this.result(exchange, 400, exchangeData);
-    }
-
-    /**
-     * End the request with a status 403 Forbidden.
-     *
-     * @param exchange     the exchange
-     * @param exchangeData the exchange data
-     */
-    protected void forbidden(final HttpServerExchange exchange, final Consumer<Sender> exchangeData) {
-        this.result(exchange, 403, exchangeData);
-    }
-
-    /**
-     * End the request with a status 404 Not Found.
-     *
-     * @param exchange     the exchange
-     * @param exchangeData the exchange data
-     */
-    protected void notFound(final HttpServerExchange exchange, final Consumer<Sender> exchangeData) {
-        this.result(exchange, 404, exchangeData);
-    }
-
-    /**
-     * End the request with a status 404 Not Found.
-     *
-     * @param exchange     the exchange
-     * @param exchangeData the exchange data
-     */
-    protected void internalServerError(final HttpServerExchange exchange, final Consumer<Sender> exchangeData) {
-        this.result(exchange, 500, exchangeData);
-    }
-
-    /**
-     * End the request with a status 404 Not Found.
-     *
-     * @param exchange     the exchange
-     * @param exchangeData the exchange data
-     */
-    protected void serviceUnavailable(final HttpServerExchange exchange, final Consumer<Sender> exchangeData) {
-        this.result(exchange, 503, exchangeData);
-    }
-
-    /**
-     * Ends the request with the given status.
-     *
-     * @param exchange     the exchange
-     * @param code         the code
-     * @param exchangeData the exchange data
-     */
-    protected void result(final HttpServerExchange exchange, final int code, final Consumer<Sender> exchangeData) {
-        exchange.setStatusCode(code);
-        exchangeData.accept(exchange.getResponseSender());
-        exchange.endExchange();
-    }
-
-    /**
      * Delegate the handling to the exchange to the runnable.
      * If an exception is thrown, the exchange will be closed.
      *
@@ -229,8 +146,9 @@ public class FlowHandler implements HttpHandler, MDCContext {
      * Delegate the handling to the exchange to the runnable.
      * If an exception is thrown, the exchange will be closed.
      *
-     * @param exchange the exchange
-     * @param runnable the runnable
+     * @param exchange      the exchange
+     * @param closeExchange the close exchange
+     * @param runnable      the runnable
      */
     private void exchangeDelegation(final HttpServerExchange exchange, final boolean closeExchange, final Runnable runnable) {
         try {
@@ -245,5 +163,12 @@ public class FlowHandler implements HttpHandler, MDCContext {
                 exchange.endExchange();
             }
         }
+    }
+
+    @Override
+    public void result(final HttpServerExchange exchange, final int code, final Consumer<Sender> exchangeData) {
+        exchange.setStatusCode(code);
+        exchangeData.accept(exchange.getResponseSender());
+        exchange.endExchange();
     }
 }

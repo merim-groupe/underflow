@@ -4,7 +4,7 @@
  * Proprietary and confidential
  */
 
-package com.merimdigitalmedia.underflow.handlers;
+package com.merimdigitalmedia.underflow.handlers.http;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;

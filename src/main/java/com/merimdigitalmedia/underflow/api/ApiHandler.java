@@ -2,10 +2,10 @@ package com.merimdigitalmedia.underflow.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.merimdigitalmedia.underflow.FlowHandler;
 import com.merimdigitalmedia.underflow.api.entities.ApiForm;
 import com.merimdigitalmedia.underflow.api.entities.ApiFormWithPayload;
 import com.merimdigitalmedia.underflow.api.entities.ServerError;
+import com.merimdigitalmedia.underflow.handlers.flows.FlowHandler;
 import com.merimdigitalmedia.underflow.mdc.MDCContext;
 import com.merimdigitalmedia.underflow.utils.SmartGZipBodyInput;
 import io.undertow.server.HttpServerExchange;
