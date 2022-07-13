@@ -7,6 +7,7 @@ import com.merimdigitalmedia.underflow.path.PathMatcher;
 import com.merimdigitalmedia.underflow.path.QueryString;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -148,8 +149,10 @@ public class ContextHandler {
                     }
                 }
             } else {
-                final String value = this.pathMatcher.getGroup(parameter.getName());
-                methodArgs.add(Converters.convert(pClass, value));
+                LoggerFactory.getLogger(this.handler.getClass()).warn("Unable to resolve the argument <{}@{}> for the method {}." +
+                                "Please use the annotation @Named or @Query to specify how to resolve this argument.",
+                        parameter.getName(), pClass.getCanonicalName(), this.method.getName());
+                methodArgs.add(null);
             }
         }
         try {
