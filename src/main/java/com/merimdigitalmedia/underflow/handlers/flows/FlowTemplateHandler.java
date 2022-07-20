@@ -41,6 +41,7 @@ public class FlowTemplateHandler extends FlowHandler implements HtmlResults {
      * Instantiates a new Flow template handler.
      *
      * @param configuration the configuration
+     * @param flowSecurity  the flow security
      */
     public FlowTemplateHandler(final Configuration configuration, final FlowSecurity<?, ?> flowSecurity) {
         super(flowSecurity);
@@ -60,6 +61,7 @@ public class FlowTemplateHandler extends FlowHandler implements HtmlResults {
      * Instantiates a new Flow template handler.
      *
      * @param resourcePath the resource path
+     * @param flowSecurity the flow security
      */
     public FlowTemplateHandler(final String resourcePath, final FlowSecurity<?, ?> flowSecurity) {
         super(flowSecurity);
@@ -78,7 +80,8 @@ public class FlowTemplateHandler extends FlowHandler implements HtmlResults {
     /**
      * Instantiates a new Flow template handler.
      *
-     * @param dirPath the dir path
+     * @param dirPath      the dir path
+     * @param flowSecurity the flow security
      */
     public FlowTemplateHandler(final File dirPath, final FlowSecurity<?, ?> flowSecurity) {
         super(flowSecurity);
@@ -102,6 +105,16 @@ public class FlowTemplateHandler extends FlowHandler implements HtmlResults {
     @Override
     public Result onNotFound(final HttpServerExchange exchange) {
         return this.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error404.ftl"), null);
+    }
+
+    @Override
+    public Result onUnauthorized(final HttpServerExchange exchange) {
+        return this.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error403.ftl"), null);
+    }
+
+    @Override
+    public Result onForbidden(final HttpServerExchange exchange) {
+        return this.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error403.ftl"), null);
     }
 
     @Override

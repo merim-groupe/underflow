@@ -4,12 +4,14 @@
     <h1>HELLO !</h1>
     <div>
         <p>
+            <b>Date</b> ${currentDate}
+        </p>
+        <p>
             <b>Secured page</b> <a href="/secured">Here !</a>
         </p>
         <p>
-            <b>Date</b> ${currentDate}
+            <b>API page</b> <a href="/api">Here !</a>
         </p>
-
     </div>
     <div>
         <h3>User data</h3>

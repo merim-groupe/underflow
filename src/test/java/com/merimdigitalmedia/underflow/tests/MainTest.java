@@ -23,7 +23,7 @@ public class MainTest {
         final PathHandler handler = new PathHandler();
 
         handler.addPrefixPath("/", new RequestLoggerHandler(new HomeHandler()));
-//        handler.addPrefixPath("/api", new RequestLoggerHandler(new ApiTestHandler()));
+        handler.addPrefixPath("/api", new RequestLoggerHandler(new ApiTestHandler()));
         handler.addPrefixPath("/CORS/Legacy", new RequestLoggerHandler(new CORSLegacyAllowHandler(new HomeHandler(), true)));
         handler.addPrefixPath("/CORS", new RequestLoggerHandler(new CORSHandler(new HomeHandler())));
 //        handler.addPrefixPath("/event", new RequestLoggerHandler(new ServerEventTestHandler()));

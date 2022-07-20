@@ -256,6 +256,7 @@ public interface HtmlResults {
             }
         }
 
-        return new InputStreamHttpResult(finalCode, new ByteArrayInputStream(renderOutput.toByteArray()));
+        return new InputStreamHttpResult(finalCode, new ByteArrayInputStream(renderOutput.toByteArray()))
+                .withContentType("text/html");
     }
 }

@@ -54,11 +54,4 @@ public interface HttpResult extends Result {
      * @return the result
      */
     HttpResult withContentType(final String contentType);
-
-    /**
-     * As json result.
-     *
-     * @return the result
-     */
-    HttpResult asJson();
 }

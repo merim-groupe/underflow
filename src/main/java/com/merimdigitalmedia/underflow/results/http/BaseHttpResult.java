@@ -3,6 +3,7 @@ package com.merimdigitalmedia.underflow.results.http;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
 import java.time.Instant;
@@ -97,11 +98,6 @@ public abstract class BaseHttpResult implements HttpResult {
 
     @Override
     public HttpResult withContentType(final String contentType) {
-        return this.withHeader("content-type", contentType);
-    }
-
-    @Override
-    public HttpResult asJson() {
-        return this.withContentType("application/json");
+        return this.withHeader(Headers.CONTENT_TYPE, contentType);
     }
 }

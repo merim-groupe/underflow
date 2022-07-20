@@ -1,5 +1,7 @@
 package com.merimdigitalmedia.underflow.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Application.
  *
@@ -13,7 +15,15 @@ public class Application {
      */
     private static Mode mode;
 
+    /**
+     * The constant mapper.
+     */
+    private static final ObjectMapper mapper;
+
     static {
+        mapper = new ObjectMapper();
+        Application.mapper.findAndRegisterModules();
+
         if (Application.runFromJar()) {
             Application.mode = Mode.PROD;
         } else {
@@ -37,6 +47,15 @@ public class Application {
      */
     public static void setMode(final Mode mode) {
         Application.mode = mode;
+    }
+
+    /**
+     * Gets mapper.
+     *
+     * @return the mapper
+     */
+    public static ObjectMapper getMapper() {
+        return Application.mapper;
     }
 
     /**

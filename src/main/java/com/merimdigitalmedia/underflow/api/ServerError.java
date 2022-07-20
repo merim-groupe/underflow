@@ -1,7 +1,12 @@
-package com.merimdigitalmedia.underflow.api.entities;
+package com.merimdigitalmedia.underflow.api;
 
 import com.merimdigitalmedia.underflow.mdc.MDCContext;
 import com.merimdigitalmedia.underflow.mdc.MDCKeys;
+import com.merimdigitalmedia.underflow.utils.Application;
+import com.merimdigitalmedia.underflow.utils.Mode;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * ServerError.
@@ -62,6 +67,18 @@ public class ServerError {
      */
     public ServerError(final String type) {
         this(type, "", "");
+    }
+
+    public ServerError(final String type, final Throwable throwable) {
+        this.requestUid = MDCContext.getInstance().getMDC(MDCKeys.Request.UID).orElse("Unavailable");
+        this.type = type;
+        this.message = throwable.getMessage();
+        
+        if (Application.getMode() == Mode.PROD) {
+            this.cause = "";
+        } else {
+            this.cause = Arrays.stream(throwable.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n"));
+        }
     }
 
     /**
