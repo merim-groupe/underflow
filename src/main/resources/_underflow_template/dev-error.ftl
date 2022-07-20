@@ -77,13 +77,17 @@
             text-shadow: 1px 1px 1px rgba(255, 255, 255, .5);
             position: relative;
             font-size: 12px;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
         }
 
         pre span.line {
             text-align: right;
             display: inline-block;
             padding: 5px 5px;
-            width: 30px;
+            width: 100%;
+            max-width: 30px;
             background: #D6D6D6;
             color: #8B8B8B;
             text-shadow: 1px 1px 1px rgba(255, 255, 255, .5);
@@ -92,9 +96,11 @@
 
         pre span.code {
             padding: 5px 5px;
-            position: absolute;
-            right: 0;
-            left: 40px;
+            position: relative;
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
         }
 
         pre:first-child span.code {
@@ -131,7 +137,8 @@
 
 <div id="source-code">
     <#list detail as line>
-        <pre data-file="${location}" data-line="${line?counter}"><span class="line">${line?counter}</span><span class="code">${line}</span></pre>
+        <pre data-file="${location}" data-line="${line?counter}"><span class="line">${line?counter}</span><span
+                    class="code">${line}</span></pre>
     </#list>
 </div>
 </body>
