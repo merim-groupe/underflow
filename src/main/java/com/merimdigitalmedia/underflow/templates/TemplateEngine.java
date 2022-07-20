@@ -4,6 +4,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -42,6 +43,24 @@ public class TemplateEngine {
         this(new Configuration(Configuration.VERSION_2_3_31));
 
         this.configuration.setClassForTemplateLoading(aClass, resourcePath);
+        this.configuration.setDefaultEncoding("UTF-8");
+        this.configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        this.configuration.setLogTemplateExceptions(false);
+        this.configuration.setWrapUncheckedExceptions(true);
+        this.configuration.setFallbackOnNullLoopVariable(false);
+    }
+
+    /**
+     * Instantiates with a file path.
+     * The path can be relative to where the project is running from.
+     *
+     * @param dirPath the dir path
+     * @throws IOException the io exception
+     */
+    public TemplateEngine(final File dirPath) throws IOException {
+        this(new Configuration(Configuration.VERSION_2_3_31));
+
+        this.configuration.setDirectoryForTemplateLoading(dirPath);
         this.configuration.setDefaultEncoding("UTF-8");
         this.configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         this.configuration.setLogTemplateExceptions(false);

@@ -1,12 +1,18 @@
 package com.merimdigitalmedia.underflow.handlers.context;
 
+import com.merimdigitalmedia.underflow.annotation.io.Dispatch;
 import com.merimdigitalmedia.underflow.annotation.method.*;
 import com.merimdigitalmedia.underflow.annotation.routing.*;
+import com.merimdigitalmedia.underflow.annotation.security.Secured;
 import com.merimdigitalmedia.underflow.converters.Converters;
+import com.merimdigitalmedia.underflow.handlers.flows.FlowHandler;
+import com.merimdigitalmedia.underflow.mdc.MDCContext;
 import com.merimdigitalmedia.underflow.path.PathMatcher;
 import com.merimdigitalmedia.underflow.path.QueryString;
+import com.merimdigitalmedia.underflow.results.Result;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
@@ -22,12 +28,17 @@ import java.util.stream.Collectors;
  * @author Pierre Adam
  * @since 21.04.27
  */
-public class ContextHandler {
+public class ContextHandler implements MDCContext {
+
+    /**
+     * The Logger.
+     */
+    private final Logger logger;
 
     /**
      * The Handler.
      */
-    private final Object handler;
+    private final FlowHandler handler;
 
     /**
      * The Exchange.
@@ -50,18 +61,25 @@ public class ContextHandler {
     private QueryString queryString;
 
     /**
+     * The Controller injectable.
+     */
+    private final Map<Class<?>, Object> controllerInjectable;
+
+    /**
      * Instantiates a new Context handler.
      *
      * @param handler  the handler
      * @param exchange the exchange
      */
-    public ContextHandler(final Object handler,
+    public ContextHandler(final FlowHandler handler,
                           final HttpServerExchange exchange) {
+        this.logger = LoggerFactory.getLogger(ContextHandler.class);
         this.handler = handler;
         this.exchange = exchange;
         this.method = null;
         this.pathMatcher = null;
         this.queryString = null;
+        this.controllerInjectable = new HashMap<>();
     }
 
     /**
@@ -73,7 +91,7 @@ public class ContextHandler {
         final Class<? extends Annotation> annotationForMethod = this.getAnnotationForMethod(this.exchange.getRequestMethod());
 
         for (final Method classMethod : this.handler.getClass().getMethods()) {
-            if (this.methodMatch(classMethod, annotationForMethod)) {
+            if (classMethod.getReturnType().isAssignableFrom(Result.class) && this.methodMatch(classMethod, annotationForMethod)) {
                 final PathMatcher matcher = this.getPathMatcher(classMethod);
                 final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), classMethod);
                 if (matcher.find() && parameter.checkRequired()) {
@@ -90,6 +108,24 @@ public class ContextHandler {
     }
 
     /**
+     * Require security.
+     *
+     * @return the boolean
+     */
+    public Optional<Secured> requireSecurity() {
+        return Optional.ofNullable(this.method.getAnnotation(Secured.class));
+    }
+
+    /**
+     * Gets method.
+     *
+     * @return the method
+     */
+    public Method getMethod() {
+        return this.method;
+    }
+
+    /**
      * Check that there is a fallback method for the call.
      *
      * @param aClass the class of the controller
@@ -97,8 +133,7 @@ public class ContextHandler {
      */
     private boolean hasFallbackMethod(final Class<?> aClass) {
         for (final Method classMethod : aClass.getMethods()) {
-            if (classMethod.isAnnotationPresent(Fallback.class)) {
-
+            if (classMethod.isAnnotationPresent(Fallback.class) && classMethod.getReturnType().isAssignableFrom(Result.class)) {
                 final PathMatcher matcher = new PathMatcher(this.exchange.getRelativePath(), ".*", true);
                 final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), classMethod);
 
@@ -121,6 +156,7 @@ public class ContextHandler {
     public void execute() {
         this.exchange.setRelativePath(this.pathMatcher.getRemainingPath());
         final List<Object> methodArgs = new ArrayList<>();
+        final Optional<Dispatch> optionalDispatch = Optional.ofNullable(this.method.getAnnotation(Dispatch.class));
 
         for (final Parameter parameter : this.method.getParameters()) {
             final Class<?> pClass = parameter.getType();
@@ -129,6 +165,8 @@ public class ContextHandler {
 
             if (pClass.isAssignableFrom(HttpServerExchange.class)) {
                 methodArgs.add(this.exchange);
+            } else if (this.controllerInjectable.containsKey(pClass)) {
+                methodArgs.add(this.controllerInjectable.get(pClass));
             } else if (pNamed != null && this.pathMatcher.hasGroup(pNamed.value())) {
                 final String value = this.pathMatcher.getGroup(pNamed.value());
                 methodArgs.add(Converters.convert(pClass, value));
@@ -155,10 +193,76 @@ public class ContextHandler {
                 methodArgs.add(null);
             }
         }
+
+        if (optionalDispatch.isPresent() && this.exchange.isInIoThread()) {
+            final Map<String, String> mdcContext = this.popMDCContext();
+            final Dispatch dispatch = optionalDispatch.get();
+
+            this.exchange.dispatch(() -> this.safeHttpExecute(() -> this.withMDCContext(mdcContext, () -> {
+                if (dispatch.block() && !this.exchange.isBlocking()) {
+                    // Closable to fix after migration to Java 9+.
+                    this.exchange.startBlocking();
+                }
+
+                this.executeMethod(methodArgs);
+            })));
+        } else {
+            this.safeHttpExecute(() -> this.executeMethod(methodArgs));
+        }
+    }
+
+    /**
+     * As optional or object object.
+     *
+     * @param pClass the p class
+     * @param value  the value
+     * @return the object
+     */
+    private Object asOptionalOrObject(final Class<?> pClass, final Object value) {
+        if (pClass.isAssignableFrom(Optional.class)) {
+            return Optional.ofNullable(value);
+        } else {
+            return value;
+        }
+    }
+
+    /**
+     * Safe http execute.
+     *
+     * @param logic the logic
+     */
+    private void safeHttpExecute(final Runnable logic) {
         try {
-            this.method.invoke(this.handler, methodArgs.toArray());
-        } catch (final IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            logic.run();
+        } catch (final Exception e) {
+            this.logger.error("Something wrong happened.", e);
+            if (!this.exchange.isResponseStarted()) {
+                this.exchange.setStatusCode(500);
+            }
+            this.exchange.endExchange();
+        }
+    }
+
+    /**
+     * Execute method.
+     *
+     * @param methodArgs the method args
+     */
+    private void executeMethod(final List<Object> methodArgs) {
+        try {
+            final Result result = (Result) this.method.invoke(this.handler, methodArgs.toArray());
+            result.process(this.exchange);
+        } catch (final Throwable e) {
+            Throwable cause = e;
+            if (e instanceof InvocationTargetException) {
+                cause = e.getCause();
+            }
+            this.logger.error("Controller uncaught exception.", cause);
+            try {
+                this.handler.onException(this.exchange, cause).process(this.exchange);
+            } catch (final Exception e2) {
+                throw new RuntimeException(e2);
+            }
         }
     }
 
@@ -182,6 +286,7 @@ public class ContextHandler {
                 }
             }
         }
+
         return PathMatcher.noMatch();
     }
 
@@ -230,5 +335,38 @@ public class ContextHandler {
             default:
                 return null;
         }
+    }
+
+    /**
+     * Add injectable.
+     *
+     * @param <T>   the type parameter
+     * @param value the value
+     */
+    public <T> void addInjectable(final T value) {
+        if (value != null) {
+            this.controllerInjectable.put(value.getClass(), value);
+        }
+    }
+
+    /**
+     * Add injectable.
+     *
+     * @param <T>    the type parameter
+     * @param tClass the t class
+     * @param value  the value
+     */
+    public <T> void addInjectable(final Class<T> tClass, final T value) {
+        this.controllerInjectable.put(tClass, value);
+    }
+
+    /**
+     * Add injectable.
+     *
+     * @param tClass the t class
+     * @param value  the value
+     */
+    public void addInjectableUnsafe(final Class<?> tClass, final Object value) {
+        this.controllerInjectable.put(tClass, value);
     }
 }

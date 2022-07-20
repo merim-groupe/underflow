@@ -14,14 +14,19 @@ import io.undertow.server.handlers.PathHandler;
  */
 public class MainTest {
 
+    /**
+     * Main.
+     *
+     * @param args the args
+     */
     public static void main(final String[] args) {
         final PathHandler handler = new PathHandler();
 
-        handler.addPrefixPath("/", new RequestLoggerHandler(new TestHandler()));
-        handler.addPrefixPath("/api", new RequestLoggerHandler(new ApiTestHandler()));
-        handler.addPrefixPath("/CORS/Legacy", new RequestLoggerHandler(new CORSLegacyAllowHandler(new TestHandler(), true)));
-        handler.addPrefixPath("/CORS", new RequestLoggerHandler(new CORSHandler(new TestHandler())));
-        handler.addPrefixPath("/event", new RequestLoggerHandler(new ServerEventTestHandler()));
+        handler.addPrefixPath("/", new RequestLoggerHandler(new HomeHandler()));
+//        handler.addPrefixPath("/api", new RequestLoggerHandler(new ApiTestHandler()));
+        handler.addPrefixPath("/CORS/Legacy", new RequestLoggerHandler(new CORSLegacyAllowHandler(new HomeHandler(), true)));
+        handler.addPrefixPath("/CORS", new RequestLoggerHandler(new CORSHandler(new HomeHandler())));
+//        handler.addPrefixPath("/event", new RequestLoggerHandler(new ServerEventTestHandler()));
 
         final Undertow server = Undertow.builder()
                 .addHttpListener(8080, "localhost")
