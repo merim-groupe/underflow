@@ -1,6 +1,5 @@
 package com.merimdigitalmedia.underflow.handlers.context;
 
-import com.merimdigitalmedia.underflow.annotation.io.Dispatch;
 import com.merimdigitalmedia.underflow.annotation.method.*;
 import com.merimdigitalmedia.underflow.annotation.routing.*;
 import com.merimdigitalmedia.underflow.annotation.security.Secured;
@@ -11,15 +10,21 @@ import com.merimdigitalmedia.underflow.handlers.flows.FlowHandler;
 import com.merimdigitalmedia.underflow.mdc.MDCContext;
 import com.merimdigitalmedia.underflow.results.Result;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.form.FormData;
+import io.undertow.server.handlers.form.FormDataParser;
+import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.util.HttpString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -63,7 +68,7 @@ public class ContextHandler implements MDCContext {
     /**
      * The Controller injectable.
      */
-    private final Map<Class<?>, Object> controllerInjectable;
+    private final Map<Class<?>, Supplier<Object>> controllerInjectable;
 
     /**
      * Instantiates a new Context handler.
@@ -80,6 +85,8 @@ public class ContextHandler implements MDCContext {
         this.pathMatcher = null;
         this.queryString = null;
         this.controllerInjectable = new HashMap<>();
+        this.controllerInjectable.put(FormData.class, () -> this.getFormData(this.exchange));
+        this.controllerInjectable.put(HttpServerExchange.class, () -> this.exchange);
     }
 
     /**
@@ -151,23 +158,53 @@ public class ContextHandler implements MDCContext {
     }
 
     /**
-     * Resolve the arguments and execute de method.
+     * Dispatch if necessary and run.
      */
     public void execute() {
+        if (this.exchange.isInIoThread()) {
+            final Map<String, String> mdcContext = this.popMDCContext();
+
+            this.exchange.dispatch(() -> this.withMDCContext(mdcContext, this::execute));
+        } else {
+            if (!this.exchange.isBlocking()) {
+                // Closable to fix after migration to Java 9+.
+                this.exchange.startBlocking();
+            }
+            this.run();
+        }
+    }
+
+    /**
+     * Resolve the arguments and execute de method.
+     */
+    private void run() {
         this.exchange.setRelativePath(this.pathMatcher.getRemainingPath());
+
+        if (this.methodHasBody()) {
+            this.addInjectable(InputStream.class, this.exchange.getInputStream());
+        }
+
+        final List<Object> methodArgs = this.resolveMethodArgs();
+
+        this.safeHttpExecute(() -> {
+            this.executeMethod(methodArgs);
+        });
+    }
+
+    /**
+     * Resolve method args list.
+     *
+     * @return the list
+     */
+    private List<Object> resolveMethodArgs() {
         final List<Object> methodArgs = new ArrayList<>();
-        final Optional<Dispatch> optionalDispatch = Optional.ofNullable(this.method.getAnnotation(Dispatch.class));
 
         for (final Parameter parameter : this.method.getParameters()) {
             final Class<?> pClass = parameter.getType();
             final Named pNamed = parameter.getAnnotation(Named.class);
             final Query pQuery = parameter.getAnnotation(Query.class);
 
-            if (pClass.isAssignableFrom(HttpServerExchange.class)) {
-                methodArgs.add(this.exchange);
-            } else if (this.controllerInjectable.containsKey(pClass)) {
-                methodArgs.add(this.controllerInjectable.get(pClass));
-            } else if (pNamed != null && this.pathMatcher.hasGroup(pNamed.value())) {
+            if (pNamed != null && this.pathMatcher.hasGroup(pNamed.value())) {
                 final String value = this.pathMatcher.getGroup(pNamed.value());
                 methodArgs.add(Converters.convert(pClass, value));
             } else if (pQuery != null) {
@@ -177,7 +214,7 @@ public class ContextHandler implements MDCContext {
                 }
                 if (pQuery.listProperty().backedType() != QueryListProperty.NoBackedType.class) {
                     final Class<?> backedType = pQuery.listProperty().backedType();
-                    final List<Object> list = values.stream().map(v -> Converters.convert(backedType, v)).collect(Collectors.toList());
+                    final List<java.lang.Object> list = values.stream().map(v -> Converters.convert(backedType, v)).collect(Collectors.toList());
                     methodArgs.add(list);
                 } else {
                     if (values.isEmpty()) {
@@ -186,6 +223,8 @@ public class ContextHandler implements MDCContext {
                         methodArgs.add(Converters.convert(pClass, values.getFirst()));
                     }
                 }
+            } else if (this.controllerInjectable.containsKey(pClass)) {
+                methodArgs.add(this.controllerInjectable.get(pClass).get());
             } else {
                 LoggerFactory.getLogger(this.handler.getClass()).warn("Unable to resolve the argument <{}@{}> for the method {}." +
                                 "Please use the annotation @Named or @Query to specify how to resolve this argument.",
@@ -194,21 +233,7 @@ public class ContextHandler implements MDCContext {
             }
         }
 
-        if (optionalDispatch.isPresent() && this.exchange.isInIoThread()) {
-            final Map<String, String> mdcContext = this.popMDCContext();
-            final Dispatch dispatch = optionalDispatch.get();
-
-            this.exchange.dispatch(() -> this.safeHttpExecute(() -> this.withMDCContext(mdcContext, () -> {
-                if (dispatch.block() && !this.exchange.isBlocking()) {
-                    // Closable to fix after migration to Java 9+.
-                    this.exchange.startBlocking();
-                }
-
-                this.executeMethod(methodArgs);
-            })));
-        } else {
-            this.safeHttpExecute(() -> this.executeMethod(methodArgs));
-        }
+        return methodArgs;
     }
 
     /**
@@ -338,6 +363,41 @@ public class ContextHandler implements MDCContext {
     }
 
     /**
+     * Method has body boolean.
+     *
+     * @return the boolean
+     */
+    private boolean methodHasBody() {
+        final Optional<POST> post = Optional.ofNullable(this.method.getAnnotation(POST.class));
+        final Optional<PATCH> patch = Optional.ofNullable(this.method.getAnnotation(PATCH.class));
+        final Optional<PUT> put = Optional.ofNullable(this.method.getAnnotation(PUT.class));
+
+        return post.isPresent() || patch.isPresent() || put.isPresent();
+    }
+
+    /**
+     * Gets form data.
+     *
+     * @param exchange the exchange
+     * @return the form data
+     */
+    private FormData getFormData(final HttpServerExchange exchange) {
+        final FormDataParser p = FormParserFactory.builder(true).build().createParser(exchange);
+
+        if (p == null) {
+            return null;
+        }
+        p.setCharacterEncoding("UTF-8");
+
+        try {
+            return p.parseBlocking();
+        } catch (final IOException e) {
+            this.logger.error("Error while parsing form data.", e);
+            return null;
+        }
+    }
+
+    /**
      * Add injectable.
      *
      * @param <T>   the type parameter
@@ -345,7 +405,7 @@ public class ContextHandler implements MDCContext {
      */
     public <T> void addInjectable(final T value) {
         if (value != null) {
-            this.controllerInjectable.put(value.getClass(), value);
+            this.controllerInjectable.put(value.getClass(), () -> value);
         }
     }
 
@@ -357,7 +417,7 @@ public class ContextHandler implements MDCContext {
      * @param value  the value
      */
     public <T> void addInjectable(final Class<T> tClass, final T value) {
-        this.controllerInjectable.put(tClass, value);
+        this.controllerInjectable.put(tClass, () -> value);
     }
 
     /**
@@ -367,6 +427,6 @@ public class ContextHandler implements MDCContext {
      * @param value  the value
      */
     public void addInjectableUnsafe(final Class<?> tClass, final Object value) {
-        this.controllerInjectable.put(tClass, value);
+        this.controllerInjectable.put(tClass, () -> value);
     }
 }

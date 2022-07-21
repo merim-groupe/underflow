@@ -11,7 +11,7 @@ import io.undertow.server.handlers.form.FormData;
  * @since 21.10.05
  */
 public class TestForm implements Form {
-    
+
     private String name;
 
     public String getName() {

@@ -8,7 +8,7 @@ import java.util.Optional;
  * @author Pierre Adam
  * @since 21.08.05
  */
-public interface ApiForm {
+public interface ApiForm extends ApiBodyBindable {
 
     /**
      * Validate the form. If a server error is returned, the server will return an error.

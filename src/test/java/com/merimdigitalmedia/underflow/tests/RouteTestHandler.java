@@ -1,6 +1,5 @@
 package com.merimdigitalmedia.underflow.tests;
 
-import com.merimdigitalmedia.underflow.annotation.io.Dispatch;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
 import com.merimdigitalmedia.underflow.annotation.routing.*;
 import com.merimdigitalmedia.underflow.handlers.flows.FlowTemplateHandler;
@@ -35,7 +34,6 @@ public class RouteTestHandler extends FlowTemplateHandler {
      */
     @GET
     @Path("/")
-    @Dispatch
     public Result pathWithQuery(final HttpServerExchange exchange,
                                 @Query(value = "bar", defaultValue = @DefaultValue(value = "default value")) final String bar) {
         return this.ok(this.getTemplate("routes/home.ftl"), null);
@@ -54,7 +52,6 @@ public class RouteTestHandler extends FlowTemplateHandler {
      */
     @GET
     @Path("/(?<uuid>[0-9a-f]{8}-(?>[0-9a-f]{4}-){3}[0-9a-f]{12})")
-    @Dispatch
     public Result uuidInPath(
             @Named("uuid") final UUID uuid,
             @Query(value = "arg", required = false) final String arg) {
@@ -78,7 +75,6 @@ public class RouteTestHandler extends FlowTemplateHandler {
      */
     @GET
     @Path("/query-list")
-    @Dispatch
     public Result uuidInPath(@Query(value = "entry", required = false,
             listProperty = @QueryListProperty(backedType = String.class),
             defaultValue = @DefaultValue("default value from controller !")) final List<String> dataList) {

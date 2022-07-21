@@ -8,6 +8,6 @@
         </p>
     </div>
     <div>
-        <img src="/assets/image.jpg"/>
+        <img src="/assets/image.jpg" width="100%"/>
     </div>
 </@base.page>

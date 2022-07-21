@@ -8,7 +8,6 @@ import com.merimdigitalmedia.underflow.results.http.JsonResults;
 import com.merimdigitalmedia.underflow.security.FlowSecurity;
 import com.merimdigitalmedia.underflow.utils.Application;
 import com.merimdigitalmedia.underflow.utils.SmartGZipBodyInput;
-import io.undertow.server.HttpServerExchange;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,16 +41,16 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
     /**
      * Gets json body.
      *
-     * @param <T>      the type parameter
-     * @param exchange the exchange
-     * @param tClass   the t class
-     * @param logic    the logic
+     * @param <T>             the type parameter
+     * @param bodyInputStream the body input stream
+     * @param tClass          the t class
+     * @param logic           the logic
      * @return the json body
      */
-    protected <T> Result getJsonBody(final HttpServerExchange exchange,
+    protected <T> Result getJsonBody(final InputStream bodyInputStream,
                                      final Class<T> tClass,
                                      final Function<T, Result> logic) {
-        final SmartGZipBodyInput bodyInput = new SmartGZipBodyInput(exchange);
+        final SmartGZipBodyInput bodyInput = new SmartGZipBodyInput(bodyInputStream);
         try (final InputStream inputStream = bodyInput.getInputStream()) {
             final T t = Application.getMapper().readerFor(tClass).readValue(inputStream);
             return logic.apply(t);
@@ -67,17 +66,17 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
     /**
      * Gets json form.
      *
-     * @param <T>      the type parameter
-     * @param exchange the exchange
-     * @param tClass   the t class
-     * @param logic    the logic
+     * @param <T>             the type parameter
+     * @param bodyInputStream the body input stream
+     * @param tClass          the t class
+     * @param logic           the logic
      * @return the json form
      */
     protected <T extends ApiForm> Result getJsonForm(
-            final HttpServerExchange exchange,
+            final InputStream bodyInputStream,
             final Class<T> tClass,
             final Function<T, Result> logic) {
-        return this.getJsonBody(exchange, tClass, form -> {
+        return this.getJsonBody(bodyInputStream, tClass, form -> {
             final Optional<ServerError> optionalError = form.isValid();
             if (optionalError.isPresent()) {
                 final ServerError error = optionalError.get();
@@ -91,20 +90,20 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
     /**
      * Gets json form.
      *
-     * @param <T>      the type parameter
-     * @param <U>      the type parameter
-     * @param exchange the exchange
-     * @param tClass   the t class
-     * @param payload  the payload
-     * @param logic    the logic
+     * @param <T>             the type parameter
+     * @param <U>             the type parameter
+     * @param bodyInputStream the body input stream
+     * @param tClass          the t class
+     * @param payload         the payload
+     * @param logic           the logic
      * @return the json form with payload
      */
     protected <T extends ApiFormWithPayload<U>, U> Result getJsonFormWithPayload(
-            final HttpServerExchange exchange,
+            final InputStream bodyInputStream,
             final Class<T> tClass,
             final U payload,
             final Function<T, Result> logic) {
-        return this.getJsonBody(exchange, tClass, form -> {
+        return this.getJsonBody(bodyInputStream, tClass, form -> {
             final Optional<ServerError> optionalError = form.isValid(payload);
             if (optionalError.isPresent()) {
                 final ServerError error = optionalError.get();

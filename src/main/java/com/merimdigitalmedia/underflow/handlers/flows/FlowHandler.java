@@ -63,22 +63,22 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
         if (context.isValid()) {
             final Optional<Secured> secured = context.requireSecurity();
             context.addInjectable(this.flowSecurity);
-            if (this.flowSecurity != null && secured.isPresent()) {
+            if (this.flowSecurity != null) {
                 final Optional<?> optionalUser = this.flowSecurity.isLogged(exchange);
-                if (optionalUser.isPresent()) {
-                    if (this.flowSecurity.isAccessibleUnsafe(optionalUser.get(), context.getMethod())) {
-                        // OK continue !
-                        context.addInjectable(this.flowSecurity);
-                        context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), optionalUser.get());
+                optionalUser.ifPresent(user -> context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), user));
+
+                if (secured.isPresent()) {
+                    if (optionalUser.isPresent()) {
+                        if (this.flowSecurity.isAccessibleUnsafe(optionalUser.get(), context.getMethod())) {
+                            // OK continue !
+                            context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), optionalUser.get());
+                        } else {
+                            // User is logged but doesn't have the right permissions.
+                            this.onForbidden().process(exchange);
+                            return;
+                        }
                     } else {
-                        // User is logged but doesn't have the right permissions.
-                        this.onForbidden().process(exchange);
-                        return;
-                    }
-                } else {
-                    // User is not logged.
-                    if (!secured.get().optional()) {
-                        // User was required.
+                        // User is not logged while required.
                         this.onUnauthorized().process(exchange);
                         return;
                     }
@@ -89,6 +89,7 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
             final Result result = this.onNotFound();
             result.process(exchange);
         }
+
     }
 
     @Override

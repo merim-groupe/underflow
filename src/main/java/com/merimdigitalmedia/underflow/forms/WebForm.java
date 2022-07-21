@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.function.Consumer;
 
 /**
@@ -50,7 +51,7 @@ public interface WebForm {
         final Logger logger = LoggerFactory.getLogger(WebForm.class);
         try {
             final FormData formData = this.getFormData(exchange);
-            final T instance = tClass.newInstance();
+            final T instance = tClass.getDeclaredConstructor().newInstance();
             try {
                 instance.accept(exchange, formData);
             } catch (final Exception e) {
@@ -58,10 +59,12 @@ public interface WebForm {
                 return;
             }
             successLogic.accept(instance);
-        } catch (final InstantiationException | IllegalAccessException e) {
-            logger.error("Unable to instantiate a form.", e);
+        } catch (final InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            logger.error("Unable to instantiate a form of {}.", tClass.getCanonicalName(), e);
         } catch (final IOException e) {
             logger.error("Unable to get the form data.", e);
+        } catch (final NoSuchMethodException e) {
+            logger.error("The class {} does not have a default constructor.", tClass.getCanonicalName(), e);
         }
     }
 }

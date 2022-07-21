@@ -1,6 +1,5 @@
 package com.merimdigitalmedia.underflow.tests;
 
-import com.merimdigitalmedia.underflow.annotation.io.Dispatch;
 import com.merimdigitalmedia.underflow.annotation.method.*;
 import com.merimdigitalmedia.underflow.annotation.routing.DefaultValue;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
@@ -48,8 +47,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @GET
-    @Dispatch
-    @Secured(optional = true)
     @Path("")
     public Result home(final MyUserRepresentation user, final MyCookieSecurity security) {
         final Map<String, Object> dataModel = new HashMap<>();
@@ -75,8 +72,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @GET
-    @Dispatch
-    @Secured(optional = true)
     @Path("/login")
     public Result login(final MyUserRepresentation user,
                         final MyCookieSecurity security,
@@ -101,8 +96,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @GET
-    @Dispatch
-    @Secured(optional = true)
     @Path("/logout")
     public Result logout() {
         return this.redirect("/").dropCookies();
@@ -115,7 +108,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @GET
-    @Dispatch
     @Secured
     @MySecurityScope("web")
     @Path("/secured")
@@ -158,7 +150,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @POST
-    @Dispatch
     @Path("")
     public Result postHome() {
         return this.ok("POST from Underflow");
@@ -170,7 +161,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @PUT
-    @Dispatch
     @Path("")
     public Result putHome() {
         return this.ok("PUT from Underflow");
@@ -182,7 +172,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @PATCH
-    @Dispatch
     @Path("")
     public Result patchHome() {
         return this.ok("PATCH from Underflow");
@@ -194,7 +183,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @OPTIONS
-    @Dispatch
     @Path("")
     public Result optionHome() {
         return this.ok("OPTIONS from Underflow");
@@ -206,7 +194,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @DELETE
-    @Dispatch
     @Path("")
     public Result deleteHome() {
         return this.ok("DELETE from Underflow");
@@ -218,7 +205,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @HEAD
-    @Dispatch
     @Path("")
     public Result headHome() {
         return this.ok("HEAD from Underflow");

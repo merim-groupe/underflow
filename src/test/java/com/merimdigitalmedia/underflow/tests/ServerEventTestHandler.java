@@ -1,6 +1,5 @@
 package com.merimdigitalmedia.underflow.tests;
 
-import com.merimdigitalmedia.underflow.annotation.io.Dispatch;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
 import com.merimdigitalmedia.underflow.annotation.routing.Query;
@@ -38,7 +37,6 @@ public class ServerEventTestHandler extends FlowApiHandler {
      */
     @GET
     @Path("/connect")
-    @Dispatch
     public Result connect() {
         return new ServerEventResult(this.sseh);
     }
@@ -51,7 +49,6 @@ public class ServerEventTestHandler extends FlowApiHandler {
      */
     @GET
     @Path("/broadcast")
-    @Dispatch
     public Result broadcast(@Query(value = "message", required = true) final String message) {
         this.sseh.getConnections().forEach(connection -> {
             connection.send(message);
@@ -66,7 +63,6 @@ public class ServerEventTestHandler extends FlowApiHandler {
      */
     @GET
     @Path("/disconnect")
-    @Dispatch
     public Result disconnect() {
         this.sseh.getConnections().forEach(connection -> {
             try {

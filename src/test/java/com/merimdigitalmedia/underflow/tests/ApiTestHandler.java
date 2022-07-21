@@ -11,7 +11,6 @@ package com.merimdigitalmedia.underflow.tests;
 //
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.merimdigitalmedia.underflow.annotation.io.Dispatch;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
 import com.merimdigitalmedia.underflow.annotation.method.POST;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
@@ -21,8 +20,8 @@ import com.merimdigitalmedia.underflow.handlers.flows.FlowApiHandler;
 import com.merimdigitalmedia.underflow.mdc.MDCKeys;
 import com.merimdigitalmedia.underflow.results.Result;
 import com.merimdigitalmedia.underflow.tests.entities.ApiDescription;
-import io.undertow.server.HttpServerExchange;
 
+import java.io.InputStream;
 import java.util.Optional;
 
 /**
@@ -40,7 +39,6 @@ public class ApiTestHandler extends FlowApiHandler {
      */
     @GET
     @Path("/")
-    @Dispatch
     public Result apiHome() {
         return this.ok(this.toJsonNode(ApiDescription.TEST_INSTANCE));
     }
@@ -48,14 +46,13 @@ public class ApiTestHandler extends FlowApiHandler {
     /**
      * Json body.
      *
-     * @param exchange the exchange
+     * @param bodyInputStream the body input stream
      * @return the result
      */
     @POST
-    @Dispatch
     @Path("/jsonbody")
-    public Result jsonBody(final HttpServerExchange exchange) {
-        return this.getJsonBody(exchange, JsonBodyForm.class, jsonBodyForm -> {
+    public Result jsonBody(final InputStream bodyInputStream) {
+        return this.getJsonBody(bodyInputStream, JsonBodyForm.class, jsonBodyForm -> {
             this.logger.info("Got the Json Body Form with:\nId   : {}\nName : {}\n=====\nRaw Json : {}",
                     jsonBodyForm.getId(), jsonBodyForm.getName(), this.getMDC(MDCKeys.Request.BODY).orElse(""));
             return this.ok(this.toJsonNode(jsonBodyForm));
