@@ -145,6 +145,21 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     }
 
     /**
+     * Exception result.
+     *
+     * @param user the user
+     * @return the result
+     */
+    @GET
+    @Path("/exception")
+    public Result exception(final MyUserRepresentation user) {
+        if (true) {
+            throw new RuntimeException("Sample Exception");
+        }
+        return this.ok("");
+    }
+
+    /**
      * Post home.
      *
      * @return the result

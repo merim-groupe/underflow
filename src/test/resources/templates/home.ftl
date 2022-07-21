@@ -21,6 +21,9 @@
         <p>
             <b>Assets loading from Java Resources</b> <a href="/image-asset-resources">Here !</a>
         </p>
+        <p>
+            <b>DEV exception</b> <a href="/exception">Here !</a>
+        </p>
     </div>
     <br/>
     <div>
