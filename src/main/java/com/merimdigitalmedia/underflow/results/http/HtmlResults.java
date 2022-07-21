@@ -7,6 +7,7 @@ import com.merimdigitalmedia.underflow.utils.Mode;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import io.undertow.io.IoCallback;
+import io.undertow.util.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult ok(final Template template, final Object dataModel) {
-        return this.result(200, template, dataModel);
+        return this.result(StatusCodes.OK, template, dataModel);
     }
 
     /**
@@ -40,7 +41,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult ok(final Template template, final Object dataModel, final IoCallback ioCallback) {
-        return this.result(200, template, dataModel, ioCallback);
+        return this.result(StatusCodes.OK, template, dataModel, ioCallback);
     }
 
     /**
@@ -51,7 +52,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult created(final Template template, final Object dataModel) {
-        return this.result(201, template, dataModel);
+        return this.result(StatusCodes.CREATED, template, dataModel);
     }
 
     /**
@@ -63,7 +64,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult created(final Template template, final Object dataModel, final IoCallback ioCallback) {
-        return this.result(201, template, dataModel, ioCallback);
+        return this.result(StatusCodes.CREATED, template, dataModel, ioCallback);
     }
 
     /**
@@ -74,7 +75,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult badRequest(final Template template, final Object dataModel) {
-        return this.result(400, template, dataModel);
+        return this.result(StatusCodes.BAD_REQUEST, template, dataModel);
     }
 
     /**
@@ -86,7 +87,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult badRequest(final Template template, final Object dataModel, final IoCallback ioCallback) {
-        return this.result(400, template, dataModel, ioCallback);
+        return this.result(StatusCodes.BAD_REQUEST, template, dataModel, ioCallback);
     }
 
     /**
@@ -97,7 +98,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult unauthorized(final Template template, final Object dataModel) {
-        return this.result(401, template, dataModel);
+        return this.result(StatusCodes.UNAUTHORIZED, template, dataModel);
     }
 
     /**
@@ -109,7 +110,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult unauthorized(final Template template, final Object dataModel, final IoCallback ioCallback) {
-        return this.result(401, template, dataModel, ioCallback);
+        return this.result(StatusCodes.UNAUTHORIZED, template, dataModel, ioCallback);
     }
 
     /**
@@ -120,7 +121,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult forbidden(final Template template, final Object dataModel) {
-        return this.result(403, template, dataModel);
+        return this.result(StatusCodes.FORBIDDEN, template, dataModel);
     }
 
     /**
@@ -132,7 +133,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult forbidden(final Template template, final Object dataModel, final IoCallback ioCallback) {
-        return this.result(403, template, dataModel, ioCallback);
+        return this.result(StatusCodes.FORBIDDEN, template, dataModel, ioCallback);
     }
 
     /**
@@ -143,7 +144,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult notFound(final Template template, final Object dataModel) {
-        return this.result(404, template, dataModel);
+        return this.result(StatusCodes.NOT_FOUND, template, dataModel);
     }
 
     /**
@@ -155,7 +156,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult notFound(final Template template, final Object dataModel, final IoCallback ioCallback) {
-        return this.result(404, template, dataModel, ioCallback);
+        return this.result(StatusCodes.NOT_FOUND, template, dataModel, ioCallback);
     }
 
     /**
@@ -166,7 +167,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult internalServerError(final Template template, final Object dataModel) {
-        return this.result(500, template, dataModel);
+        return this.result(StatusCodes.INTERNAL_SERVER_ERROR, template, dataModel);
     }
 
     /**
@@ -178,7 +179,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult internalServerError(final Template template, final Object dataModel, final IoCallback ioCallback) {
-        return this.result(500, template, dataModel, ioCallback);
+        return this.result(StatusCodes.INTERNAL_SERVER_ERROR, template, dataModel, ioCallback);
     }
 
     /**
@@ -189,7 +190,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult serviceUnavailable(final Template template, final Object dataModel) {
-        return this.result(503, template, dataModel);
+        return this.result(StatusCodes.SERVICE_UNAVAILABLE, template, dataModel);
     }
 
     /**
@@ -201,7 +202,7 @@ public interface HtmlResults {
      * @return the result
      */
     default HttpResult serviceUnavailable(final Template template, final Object dataModel, final IoCallback ioCallback) {
-        return this.result(503, template, dataModel, ioCallback);
+        return this.result(StatusCodes.SERVICE_UNAVAILABLE, template, dataModel, ioCallback);
     }
 
     /**

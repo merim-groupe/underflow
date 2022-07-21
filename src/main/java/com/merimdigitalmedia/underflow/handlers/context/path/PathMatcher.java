@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.path;
+package com.merimdigitalmedia.underflow.handlers.context.path;
 
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
 

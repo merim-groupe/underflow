@@ -47,6 +47,8 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
 
     /**
      * Instantiates a new Flow handler.
+     *
+     * @param flowSecurity the flow security
      */
     public FlowHandler(final FlowSecurity<?, ?> flowSecurity) {
         this.logger = LoggerFactory.getLogger(this.getClass());
@@ -70,21 +72,21 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
                         context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), optionalUser.get());
                     } else {
                         // User is logged but doesn't have the right permissions.
-                        this.onForbidden(exchange).process(exchange);
+                        this.onForbidden().process(exchange);
                         return;
                     }
                 } else {
                     // User is not logged.
                     if (!secured.get().optional()) {
                         // User was required.
-                        this.onUnauthorized(exchange).process(exchange);
+                        this.onUnauthorized().process(exchange);
                         return;
                     }
                 }
             }
             context.execute();
         } else {
-            final Result result = this.onNotFound(exchange);
+            final Result result = this.onNotFound();
             result.process(exchange);
         }
     }
@@ -97,41 +99,37 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
     /**
      * On not found result.
      *
-     * @param exchange the exchange
      * @return the result
      */
-    public Result onNotFound(final HttpServerExchange exchange) {
+    public Result onNotFound() {
         return this.notFound("Not Found");
     }
 
     /**
-     * On not found result.
+     * On unauthorized result.
      *
-     * @param exchange the exchange
      * @return the result
      */
-    public Result onUnauthorized(final HttpServerExchange exchange) {
+    public Result onUnauthorized() {
         return this.unauthorized("Unauthorized");
     }
 
     /**
-     * On not found result.
+     * On forbidden result.
      *
-     * @param exchange the exchange
      * @return the result
      */
-    public Result onForbidden(final HttpServerExchange exchange) {
+    public Result onForbidden() {
         return this.forbidden("Forbidden");
     }
 
     /**
      * On exception result.
      *
-     * @param exchange  the exchange
      * @param exception the exception
      * @return the result
      */
-    public Result onException(final HttpServerExchange exchange, final Throwable exception) {
+    public Result onException(final Throwable exception) {
         return this.internalServerError("Internal Server Error");
     }
 }

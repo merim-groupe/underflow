@@ -116,22 +116,22 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
     }
 
     @Override
-    public Result onNotFound(final HttpServerExchange exchange) {
+    public Result onNotFound() {
         return this.notFound(this.toJsonNode(new ServerError("Not Found", "This request has been logged.")));
     }
 
     @Override
-    public Result onUnauthorized(final HttpServerExchange exchange) {
+    public Result onUnauthorized() {
         return this.unauthorized(this.toJsonNode(new ServerError("Unauthorized", "This request has been logged.")));
     }
 
     @Override
-    public Result onForbidden(final HttpServerExchange exchange) {
+    public Result onForbidden() {
         return this.forbidden(this.toJsonNode(new ServerError("Forbidden", "This request has been logged.")));
     }
 
     @Override
-    public Result onException(final HttpServerExchange exchange, final Throwable exception) {
+    public Result onException(final Throwable exception) {
         return this.internalServerError(this.toJsonNode(new ServerError("Internal Server Error", exception)));
     }
 }

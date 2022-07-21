@@ -5,10 +5,10 @@ import com.merimdigitalmedia.underflow.annotation.method.*;
 import com.merimdigitalmedia.underflow.annotation.routing.*;
 import com.merimdigitalmedia.underflow.annotation.security.Secured;
 import com.merimdigitalmedia.underflow.converters.Converters;
+import com.merimdigitalmedia.underflow.handlers.context.path.PathMatcher;
+import com.merimdigitalmedia.underflow.handlers.context.path.QueryString;
 import com.merimdigitalmedia.underflow.handlers.flows.FlowHandler;
 import com.merimdigitalmedia.underflow.mdc.MDCContext;
-import com.merimdigitalmedia.underflow.path.PathMatcher;
-import com.merimdigitalmedia.underflow.path.QueryString;
 import com.merimdigitalmedia.underflow.results.Result;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
@@ -259,7 +259,7 @@ public class ContextHandler implements MDCContext {
             }
             this.logger.error("Controller uncaught exception.", cause);
             try {
-                this.handler.onException(this.exchange, cause).process(this.exchange);
+                this.handler.onException(cause).process(this.exchange);
             } catch (final Exception e2) {
                 throw new RuntimeException(e2);
             }

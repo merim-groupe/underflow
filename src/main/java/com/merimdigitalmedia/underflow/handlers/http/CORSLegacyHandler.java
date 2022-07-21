@@ -23,7 +23,7 @@ import java.util.Locale;
  * @author Pierre Adam
  * @since 21.12.15
  */
-public class CORSLegacyAllowHandler extends HeaderHandler {
+public class CORSLegacyHandler extends HeaderHandler {
 
     /**
      * Instantiates a new Cors handler.
@@ -31,8 +31,8 @@ public class CORSLegacyAllowHandler extends HeaderHandler {
      * @param underlying                    the underlying
      * @param accessControlAllowCredentials the access control allow credentials
      */
-    public CORSLegacyAllowHandler(final HttpHandler underlying,
-                                  final boolean accessControlAllowCredentials) {
+    public CORSLegacyHandler(final HttpHandler underlying,
+                             final boolean accessControlAllowCredentials) {
         super(underlying, new HashMap<String, String>() {{
             this.put("Access-Control-Allow-Origin", "*");
             this.put("Access-Control-Allow-Methods", "*");

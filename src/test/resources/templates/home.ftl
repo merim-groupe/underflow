@@ -1,7 +1,7 @@
 <#import "/common/base-page.ftl" as base/>
 
-<@base.page title="Home page" lang="fr">
-    <h1>HELLO !</h1>
+<@base.page title="Underflow" lang="en">
+    <h1>Underflow !</h1>
     <div>
         <p>
             <b>Date</b> ${currentDate}
@@ -12,7 +12,17 @@
         <p>
             <b>API page</b> <a href="/api">Here !</a>
         </p>
+        <p>
+            <b>Routing test page</b> <a href="/routes">Here !</a>
+        </p>
+        <p>
+            <b>Long page with multiple chunk (HTTP)</b> <a href="/long-content">Here !</a>
+        </p>
+        <p>
+            <b>Assets loading from Java Resources</b> <a href="/image-asset-resources">Here !</a>
+        </p>
     </div>
+    <br/>
     <div>
         <h3>User data</h3>
         <#if user??>

@@ -129,6 +129,30 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     }
 
     /**
+     * Secured page result.
+     *
+     * @param user the user
+     * @return the result
+     */
+    @GET
+    @Path("/long-content")
+    public Result longContent(final MyUserRepresentation user) {
+        return this.ok(this.getTemplate("long-content.ftl"), null);
+    }
+
+    /**
+     * Secured page result.
+     *
+     * @param user the user
+     * @return the result
+     */
+    @GET
+    @Path("/image-asset-resources")
+    public Result imageAssetResources(final MyUserRepresentation user) {
+        return this.ok(this.getTemplate("image-asset-resources.ftl"), null);
+    }
+
+    /**
      * Post home.
      *
      * @return the result

@@ -83,10 +83,18 @@ public class InputStreamHttpResult extends BaseHttpResult {
 
                     @Override
                     public void onException(final HttpServerExchange httpServerExchange, final Sender sender, final IOException e) {
+                        try {
+                            InputStreamHttpResult.this.data.close();
+                        } catch (final IOException ignore) {
+                        }
                         InputStreamHttpResult.this.ioCallback.onException(httpServerExchange, sender, e);
                     }
                 });
             } else {
+                try {
+                    this.data.close();
+                } catch (final IOException ignore) {
+                }
                 this.ioCallback.onComplete(this.serverExchange, sender);
             }
         } catch (final IOException e) {

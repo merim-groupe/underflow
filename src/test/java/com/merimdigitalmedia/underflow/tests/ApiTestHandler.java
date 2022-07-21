@@ -52,6 +52,7 @@ public class ApiTestHandler extends FlowApiHandler {
      * @return the result
      */
     @POST
+    @Dispatch
     @Path("/jsonbody")
     public Result jsonBody(final HttpServerExchange exchange) {
         return this.getJsonBody(exchange, JsonBodyForm.class, jsonBodyForm -> {

@@ -10,7 +10,6 @@ import com.merimdigitalmedia.underflow.utils.Application;
 import com.merimdigitalmedia.underflow.utils.Mode;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
-import io.undertow.server.HttpServerExchange;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,22 +102,22 @@ public class FlowTemplateHandler extends FlowHandler implements HtmlResults {
     }
 
     @Override
-    public Result onNotFound(final HttpServerExchange exchange) {
+    public Result onNotFound() {
         return this.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error404.ftl"), null);
     }
 
     @Override
-    public Result onUnauthorized(final HttpServerExchange exchange) {
+    public Result onUnauthorized() {
         return this.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error403.ftl"), null);
     }
 
     @Override
-    public Result onForbidden(final HttpServerExchange exchange) {
+    public Result onForbidden() {
         return this.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error403.ftl"), null);
     }
 
     @Override
-    public Result onException(final HttpServerExchange exchange, final Throwable exception) {
+    public Result onException(final Throwable exception) {
         if (Application.getMode() == Mode.PROD) {
             return this.internalServerError(TemplateSystem.getStandardErrorsTemplates().getTemplate("error500.ftl"), null);
         } else {

@@ -3,9 +3,9 @@
 <@base.page title="Home page" lang="fr">
     <h1>Secret stuff !</h1>
     <p>
-        <a href="https://www.youtube.com/watch?v=VpATBBRajP8">https://www.youtube.com/watch?v=VpATBBRajP8</a>
+        <a href="/">Back Home !</a>
     </p>
     <p>
-        <a href="/">Back Home !</a>
+        <a href="https://www.youtube.com/watch?v=VpATBBRajP8">https://www.youtube.com/watch?v=VpATBBRajP8</a>
     </p>
 </@base.page>

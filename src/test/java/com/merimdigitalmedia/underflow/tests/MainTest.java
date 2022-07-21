@@ -1,7 +1,9 @@
 package com.merimdigitalmedia.underflow.tests;
 
+import com.merimdigitalmedia.underflow.handlers.flows.FlowAssetsHandler;
+import com.merimdigitalmedia.underflow.handlers.flows.assets.ResourceAssetLoader;
 import com.merimdigitalmedia.underflow.handlers.http.CORSHandler;
-import com.merimdigitalmedia.underflow.handlers.http.CORSLegacyAllowHandler;
+import com.merimdigitalmedia.underflow.handlers.http.CORSLegacyHandler;
 import com.merimdigitalmedia.underflow.handlers.http.RequestLoggerHandler;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
@@ -23,10 +25,12 @@ public class MainTest {
         final PathHandler handler = new PathHandler();
 
         handler.addPrefixPath("/", new RequestLoggerHandler(new HomeHandler()));
+        handler.addPrefixPath("/assets", new RequestLoggerHandler(new FlowAssetsHandler(new ResourceAssetLoader(MainTest.class, "/assets"))));
+        handler.addPrefixPath("/routes", new RequestLoggerHandler(new RouteTestHandler()));
+        handler.addPrefixPath("/event", new RequestLoggerHandler(new ServerEventTestHandler()));
         handler.addPrefixPath("/api", new RequestLoggerHandler(new ApiTestHandler()));
-        handler.addPrefixPath("/CORS/Legacy", new RequestLoggerHandler(new CORSLegacyAllowHandler(new HomeHandler(), true)));
-        handler.addPrefixPath("/CORS", new RequestLoggerHandler(new CORSHandler(new HomeHandler())));
-//        handler.addPrefixPath("/event", new RequestLoggerHandler(new ServerEventTestHandler()));
+        handler.addPrefixPath("/api/CORS", new RequestLoggerHandler(new CORSHandler(new ApiTestHandler())));
+        handler.addPrefixPath("/api/CORSLegacy", new RequestLoggerHandler(new CORSLegacyHandler(new ApiTestHandler(), true)));
 
         final Undertow server = Undertow.builder()
                 .addHttpListener(8080, "localhost")

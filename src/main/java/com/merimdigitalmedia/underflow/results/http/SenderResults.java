@@ -1,6 +1,7 @@
 package com.merimdigitalmedia.underflow.results.http;
 
 import io.undertow.io.Sender;
+import io.undertow.util.StatusCodes;
 
 import java.util.function.Consumer;
 
@@ -19,7 +20,7 @@ public interface SenderResults {
      * @return the result
      */
     default HttpResult ok(final Consumer<Sender> exchangeData) {
-        return this.result(200, exchangeData);
+        return this.result(StatusCodes.OK, exchangeData);
     }
 
     /**
@@ -29,7 +30,7 @@ public interface SenderResults {
      * @return the result
      */
     default HttpResult created(final Consumer<Sender> exchangeData) {
-        return this.result(201, exchangeData);
+        return this.result(StatusCodes.CREATED, exchangeData);
     }
 
     /**
@@ -39,7 +40,7 @@ public interface SenderResults {
      * @return the result
      */
     default HttpResult badRequest(final Consumer<Sender> exchangeData) {
-        return this.result(400, exchangeData);
+        return this.result(StatusCodes.BAD_REQUEST, exchangeData);
     }
 
     /**
@@ -49,7 +50,7 @@ public interface SenderResults {
      * @return the result
      */
     default HttpResult unauthorized(final Consumer<Sender> exchangeData) {
-        return this.result(401, exchangeData);
+        return this.result(StatusCodes.UNAUTHORIZED, exchangeData);
     }
 
     /**
@@ -59,7 +60,7 @@ public interface SenderResults {
      * @return the result
      */
     default HttpResult forbidden(final Consumer<Sender> exchangeData) {
-        return this.result(403, exchangeData);
+        return this.result(StatusCodes.FORBIDDEN, exchangeData);
     }
 
     /**
@@ -69,7 +70,7 @@ public interface SenderResults {
      * @return the result
      */
     default HttpResult notFound(final Consumer<Sender> exchangeData) {
-        return this.result(404, exchangeData);
+        return this.result(StatusCodes.NOT_FOUND, exchangeData);
     }
 
     /**
@@ -79,7 +80,7 @@ public interface SenderResults {
      * @return the result
      */
     default HttpResult internalServerError(final Consumer<Sender> exchangeData) {
-        return this.result(500, exchangeData);
+        return this.result(StatusCodes.INTERNAL_SERVER_ERROR, exchangeData);
     }
 
     /**
@@ -89,7 +90,7 @@ public interface SenderResults {
      * @return the result
      */
     default HttpResult serviceUnavailable(final Consumer<Sender> exchangeData) {
-        return this.result(503, exchangeData);
+        return this.result(StatusCodes.SERVICE_UNAVAILABLE, exchangeData);
     }
 
     /**
