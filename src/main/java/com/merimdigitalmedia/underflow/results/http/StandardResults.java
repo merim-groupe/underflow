@@ -2,7 +2,6 @@ package com.merimdigitalmedia.underflow.results.http;
 
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
-import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.StatusCodes;
 
@@ -146,10 +145,9 @@ public interface StandardResults {
     /**
      * End the request with a status 204 No Content.
      *
-     * @param exchange the exchange
      * @return the result
      */
-    default HttpResult noContent(final HttpServerExchange exchange) {
+    default HttpResult noContent() {
         return this.result(StatusCodes.NO_CONTENT, sender -> {
         });
     }
@@ -558,7 +556,8 @@ public interface StandardResults {
     /**
      * End the request with a status 302 Temporary Redirect.
      *
-     * @param location the location
+     * @param location   the location
+     * @param ioCallback the io callback
      * @return the http result
      */
     default HttpResult redirect(final String location, final IoCallback ioCallback) {
@@ -580,7 +579,8 @@ public interface StandardResults {
     /**
      * End the request with a status 301 Moved Permanently.
      *
-     * @param location the location
+     * @param location   the location
+     * @param ioCallback the io callback
      * @return the http result
      */
     default HttpResult redirectPermanently(final String location, final IoCallback ioCallback) {
