@@ -17,18 +17,35 @@ public class ServerEventResult implements Result {
     private final ServerSentEventHandler serverSentEventHandler;
 
     /**
+     * The And then.
+     */
+    private final Runnable andThen;
+
+    /**
+     * Instantiates a new Server event result.
+     *
+     * @param serverSentEventHandler the server sent event handler
+     * @param andThen                the and then
+     */
+    public ServerEventResult(final ServerSentEventHandler serverSentEventHandler, final Runnable andThen) {
+        this.serverSentEventHandler = serverSentEventHandler;
+        this.andThen = andThen;
+    }
+
+    /**
      * Instantiates a new Server event result.
      *
      * @param serverSentEventHandler the server sent event handler
      */
     public ServerEventResult(final ServerSentEventHandler serverSentEventHandler) {
-        this.serverSentEventHandler = serverSentEventHandler;
+        this(serverSentEventHandler, null);
     }
 
     @Override
     public void process(final HttpServerExchange exchange) {
         try {
             this.serverSentEventHandler.handleRequest(exchange);
+            this.andThen.run();
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
