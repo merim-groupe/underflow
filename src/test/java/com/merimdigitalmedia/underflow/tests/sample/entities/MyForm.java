@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.tests.entities;
+package com.merimdigitalmedia.underflow.tests.sample.entities;
 
 import com.merimdigitalmedia.underflow.forms.Form;
 import io.undertow.server.HttpServerExchange;
@@ -10,7 +10,7 @@ import io.undertow.server.handlers.form.FormData;
  * @author Pierre Adam
  * @since 21.10.05
  */
-public class TestForm implements Form {
+public class MyForm implements Form {
 
     private String name;
 

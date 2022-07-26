@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.tests;
+package com.merimdigitalmedia.underflow.tests.sample;
 
 import com.merimdigitalmedia.underflow.handlers.flows.FlowAssetsHandler;
 import com.merimdigitalmedia.underflow.handlers.flows.assets.ResourceAssetLoader;
@@ -14,7 +14,7 @@ import io.undertow.server.handlers.PathHandler;
  * @author Pierre Adam
  * @since 21.04.27
  */
-public class MainTest {
+public class MainSample {
 
     /**
      * Main.
@@ -25,7 +25,7 @@ public class MainTest {
         final PathHandler handler = new PathHandler();
 
         handler.addPrefixPath("/", new RequestLoggerHandler(new HomeHandler()));
-        handler.addPrefixPath("/assets", new RequestLoggerHandler(new FlowAssetsHandler(new ResourceAssetLoader(MainTest.class, "/assets"))));
+        handler.addPrefixPath("/assets", new RequestLoggerHandler(new FlowAssetsHandler(new ResourceAssetLoader(MainSample.class, "/assets"))));
         handler.addPrefixPath("/routes", new RequestLoggerHandler(new RouteTestHandler()));
         handler.addPrefixPath("/event", new RequestLoggerHandler(new ServerEventTestHandler()));
         handler.addPrefixPath("/api", new RequestLoggerHandler(new ApiTestHandler()));

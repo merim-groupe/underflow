@@ -94,7 +94,8 @@ public class PathMatcher {
      * @return the match
      */
     public String getFullMatch() {
-        return this.matcher.group();
+        final String match = this.matcher.group().replaceAll("/$", "");
+        return match.isEmpty() ? "/" : match;
     }
 
     /**
@@ -114,9 +115,9 @@ public class PathMatcher {
      */
     public boolean hasGroup(final String groupName) {
         try {
-            this.matcher.group(groupName);
-            return true;
-        } catch (final IllegalArgumentException ignore) {
+            final String group = this.matcher.group(groupName);
+            return group != null;
+        } catch (final Exception ignore) {
             return false;
         }
     }

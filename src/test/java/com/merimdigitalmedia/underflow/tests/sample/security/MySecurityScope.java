@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.tests.security;
+package com.merimdigitalmedia.underflow.tests.sample.security;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

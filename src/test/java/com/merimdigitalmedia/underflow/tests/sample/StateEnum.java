@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.tests;
+package com.merimdigitalmedia.underflow.tests.sample;
 
 /**
  * MyEnum.

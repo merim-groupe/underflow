@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.tests;
+package com.merimdigitalmedia.underflow.tests.sample;
 
 import com.merimdigitalmedia.underflow.annotation.method.*;
 import com.merimdigitalmedia.underflow.annotation.routing.DefaultValue;
@@ -9,9 +9,9 @@ import com.merimdigitalmedia.underflow.annotation.security.Secured;
 import com.merimdigitalmedia.underflow.forms.WebForm;
 import com.merimdigitalmedia.underflow.handlers.flows.FlowTemplateHandler;
 import com.merimdigitalmedia.underflow.results.Result;
-import com.merimdigitalmedia.underflow.tests.security.MyCookieSecurity;
-import com.merimdigitalmedia.underflow.tests.security.MySecurityScope;
-import com.merimdigitalmedia.underflow.tests.security.MyUserRepresentation;
+import com.merimdigitalmedia.underflow.tests.sample.security.MyCookieSecurity;
+import com.merimdigitalmedia.underflow.tests.sample.security.MySecurityScope;
+import com.merimdigitalmedia.underflow.tests.sample.security.MyUserRepresentation;
 import freemarker.template.Template;
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;

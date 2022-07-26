@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.tests.security;
+package com.merimdigitalmedia.underflow.tests.sample.security;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

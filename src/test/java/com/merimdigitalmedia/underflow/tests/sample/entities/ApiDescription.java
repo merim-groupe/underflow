@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.tests.entities;
+package com.merimdigitalmedia.underflow.tests.sample.entities;
 
 import java.util.ArrayList;
 import java.util.List;

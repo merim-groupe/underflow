@@ -1,14 +1,4 @@
-package com.merimdigitalmedia.underflow.tests;
-
-//import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-//import com.merimdigitalmedia.underflow.annotation.method.POST;
-//import com.merimdigitalmedia.underflow.annotation.routing.Path;
-//import com.merimdigitalmedia.underflow.api.ApiHandler;
-//import com.merimdigitalmedia.underflow.api.entities.ApiForm;
-//import com.merimdigitalmedia.underflow.api.entities.ServerError;
-//import com.merimdigitalmedia.underflow.mdc.MDCKeys;
-//import io.undertow.server.HttpServerExchange;
-//
+package com.merimdigitalmedia.underflow.tests.sample;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.merimdigitalmedia.underflow.annotation.method.GET;
@@ -19,7 +9,7 @@ import com.merimdigitalmedia.underflow.api.ServerError;
 import com.merimdigitalmedia.underflow.handlers.flows.FlowApiHandler;
 import com.merimdigitalmedia.underflow.mdc.MDCKeys;
 import com.merimdigitalmedia.underflow.results.Result;
-import com.merimdigitalmedia.underflow.tests.entities.ApiDescription;
+import com.merimdigitalmedia.underflow.tests.sample.entities.ApiDescription;
 
 import java.io.InputStream;
 import java.util.Optional;

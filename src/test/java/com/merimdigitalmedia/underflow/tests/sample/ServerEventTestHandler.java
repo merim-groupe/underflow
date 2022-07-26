@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.tests;
+package com.merimdigitalmedia.underflow.tests.sample;
 
 import com.merimdigitalmedia.underflow.annotation.method.GET;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
