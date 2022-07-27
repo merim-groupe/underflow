@@ -181,7 +181,7 @@ public class ContextHandler implements MDCContext {
         this.exchange.setRelativePath(this.pathMatcher.getRemainingPath());
 
         if (this.methodHasBody()) {
-            this.addInjectable(InputStream.class, this.exchange.getInputStream());
+            this.controllerInjectable.put(InputStream.class, this.exchange::getInputStream);
         }
 
         final List<Object> methodArgs = this.resolveMethodArgs();
