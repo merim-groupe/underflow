@@ -1,4 +1,4 @@
-package com.merimdigitalmedia.underflow.api;
+package com.merimdigitalmedia.underflow.entities;
 
 import com.merimdigitalmedia.underflow.mdc.MDCContext;
 import com.merimdigitalmedia.underflow.mdc.MDCKeys;
@@ -73,7 +73,7 @@ public class ServerError {
         this.requestUid = MDCContext.getInstance().getMDC(MDCKeys.Request.UID).orElse("Unavailable");
         this.type = type;
         this.message = throwable.getMessage();
-        
+
         if (Application.getMode() == Mode.PROD) {
             this.cause = "";
         } else {

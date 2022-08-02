@@ -1,6 +1,8 @@
 package com.merimdigitalmedia.underflow.api;
 
-import java.util.Optional;
+import com.merimdigitalmedia.underflow.entities.FormError;
+
+import java.util.List;
 
 /**
  * ApiForm.
@@ -18,23 +20,5 @@ public interface ApiFormWithPayload<T> extends ApiBodyBindable {
      * @param payload the payload
      * @return a server error or null
      */
-    Optional<ServerError> isValid(T payload);
-
-    /**
-     * With valid sub form optional.
-     *
-     * @param prefix the prefix
-     * @param form   the form
-     * @return the optional
-     */
-    default <U> Optional<ServerError> withValidSubForm(final String prefix, final ApiFormWithPayload<U> form, final U payload) {
-        final Optional<ServerError> optionalError = form.isValid(payload);
-
-        if (optionalError.isPresent()) {
-            final ServerError error = optionalError.get();
-            return this.asError(prefix + "." + error.getMessage(), error.getMessage());
-        }
-
-        return optionalError;
-    }
+    List<FormError> isValid(T payload);
 }

@@ -2,7 +2,9 @@ package com.merimdigitalmedia.underflow.handlers.flows;
 
 import com.merimdigitalmedia.underflow.api.ApiForm;
 import com.merimdigitalmedia.underflow.api.ApiFormWithPayload;
-import com.merimdigitalmedia.underflow.api.ServerError;
+import com.merimdigitalmedia.underflow.entities.FormError;
+import com.merimdigitalmedia.underflow.entities.ServerError;
+import com.merimdigitalmedia.underflow.entities.ServerFormError;
 import com.merimdigitalmedia.underflow.results.Result;
 import com.merimdigitalmedia.underflow.results.http.JsonResults;
 import com.merimdigitalmedia.underflow.security.FlowSecurity;
@@ -11,7 +13,7 @@ import com.merimdigitalmedia.underflow.utils.SmartGZipBodyInput;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -77,10 +79,9 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
             final Class<T> tClass,
             final Function<T, Result> logic) {
         return this.getJsonBody(bodyInputStream, tClass, form -> {
-            final Optional<ServerError> optionalError = form.isValid();
-            if (optionalError.isPresent()) {
-                final ServerError error = optionalError.get();
-                return this.badRequest(this.toJsonNode(new ServerError("Bad request", error.getMessage(), error.getCause())));
+            final List<FormError> errors = form.isValid();
+            if (errors != null && errors.size() > 0) {
+                return this.badRequest(this.toJsonNode(new ServerFormError(errors)));
             } else {
                 return logic.apply(form);
             }
@@ -104,10 +105,9 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
             final U payload,
             final Function<T, Result> logic) {
         return this.getJsonBody(bodyInputStream, tClass, form -> {
-            final Optional<ServerError> optionalError = form.isValid(payload);
-            if (optionalError.isPresent()) {
-                final ServerError error = optionalError.get();
-                return this.badRequest(this.toJsonNode(new ServerError("Bad request", error.getMessage(), error.getCause())));
+            final List<FormError> errors = form.isValid(payload);
+            if (errors != null && errors.size() > 0) {
+                return this.badRequest(this.toJsonNode(new ServerFormError(errors)));
             } else {
                 return logic.apply(form);
             }

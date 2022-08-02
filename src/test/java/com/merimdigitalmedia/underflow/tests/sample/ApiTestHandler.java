@@ -5,14 +5,14 @@ import com.merimdigitalmedia.underflow.annotation.method.GET;
 import com.merimdigitalmedia.underflow.annotation.method.POST;
 import com.merimdigitalmedia.underflow.annotation.routing.Path;
 import com.merimdigitalmedia.underflow.api.ApiForm;
-import com.merimdigitalmedia.underflow.api.ServerError;
+import com.merimdigitalmedia.underflow.entities.FormError;
 import com.merimdigitalmedia.underflow.handlers.flows.FlowApiHandler;
 import com.merimdigitalmedia.underflow.mdc.MDCKeys;
 import com.merimdigitalmedia.underflow.results.Result;
 import com.merimdigitalmedia.underflow.tests.sample.entities.ApiDescription;
 
 import java.io.InputStream;
-import java.util.Optional;
+import java.util.List;
 
 /**
  * ApiTestHandler.
@@ -66,8 +66,8 @@ public class ApiTestHandler extends FlowApiHandler {
         private String name;
 
         @Override
-        public Optional<ServerError> isValid() {
-            return Optional.empty();
+        public List<FormError> isValid() {
+            return null;
         }
 
         /**

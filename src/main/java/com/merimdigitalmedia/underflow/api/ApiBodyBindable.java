@@ -1,6 +1,10 @@
 package com.merimdigitalmedia.underflow.api;
 
-import java.util.Optional;
+import com.merimdigitalmedia.underflow.entities.FormError;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * ApiBodyBindable.
@@ -11,28 +15,40 @@ import java.util.Optional;
 public interface ApiBodyBindable {
 
     /**
-     * As error optional.
+     * With valid sub form optional.
      *
-     * @param field  the field
-     * @param reason the reason
+     * @param prefix the prefix
+     * @param form   the form
      * @return the optional
      */
-    default Optional<ServerError> asError(final String field, final String reason) {
-        return Optional.of(new ServerError("Bad request", field, reason));
+    default List<FormError> withValidSubForm(final String prefix, final ApiForm form) {
+        if (form == null) {
+            return new ArrayList<>();
+        }
+
+        return form.isValid()
+                .stream()
+                .map(e -> new FormError(prefix + "." + e.getField(), e.getMessage()))
+                .collect(Collectors.toList());
     }
 
     /**
-     * With any optional.
+     * With valid sub form list.
      *
-     * @param errors the errors
-     * @return the optional
+     * @param <U>     the type parameter
+     * @param prefix  the prefix
+     * @param form    the form
+     * @param payload the payload
+     * @return the list
      */
-    default Optional<ServerError> withAny(final Optional<ServerError>... errors) {
-        for (final Optional<ServerError> error : errors) {
-            if (error.isPresent()) {
-                return error;
-            }
+    default <T> List<FormError> withValidSubForm(final String prefix, final ApiFormWithPayload<T> form, final T payload) {
+        if (form == null) {
+            return new ArrayList<>();
         }
-        return Optional.empty();
+
+        return form.isValid(payload)
+                .stream()
+                .map(e -> new FormError(prefix + "." + e.getField(), e.getMessage()))
+                .collect(Collectors.toList());
     }
 }
