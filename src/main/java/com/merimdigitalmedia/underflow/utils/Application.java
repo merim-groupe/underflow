@@ -2,6 +2,10 @@ package com.merimdigitalmedia.underflow.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 /**
  * Application.
  *
@@ -20,6 +24,11 @@ public class Application {
      */
     private static final ObjectMapper mapper;
 
+    /**
+     * The Instances.
+     */
+    private static final Map<Class<?>, Object> instances;
+
     static {
         mapper = new ObjectMapper();
         Application.mapper.findAndRegisterModules();
@@ -29,6 +38,8 @@ public class Application {
         } else {
             Application.mode = Mode.DEV;
         }
+
+        instances = new HashMap<>();
     }
 
     /**
@@ -69,5 +80,39 @@ public class Application {
         final String classJar = aClass.getResource("/" + className + ".class").toString();
 
         return classJar.startsWith("jar:");
+    }
+
+    /**
+     * Register.
+     *
+     * @param <T>      the type parameter
+     * @param tClass   the t class
+     * @param instance the instance
+     */
+    public static <T> void register(final Class<T> tClass, final T instance) {
+        Application.instances.put(tClass, instance);
+    }
+
+    /**
+     * Gets instance.
+     *
+     * @param <T>    the type parameter
+     * @param tClass the t class
+     * @return the instance
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T getInstance(final Class<T> tClass) {
+        return (T) Application.instances.get(tClass);
+    }
+
+    /**
+     * Gets instance.
+     *
+     * @param <T>    the type parameter
+     * @param tClass the t class
+     * @return the instance
+     */
+    public static <T> Optional<T> getInstanceOptional(final Class<T> tClass) {
+        return Optional.ofNullable(Application.getInstance(tClass));
     }
 }
