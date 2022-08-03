@@ -9,6 +9,7 @@ import com.merimdigitalmedia.underflow.handlers.context.path.QueryString;
 import com.merimdigitalmedia.underflow.handlers.flows.FlowHandler;
 import com.merimdigitalmedia.underflow.mdc.MDCContext;
 import com.merimdigitalmedia.underflow.results.Result;
+import com.merimdigitalmedia.underflow.utils.Application;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
@@ -203,6 +204,7 @@ public class ContextHandler implements MDCContext {
             final Class<?> pClass = parameter.getType();
             final Named pNamed = parameter.getAnnotation(Named.class);
             final Query pQuery = parameter.getAnnotation(Query.class);
+            final Optional<?> appInject = Application.getInstanceOptional(pClass);
 
             if (pNamed != null && this.pathMatcher.hasGroup(pNamed.value())) {
                 final String value = this.pathMatcher.getGroup(pNamed.value());
@@ -225,6 +227,8 @@ public class ContextHandler implements MDCContext {
                 }
             } else if (this.controllerInjectable.containsKey(pClass)) {
                 methodArgs.add(this.controllerInjectable.get(pClass).get());
+            } else if (appInject.isPresent()) {
+                methodArgs.add(appInject.get());
             } else {
                 LoggerFactory.getLogger(this.handler.getClass()).warn("Unable to resolve the argument <{}@{}> for the method {}." +
                                 "Please use the annotation @Named or @Query to specify how to resolve this argument.",
