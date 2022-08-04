@@ -33,7 +33,7 @@ public interface ApiBodyBindable {
     /**
      * With valid sub form list.
      *
-     * @param <U>     the type parameter
+     * @param <T>     the type parameter
      * @param prefix  the prefix
      * @param form    the form
      * @param payload the payload
