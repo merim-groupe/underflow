@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.merim.digitalpayment.underflow</groupId>
+  <artifactId>underflow</artifactId>
+  <version>22.08-RC2</version>
+  <packaging>pom</packaging>
+  <organization>
+    <name>Merim Digital Payment</name>
+    <url>https://www.merim-groupe.com</url>
+  </organization>
+  <distributionManagement>
+    <repository>
+      <id>gitlab-bk</id>
+      <url>https://gitlab.reboot-qsr.com/api/v4/projects/152/packages/maven</url>
+    </repository>
+    <snapshotRepository>
+      <id>gitlab-bk</id>
+      <url>https://gitlab.reboot-qsr.com/api/v4/projects/152/packages/maven</url>
+    </snapshotRepository>
+  </distributionManagement>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.release>8</java.release>
+    <revision>22.08-RC2</revision>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>com.merim.digitalpayment.underflow</groupId>
+      <artifactId>underflow-core</artifactId>
+      <version>22.08-RC2</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.merim.digitalpayment.underflow</groupId>
+      <artifactId>underflow-api-form</artifactId>
+      <version>22.08-RC2</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.36</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+  <repositories>
+    <repository>
+      <id>gitlab-bk</id>
+      <url>https://gitlab.reboot-qsr.com/api/v4/projects/152/packages/maven</url>
+    </repository>
+  </repositories>
+</project>

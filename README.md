@@ -10,5 +10,5 @@ then you will be able to run the tests from a jar.
 
 ```shell
 mvn -P test-as-jar package
-java -cp target/* com.merimdigitalmedia.underflow.tests.sample.MainSample
+java -cp target/* sample.tests.com.merim.digitalpayment.underflow.MainSample
 ```
