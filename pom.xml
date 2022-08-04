@@ -146,6 +146,7 @@
                             <encoding>UTF-8</encoding>
                             <show>package</show>
                             <source>${java.release}</source>
+                            <quiet>true</quiet>
                         </configuration>
                         <executions>
                             <execution>

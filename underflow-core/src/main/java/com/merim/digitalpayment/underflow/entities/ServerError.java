@@ -1,9 +1,9 @@
 package com.merim.digitalpayment.underflow.entities;
 
-import com.merim.digitalpayment.underflow.utils.Mode;
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
 import com.merim.digitalpayment.underflow.mdc.MDCKeys;
 import com.merim.digitalpayment.underflow.utils.Application;
+import com.merim.digitalpayment.underflow.utils.Mode;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -69,6 +69,12 @@ public class ServerError {
         this(type, "", "");
     }
 
+    /**
+     * Instantiates a new Server error.
+     *
+     * @param type      the type
+     * @param throwable the throwable
+     */
     public ServerError(final String type, final Throwable throwable) {
         this.requestUid = MDCContext.getInstance().getMDC(MDCKeys.Request.UID).orElse("Unavailable");
         this.type = type;

@@ -44,6 +44,7 @@ public interface WebForm {
      * @param tClass       the t class
      * @param successLogic the success logic
      * @param errorLogic   the error logic
+     * @return the form
      */
     default <T extends Form> Result getForm(final HttpServerExchange exchange,
                                             final Class<T> tClass,
