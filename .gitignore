@@ -7,3 +7,4 @@
 *.jar
 target
 dist
+.flattened-pom.xml
