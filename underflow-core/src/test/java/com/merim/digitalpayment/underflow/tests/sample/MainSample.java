@@ -31,6 +31,7 @@ public class MainSample {
         handler.addPrefixPath("/api", new RequestLoggerHandler(new ApiTestHandler()));
         handler.addPrefixPath("/api/CORS", new RequestLoggerHandler(new CORSHandler(new ApiTestHandler())));
         handler.addPrefixPath("/api/CORSLegacy", new RequestLoggerHandler(new CORSLegacyHandler(new ApiTestHandler(), true)));
+        handler.addPrefixPath("/prefix", new RequestLoggerHandler(new PathPrefixHandler()));
 
         final Undertow server = Undertow.builder()
                 .addHttpListener(8080, "localhost")

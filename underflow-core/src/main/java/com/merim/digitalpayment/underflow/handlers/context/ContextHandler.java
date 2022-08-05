@@ -97,22 +97,28 @@ public class ContextHandler implements MDCContext {
      */
     public boolean isValid() {
         final Class<? extends Annotation> annotationForMethod = this.getAnnotationForMethod(this.exchange.getRequestMethod());
+        final Class<? extends FlowHandler> hClass = this.handler.getClass();
 
-        for (final Method classMethod : this.handler.getClass().getMethods()) {
+        for (final Method classMethod : hClass.getMethods()) {
             if (classMethod.getReturnType().isAssignableFrom(Result.class) && this.methodMatch(classMethod, annotationForMethod)) {
-                final PathMatcher matcher = this.getPathMatcher(classMethod);
+                final PathMatcher matcher = this.getPathMatcher(hClass, classMethod);
                 final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), classMethod);
                 if (matcher.find() && parameter.checkRequired()) {
-                    this.method = classMethod;
-                    this.pathMatcher = matcher;
-                    this.queryString = parameter;
-
-                    return true;
+                    // Try to find "a match" or "the best match".
+                    if (this.method == null || matcher.getRemainingPath().length() < this.pathMatcher.getRemainingPath().length()) {
+                        this.method = classMethod;
+                        this.pathMatcher = matcher;
+                        this.queryString = parameter;
+                    }
                 }
             }
         }
 
-        return this.hasFallbackMethod(this.handler.getClass());
+        if (this.method != null) {
+            return true;
+        }
+
+        return this.hasFallbackMethod(hClass);
     }
 
     /**
@@ -298,17 +304,20 @@ public class ContextHandler implements MDCContext {
     /**
      * Gets path matcher for the given path pattern.
      *
+     * @param hClass the h class
      * @param method the method
      * @return the path matcher
      */
-    private PathMatcher getPathMatcher(final Method method) {
+    private PathMatcher getPathMatcher(final Class<? extends FlowHandler> hClass, final Method method) {
+        final PathPrefix pathPrefix = hClass.getAnnotation(PathPrefix.class);
+
         if (method.isAnnotationPresent(Path.class)) {
             final Path path = method.getAnnotation(Path.class);
-            return new PathMatcher(this.exchange.getRelativePath(), path);
+            return new PathMatcher(this.exchange.getRelativePath(), pathPrefix, path);
         } else if (method.isAnnotationPresent(Paths.class)) {
             final Paths paths = method.getAnnotation(Paths.class);
             for (final Path path : paths.value()) {
-                final PathMatcher pathMatcher = new PathMatcher(this.exchange.getRelativePath(), path);
+                final PathMatcher pathMatcher = new PathMatcher(this.exchange.getRelativePath(), pathPrefix, path);
                 if (pathMatcher.find()) {
                     pathMatcher.reset();
                     return pathMatcher;

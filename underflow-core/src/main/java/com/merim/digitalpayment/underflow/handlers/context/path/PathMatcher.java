@@ -1,6 +1,7 @@
 package com.merim.digitalpayment.underflow.handlers.context.path;
 
 import com.merim.digitalpayment.underflow.annotation.routing.Path;
+import com.merim.digitalpayment.underflow.annotation.routing.PathPrefix;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,16 +41,39 @@ public class PathMatcher {
      * @param ignoreCase   the ignore case
      */
     public PathMatcher(final String relativePath, final String searchValue, final boolean ignoreCase) {
-        String search = searchValue;
+        this(relativePath, null, searchValue, ignoreCase);
+    }
 
-        // Add / in front of the search because the slash after the previous search is not captured.
-        if (!search.startsWith("/")) {
-            search = "/" + search;
+    /**
+     * Instantiates a new Path matcher.
+     *
+     * @param relativePath the relative path
+     * @param searchPrefix the search prefix
+     * @param searchValue  the search value
+     * @param ignoreCase   the ignore case
+     */
+    public PathMatcher(final String relativePath, final String searchPrefix, final String searchValue, final boolean ignoreCase) {
+        String search = "";
+
+        if (searchPrefix != null && !searchPrefix.isEmpty()) {
+            search = searchPrefix;
+            // Add / in front of the search because the slash after the previous search is not captured.
+            if (!search.startsWith("/")) {
+                search = "/" + search;
+            }
+            // Remove tailing / to avoid double /.
+            if (search.endsWith("/")) {
+                search = search.substring(search.length() - 1);
+            }
         }
 
-        // If the relative path is empty, removing the leading / to allow for @Path("") and @Path("/") to work.
-        if (relativePath.isEmpty() && search.startsWith("/")) {
-            search = search.substring(1);
+        // Only add the search value if it is not an "empty path". This allows @Path("") and @Path("/")
+        if (!searchValue.isEmpty() && !searchValue.equals("/")) {
+            // Add / in front of the search because the slash after the previous search is not captured.
+            if (!searchValue.startsWith("/")) {
+                search += "/";
+            }
+            search += searchValue;
         }
 
         final String format = String.format("^(?<pathCapture>%s)(?:/|$)", search);
@@ -64,10 +88,11 @@ public class PathMatcher {
      * Instantiates a new Path matcher.
      *
      * @param relativePath the relative path
+     * @param pathPrefix   the path prefix
      * @param path         the path
      */
-    public PathMatcher(final String relativePath, final Path path) {
-        this(relativePath, path.value(), path.ignoreCase());
+    public PathMatcher(final String relativePath, final PathPrefix pathPrefix, final Path path) {
+        this(relativePath, pathPrefix == null ? null : pathPrefix.value(), path.value(), path.ignoreCase());
     }
 
     /**

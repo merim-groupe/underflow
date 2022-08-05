@@ -39,7 +39,7 @@
     </modules>
 
     <properties>
-        <revision>22.08-RC2</revision>
+        <revision>22.08-DEV</revision>
 
         <java.release>8</java.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
