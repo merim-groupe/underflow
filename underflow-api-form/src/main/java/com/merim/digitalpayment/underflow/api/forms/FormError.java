@@ -11,12 +11,18 @@ public class FormError {
     /**
      * The Field.
      */
-    private final String field;
+    private String field;
 
     /**
      * The Message.
      */
-    private final String message;
+    private String message;
+
+    /**
+     * Instantiates a new Form error.
+     */
+    public FormError() {
+    }
 
     /**
      * Instantiates a new Form error.
@@ -39,11 +45,29 @@ public class FormError {
     }
 
     /**
+     * Sets field.
+     *
+     * @param field the field
+     */
+    public void setField(final String field) {
+        this.field = field;
+    }
+
+    /**
      * Gets message.
      *
      * @return the message
      */
     public String getMessage() {
         return this.message;
+    }
+
+    /**
+     * Sets message.
+     *
+     * @param message the message
+     */
+    public void setMessage(final String message) {
+        this.message = message;
     }
 }
