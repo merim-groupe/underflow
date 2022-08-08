@@ -2,6 +2,7 @@ package com.merim.digitalpayment.underflow.handlers;
 
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
 import com.merim.digitalpayment.underflow.mdc.MDCInterceptor;
+import com.merim.digitalpayment.underflow.mdc.MDCServerContext;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
@@ -46,9 +47,10 @@ public abstract class PassthroughsHandler implements HttpHandler, MDCContext {
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
-        MDCInterceptor.getInstance().accept(exchange);
-        this.interceptRequest(exchange);
-        this.callUnderlying(exchange);
+        try (final MDCServerContext ignored = MDCInterceptor.getInstance().withMDCServerContext(exchange)) {
+            this.interceptRequest(exchange);
+            this.callUnderlying(exchange);
+        }
     }
 
     /**

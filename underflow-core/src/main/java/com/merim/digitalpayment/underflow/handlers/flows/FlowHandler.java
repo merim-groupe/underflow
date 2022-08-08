@@ -4,6 +4,7 @@ import com.merim.digitalpayment.underflow.annotation.security.Secured;
 import com.merim.digitalpayment.underflow.handlers.context.ContextHandler;
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
 import com.merim.digitalpayment.underflow.mdc.MDCInterceptor;
+import com.merim.digitalpayment.underflow.mdc.MDCServerContext;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.results.http.HttpResult;
 import com.merim.digitalpayment.underflow.results.http.SenderHttpResult;
@@ -16,6 +17,7 @@ import io.undertow.server.HttpServerExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -57,39 +59,41 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) {
-        MDCInterceptor.getInstance().accept(exchange);
-        final ContextHandler context = new ContextHandler(this, exchange);
+        try (final MDCServerContext ignored = MDCInterceptor.getInstance().withMDCServerContext(exchange)) {
+            final ContextHandler context = new ContextHandler(this, exchange);
 
-        if (context.isValid()) {
-            final Optional<Secured> secured = context.requireSecurity();
-            context.addInjectable(this.flowSecurity);
-            if (this.flowSecurity != null) {
-                final Optional<?> optionalUser = this.flowSecurity.isLogged(exchange);
-                optionalUser.ifPresent(user -> context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), user));
+            if (context.isValid()) {
+                final Optional<Secured> secured = context.requireSecurity();
+                context.addInjectable(this.flowSecurity);
+                if (this.flowSecurity != null) {
+                    final Optional<?> optionalUser = this.flowSecurity.isLogged(exchange);
+                    optionalUser.ifPresent(user -> context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), user));
 
-                if (secured.isPresent()) {
-                    if (optionalUser.isPresent()) {
-                        if (this.flowSecurity.isAccessibleUnsafe(optionalUser.get(), context.getMethod())) {
-                            // OK continue !
-                            context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), optionalUser.get());
+                    if (secured.isPresent()) {
+                        if (optionalUser.isPresent()) {
+                            if (this.flowSecurity.isAccessibleUnsafe(optionalUser.get(), context.getMethod())) {
+                                // OK continue !
+                                context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), optionalUser.get());
+                            } else {
+                                // User is logged but doesn't have the right permissions.
+                                this.onForbidden().process(exchange);
+                                return;
+                            }
                         } else {
-                            // User is logged but doesn't have the right permissions.
-                            this.onForbidden().process(exchange);
+                            // User is not logged while required.
+                            this.onUnauthorized().process(exchange);
                             return;
                         }
-                    } else {
-                        // User is not logged while required.
-                        this.onUnauthorized().process(exchange);
-                        return;
                     }
                 }
+                context.execute();
+            } else {
+                final Result result = this.onNotFound();
+                result.process(exchange);
             }
-            context.execute();
-        } else {
-            final Result result = this.onNotFound();
-            result.process(exchange);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
         }
-
     }
 
     @Override

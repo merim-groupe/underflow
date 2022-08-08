@@ -16,13 +16,16 @@ import java.util.function.Consumer;
  * @author Pierre Adam
  * @since 21.09.29
  */
-public class MDCInterceptor implements Consumer<HttpServerExchange> {
+public class MDCInterceptor {
 
     /**
      * The constant INSTANCE.
      */
     private static final MDCInterceptor INSTANCE = new MDCInterceptor();
 
+    /**
+     * The Mdc context.
+     */
     private final MDCContext mdcContext;
 
     /**
@@ -76,11 +79,20 @@ public class MDCInterceptor implements Consumer<HttpServerExchange> {
         this.mdcRequestConsumers.add((exchange, mdcContext) -> consumer.accept(exchange));
     }
 
-    @Override
-    public void accept(final HttpServerExchange exchange) {
+    /**
+     * With mdc server context r.
+     *
+     * @param exchange the exchange
+     * @return the mdc server context
+     */
+    public MDCServerContext withMDCServerContext(final HttpServerExchange exchange) {
         if (MDC.getMDCAdapter() != null && !this.mdcContext.getMDC(MDCKeys.Request.UID).isPresent()) {
             this.mdcContext.putMDC(MDCKeys.Request.UID, UUID.randomUUID().toString());
             this.mdcRequestConsumers.forEach(consumer -> consumer.accept(exchange, this.mdcContext));
+
+            return new MDCServerContext(this.mdcContext);
         }
+
+        return new MDCServerContext(null);
     }
 }
