@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.handlers.flows;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.merim.digitalpayment.underflow.api.forms.ApiForm;
 import com.merim.digitalpayment.underflow.api.forms.ApiFormWithPayload;
 import com.merim.digitalpayment.underflow.api.forms.FormError;
@@ -44,17 +45,21 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
      * Gets json body.
      *
      * @param <T>             the type parameter
+     * @param mapper          the mapper
      * @param bodyInputStream the body input stream
      * @param tClass          the t class
      * @param logic           the logic
      * @return the json body
      */
-    protected <T> Result getJsonBody(final InputStream bodyInputStream,
-                                     final Class<T> tClass,
-                                     final Function<T, Result> logic) {
+    protected <T> Result getJsonBody(
+            final ObjectMapper mapper,
+            final InputStream bodyInputStream,
+            final Class<T> tClass,
+            final Function<T, Result> logic) {
         final SmartGZipBodyInput bodyInput = new SmartGZipBodyInput(bodyInputStream);
         try (final InputStream inputStream = bodyInput.getInputStream()) {
-            final T t = Application.getMapper().readerFor(tClass).readValue(inputStream);
+            final T t = mapper.readerFor(tClass).readValue(inputStream);
+            mapper.readerFor(tClass).readValue(inputStream);
             return logic.apply(t);
         } catch (final IOException e) {
             this.logger.debug("Invalid input body.", e);
@@ -63,6 +68,47 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
                     e.getMessage());
             return this.badRequest(this.toJsonNode(serverError));
         }
+    }
+
+    /**
+     * Gets json body.
+     *
+     * @param <T>             the type parameter
+     * @param bodyInputStream the body input stream
+     * @param tClass          the t class
+     * @param logic           the logic
+     * @return the json body
+     */
+    protected <T> Result getJsonBody(
+            final InputStream bodyInputStream,
+            final Class<T> tClass,
+            final Function<T, Result> logic) {
+        return this.getJsonBody(Application.getMapper(), bodyInputStream, tClass, logic);
+    }
+
+    /**
+     * Gets json form.
+     *
+     * @param <T>             the type parameter
+     * @param mapper          the mapper
+     * @param bodyInputStream the body input stream
+     * @param tClass          the t class
+     * @param logic           the logic
+     * @return the json form
+     */
+    protected <T extends ApiForm> Result getJsonForm(
+            final ObjectMapper mapper,
+            final InputStream bodyInputStream,
+            final Class<T> tClass,
+            final Function<T, Result> logic) {
+        return this.getJsonBody(mapper, bodyInputStream, tClass, form -> {
+            final List<FormError> errors = form.isValid();
+            if (errors != null && errors.size() > 0) {
+                return this.badRequest(this.toJsonNode(new ServerFormError(errors)));
+            } else {
+                return logic.apply(form);
+            }
+        });
     }
 
     /**
@@ -78,8 +124,29 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
             final InputStream bodyInputStream,
             final Class<T> tClass,
             final Function<T, Result> logic) {
-        return this.getJsonBody(bodyInputStream, tClass, form -> {
-            final List<FormError> errors = form.isValid();
+        return this.getJsonForm(Application.getMapper(), bodyInputStream, tClass, logic);
+    }
+
+    /**
+     * Gets json form.
+     *
+     * @param <T>             the type parameter
+     * @param <U>             the type parameter
+     * @param mapper          the mapper
+     * @param bodyInputStream the body input stream
+     * @param tClass          the t class
+     * @param payload         the payload
+     * @param logic           the logic
+     * @return the json form with payload
+     */
+    protected <T extends ApiFormWithPayload<U>, U> Result getJsonFormWithPayload(
+            final ObjectMapper mapper,
+            final InputStream bodyInputStream,
+            final Class<T> tClass,
+            final U payload,
+            final Function<T, Result> logic) {
+        return this.getJsonBody(mapper, bodyInputStream, tClass, form -> {
+            final List<FormError> errors = form.isValid(payload);
             if (errors != null && errors.size() > 0) {
                 return this.badRequest(this.toJsonNode(new ServerFormError(errors)));
             } else {
@@ -104,14 +171,7 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
             final Class<T> tClass,
             final U payload,
             final Function<T, Result> logic) {
-        return this.getJsonBody(bodyInputStream, tClass, form -> {
-            final List<FormError> errors = form.isValid(payload);
-            if (errors != null && errors.size() > 0) {
-                return this.badRequest(this.toJsonNode(new ServerFormError(errors)));
-            } else {
-                return logic.apply(form);
-            }
-        });
+        return this.getJsonFormWithPayload(Application.getMapper(), bodyInputStream, tClass, payload, logic);
     }
 
     @Override
