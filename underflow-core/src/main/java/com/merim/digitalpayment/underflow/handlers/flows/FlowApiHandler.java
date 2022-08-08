@@ -59,7 +59,6 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
         final SmartGZipBodyInput bodyInput = new SmartGZipBodyInput(bodyInputStream);
         try (final InputStream inputStream = bodyInput.getInputStream()) {
             final T t = mapper.readerFor(tClass).readValue(inputStream);
-            mapper.readerFor(tClass).readValue(inputStream);
             return logic.apply(t);
         } catch (final IOException e) {
             this.logger.debug("Invalid input body.", e);
