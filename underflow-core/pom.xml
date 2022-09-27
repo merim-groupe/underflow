@@ -19,12 +19,6 @@
             <artifactId>underflow-api-form</artifactId>
             <version>${revision}</version>
         </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-            <version>2.2.18.Final</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -35,39 +29,19 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.13.3</version>
+            <version>2.13.4</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.13.3</version>
+            <version>2.13.4</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.11.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.36</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.8.2</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.11</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
