@@ -14,5 +14,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MySecurityScope {
+    /**
+     * Value string.
+     *
+     * @return the string
+     */
     String value();
 }

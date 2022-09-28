@@ -12,8 +12,16 @@ import io.undertow.server.handlers.form.FormData;
  */
 public class MyForm implements Form {
 
+    /**
+     * The Name.
+     */
     private String name;
 
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
     public String getName() {
         return this.name;
     }

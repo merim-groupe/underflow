@@ -63,7 +63,8 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     /**
      * Login result.
      * <p>
-     * Example : http://localhost:8080/login?name=Pierre&scope=web&scope=abc
+     * Example : http://localhost:8080/login?name=Pierre&amp;scope=web&amp;scope=abc
+     * </p>
      *
      * @param user     the user
      * @param security the security

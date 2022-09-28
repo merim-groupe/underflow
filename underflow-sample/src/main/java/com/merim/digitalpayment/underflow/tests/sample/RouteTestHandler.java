@@ -62,13 +62,15 @@ public class RouteTestHandler extends FlowTemplateHandler {
 
     /**
      * GET example with parameters list in query strings
+     * <p>
      * http://localhost:8080/routes/list-query
      * http://localhost:8080/routes/list-query?entry=xxx
      * http://localhost:8080/routes/list-query?entry[]=xxx
-     * http://localhost:8080/routes/list-query?entry=xxx&entry=yyy
-     * http://localhost:8080/routes/list-query?entry[]=xxx&entry[]=yyy
-     * http://localhost:8080/routes/list-query?entry[0]=xxx&entry[1]=yyy
+     * http://localhost:8080/routes/list-query?entry=xxx&amp;entry=yyy
+     * http://localhost:8080/routes/list-query?entry[]=xxx&amp;entry[]=yyy
+     * http://localhost:8080/routes/list-query?entry[0]=xxx&amp;entry[1]=yyy
      * ...
+     * </p>
      *
      * @param dataList the data list
      * @return the result

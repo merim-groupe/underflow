@@ -2,13 +2,14 @@
 
 An undertow based framework making your life easier than it should be.
 
-## Running test server from a jar
+## Running underflow-sample
 
 For testing purposes you may want to run the tests classes from a jar file.
-To do so, you will need to package the project using the `test-as-jar` profile,
-then you will be able to run the tests from a jar.
+To do so, you will need to package the project using the `copy-dependencies` profile,
+then you will be able to run the sample from a jar.
 
 ```shell
-mvn -P test-as-jar package
-java -cp target/* sample.tests.com.merim.digitalpayment.underflow.MainSample
+mvn -P copy-dependencies package
+cd underflow-sample
+java -cp 'target/*' com.merim.digitalpayment.underflow.tests.sample.MainSample
 ```

@@ -7,7 +7,6 @@ import io.undertow.server.handlers.GracefulShutdownHandler;
 import io.undertow.server.handlers.PathHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.Signal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +20,7 @@ import java.util.function.Consumer;
  * @author Pierre Adam
  * @since 22.09.27
  */
-@SuppressWarnings("restriction")
-public class UnderflowServer {
+class UnderflowServerImpl implements UnderflowServer {
 
     /**
      * The Shutdown.
@@ -67,8 +65,8 @@ public class UnderflowServer {
     /**
      * Instantiates a new Web server.
      */
-    public UnderflowServer() {
-        this.logger = LoggerFactory.getLogger(UnderflowServer.class);
+    public UnderflowServerImpl() {
+        this.logger = LoggerFactory.getLogger(UnderflowServerImpl.class);
         this.pathHandler = Handlers.path();
         this.shutdownHandler = new GracefulShutdownHandler(this.pathHandler);
         this.shutdownHooks = new ArrayList<>();
@@ -78,87 +76,40 @@ public class UnderflowServer {
                 .setWorkerThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2 * 8, 16));
     }
 
-    /**
-     * Add prefix path web server.
-     *
-     * @param prefix  the prefix
-     * @param handler the handler
-     * @return the web server
-     */
-    public UnderflowServer addPrefixPath(final String prefix, final HttpHandler handler) {
+    @Override
+    public UnderflowServerImpl addPrefixPath(final String prefix, final HttpHandler handler) {
         this.pathHandler.addPrefixPath(prefix, handler);
         return this;
     }
 
-    /**
-     * Add shutdown hook.
-     *
-     * @param closeable the closeable
-     * @return the web server
-     */
-    public UnderflowServer addToShutdown(final AutoCloseable closeable) {
-        this.shutdownHooks.add(() -> {
-            try {
-                closeable.close();
-            } catch (final Exception e) {
-                this.logger.error("An error occurred while shutting down.", e);
-            }
-        });
-        return this;
-    }
-
-    /**
-     * Add shutdown hook.
-     *
-     * @param hook the hook
-     * @return the web server
-     */
-    public UnderflowServer addShutdownHook(final Runnable hook) {
+    @Override
+    public UnderflowServerImpl addShutdownHook(final Runnable hook) {
         this.shutdownHooks.add(hook);
         return this;
     }
 
-    /**
-     * Add listen web server.
-     *
-     * @param port the port
-     * @param host the host
-     * @return the web server
-     */
-    public UnderflowServer addHttpListener(final int port, final String host) {
+    @Override
+    public UnderflowServerImpl addHttpListener(final int port, final String host) {
         this.builder.addHttpListener(port, host);
         return this;
     }
 
-    /**
-     * Alter builder web server.
-     *
-     * @param consumer the consumer
-     * @return the web server
-     */
-    public UnderflowServer alterBuilder(final Consumer<Undertow.Builder> consumer) {
+    @Override
+    public UnderflowServerImpl alterBuilder(final Consumer<Undertow.Builder> consumer) {
         consumer.accept(this.builder);
         return this;
     }
 
-    /**
-     * With shutdown handling web server.
-     *
-     * @return the web server
-     */
-    public UnderflowServer withShutdownSignalHandling() {
+    @Override
+    public UnderflowServerImpl withShutdownSignalHandling() {
         this.shutdownSignalHandling = true;
         return this;
     }
 
-    /**
-     * Start the service
-     */
+    @Override
     public void start() {
         if (this.shutdownSignalHandling) {
-            Signal.handle(new Signal("TERM"), sig -> this.stop()); // Handle SIGTERM.
-            Signal.handle(new Signal("INT"), sig -> this.stop()); // Handle SIGINT.
-            Runtime.getRuntime().addShutdownHook(new Thread(this::stopServer));
+            ShutdownHandlingFactory.get().accept(this);
         }
 
         //  Create the Http Server
@@ -168,35 +119,19 @@ public class UnderflowServer {
         this.server.start();
     }
 
-    /**
-     * Start and wait.
-     *
-     * @throws InterruptedException the interrupted exception
-     */
-    public void startAndWait() throws InterruptedException {
-        this.start();
-        this.waitForExit();
-    }
-
-    /**
-     * Stop.
-     */
+    @Override
     public void stop() {
-        synchronized (UnderflowServer.waitLock) {
-            UnderflowServer.waitLock.notifyAll();
+        synchronized (UnderflowServerImpl.waitLock) {
+            UnderflowServerImpl.waitLock.notifyAll();
             this.shutdownHandler.shutdown();
         }
     }
 
-    /**
-     * Wait for exit.
-     *
-     * @throws InterruptedException the interrupted exception
-     */
+    @Override
     public void waitForExit() throws InterruptedException {
         try {
-            synchronized (UnderflowServer.waitLock) {
-                UnderflowServer.waitLock.wait();
+            synchronized (UnderflowServerImpl.waitLock) {
+                UnderflowServerImpl.waitLock.wait();
                 this.logger.debug("Stopping server from trigger.");
             }
         } finally {
