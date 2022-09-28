@@ -2,7 +2,7 @@ package com.merim.digitalpayment.underflow.results.http;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.merim.digitalpayment.underflow.utils.Application;
+import com.merim.digitalpayment.underflow.app.Application;
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
 import io.undertow.util.StatusCodes;

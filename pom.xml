@@ -34,8 +34,13 @@
 
     <modules>
         <module>underflow-api-form</module>
+        <module>underflow-context</module>
+        <module>underflow-converters</module>
+        <module>underflow-security</module>
         <module>underflow-core</module>
-        <module>underflow-sample</module>
+        <module>underflow-template</module>
+        <module>underflow-utils</module>
+        <module>sample</module>
     </modules>
 
     <properties>
@@ -43,6 +48,16 @@
 
         <java.release>8</java.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <maven.install.skip>true</maven.install.skip>
+        <maven.deploy.skip>true</maven.deploy.skip>
+
+        <!-- Common -->
+        <jackson-version>2.13.4</jackson-version> <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+        <apache-commons-io-version>2.11.0</apache-commons-io-version> <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+
+        <!-- Templates -->
+        <freemarker-version>2.3.31</freemarker-version> <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
     </properties>
 
     <dependencies>

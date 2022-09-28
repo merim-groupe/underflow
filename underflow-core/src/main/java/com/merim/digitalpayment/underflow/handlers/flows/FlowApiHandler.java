@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.merim.digitalpayment.underflow.api.forms.ApiForm;
 import com.merim.digitalpayment.underflow.api.forms.ApiFormWithPayload;
 import com.merim.digitalpayment.underflow.api.forms.FormError;
+import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.entities.ServerError;
 import com.merim.digitalpayment.underflow.entities.ServerFormError;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.results.http.JsonResults;
 import com.merim.digitalpayment.underflow.security.FlowSecurity;
-import com.merim.digitalpayment.underflow.utils.Application;
 import com.merim.digitalpayment.underflow.utils.SmartGZipBodyInput;
 
 import java.io.IOException;

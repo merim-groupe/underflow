@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>com.merim.digitalpayment.underflow</groupId>
-    <artifactId>underflow-sample</artifactId>
+    <artifactId>sample</artifactId>
 
     <properties>
         <maven.install.skip>true</maven.install.skip>
@@ -22,6 +22,11 @@
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-core</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.merim.digitalpayment.underflow</groupId>
+            <artifactId>underflow-template</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

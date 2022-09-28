@@ -1,13 +1,13 @@
 package com.merim.digitalpayment.underflow.handlers.flows;
 
+import com.merim.digitalpayment.underflow.app.Application;
+import com.merim.digitalpayment.underflow.app.Mode;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.results.http.HtmlResults;
 import com.merim.digitalpayment.underflow.security.FlowSecurity;
 import com.merim.digitalpayment.underflow.templates.TemplateEngine;
 import com.merim.digitalpayment.underflow.templates.TemplateSystem;
 import com.merim.digitalpayment.underflow.templates.dto.DevErrorDTO;
-import com.merim.digitalpayment.underflow.utils.Application;
-import com.merim.digitalpayment.underflow.utils.Mode;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 

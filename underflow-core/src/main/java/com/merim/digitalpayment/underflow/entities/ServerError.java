@@ -1,9 +1,9 @@
 package com.merim.digitalpayment.underflow.entities;
 
+import com.merim.digitalpayment.underflow.app.Application;
+import com.merim.digitalpayment.underflow.app.Mode;
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
 import com.merim.digitalpayment.underflow.mdc.MDCKeys;
-import com.merim.digitalpayment.underflow.utils.Application;
-import com.merim.digitalpayment.underflow.utils.Mode;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;

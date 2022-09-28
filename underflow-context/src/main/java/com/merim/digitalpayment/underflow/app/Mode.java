@@ -1,4 +1,4 @@
-package com.merim.digitalpayment.underflow.utils;
+package com.merim.digitalpayment.underflow.app;
 
 /**
  * Mode.

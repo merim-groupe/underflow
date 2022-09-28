@@ -10,10 +10,24 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>underflow-api-form</artifactId>
+    <artifactId>underflow-utils</artifactId>
 
     <properties>
         <maven.install.skip>false</maven.install.skip>
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.merim.digitalpayment.underflow</groupId>
+            <artifactId>underflow-context</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${apache-commons-io-version}</version>
+        </dependency>
+    </dependencies>
 </project>

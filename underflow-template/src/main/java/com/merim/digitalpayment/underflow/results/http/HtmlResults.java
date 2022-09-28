@@ -1,9 +1,9 @@
 package com.merim.digitalpayment.underflow.results.http;
 
+import com.merim.digitalpayment.underflow.app.Application;
+import com.merim.digitalpayment.underflow.app.Mode;
 import com.merim.digitalpayment.underflow.templates.TemplateSystem;
 import com.merim.digitalpayment.underflow.templates.dto.DevErrorDTO;
-import com.merim.digitalpayment.underflow.utils.Application;
-import com.merim.digitalpayment.underflow.utils.Mode;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import io.undertow.io.IoCallback;

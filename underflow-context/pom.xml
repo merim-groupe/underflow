@@ -10,7 +10,7 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>underflow-core</artifactId>
+    <artifactId>underflow-context</artifactId>
 
     <properties>
         <maven.install.skip>false</maven.install.skip>
@@ -18,31 +18,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.merim.digitalpayment.underflow</groupId>
-            <artifactId>underflow-api-form</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.merim.digitalpayment.underflow</groupId>
-            <artifactId>underflow-context</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.merim.digitalpayment.underflow</groupId>
-            <artifactId>underflow-converters</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.merim.digitalpayment.underflow</groupId>
-            <artifactId>underflow-security</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.merim.digitalpayment.underflow</groupId>
-            <artifactId>underflow-utils</artifactId>
-            <version>${revision}</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
