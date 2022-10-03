@@ -37,9 +37,10 @@
         <module>underflow-context</module>
         <module>underflow-converters</module>
         <module>underflow-security</module>
-        <module>underflow-core</module>
+        <module>underflow-server</module>
         <module>underflow-template</module>
         <module>underflow-utils</module>
+        <module>underflow-core</module>
         <module>sample</module>
     </modules>
 

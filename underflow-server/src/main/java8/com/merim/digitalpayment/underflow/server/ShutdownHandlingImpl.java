@@ -11,7 +11,6 @@ public class ShutdownHandlingImpl implements ShutdownHandling {
 
     @Override
     public void accept(final UnderflowServer underflowServer) {
-        System.out.println("JAVA8");
         Runtime.getRuntime().addShutdownHook(new Thread(underflowServer::stop));
     }
 }
