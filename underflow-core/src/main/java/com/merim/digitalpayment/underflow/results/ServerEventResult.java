@@ -38,7 +38,8 @@ public class ServerEventResult implements Result {
      * @param serverSentEventHandler the server sent event handler
      */
     public ServerEventResult(final ServerSentEventHandler serverSentEventHandler) {
-        this(serverSentEventHandler, null);
+        this(serverSentEventHandler, () -> {
+        });
     }
 
     @Override
