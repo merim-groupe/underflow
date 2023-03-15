@@ -21,6 +21,10 @@ public class MainSample {
      * @param args the args
      */
     public static void main(final String[] args) {
+        MainSample.runServer();
+    }
+
+    public static void runServer() {
         final UnderflowServer underflowServer = UnderflowServer.create()
                 .addHttpListener(8080, "localhost")
                 .withShutdownSignalHandling()
