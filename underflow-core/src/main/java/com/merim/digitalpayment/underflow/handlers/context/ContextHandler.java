@@ -5,6 +5,8 @@ import com.merim.digitalpayment.underflow.annotation.routing.*;
 import com.merim.digitalpayment.underflow.annotation.security.Secured;
 import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.converters.Converters;
+import com.merim.digitalpayment.underflow.converters.IConverter;
+import com.merim.digitalpayment.underflow.converters.NoConverter;
 import com.merim.digitalpayment.underflow.handlers.context.path.PathMatcher;
 import com.merim.digitalpayment.underflow.handlers.context.path.QueryString;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
@@ -52,6 +54,16 @@ public class ContextHandler implements MDCContext {
     private final HttpServerExchange exchange;
 
     /**
+     * The Controller injectable.
+     */
+    private final Map<Class<?>, Supplier<Object>> controllerInjectable;
+
+    /**
+     * The Controller injectable.
+     */
+    private final Map<Class<?>, IConverter<?>> runtimeConverter;
+
+    /**
      * The Method.
      */
     private Method method;
@@ -65,11 +77,6 @@ public class ContextHandler implements MDCContext {
      * The Query parameter.
      */
     private QueryString queryString;
-
-    /**
-     * The Controller injectable.
-     */
-    private final Map<Class<?>, Supplier<Object>> controllerInjectable;
 
     /**
      * Instantiates a new Context handler.
@@ -86,6 +93,7 @@ public class ContextHandler implements MDCContext {
         this.pathMatcher = null;
         this.queryString = null;
         this.controllerInjectable = new HashMap<>();
+        this.runtimeConverter = new HashMap<>();
         this.controllerInjectable.put(FormData.class, () -> this.getFormData(this.exchange));
         this.controllerInjectable.put(HttpServerExchange.class, () -> this.exchange);
     }
@@ -185,17 +193,23 @@ public class ContextHandler implements MDCContext {
      * Resolve the arguments and execute de method.
      */
     private void run() {
-        this.exchange.setRelativePath(this.pathMatcher.getRemainingPath());
+        try {
+            this.exchange.setRelativePath(this.pathMatcher.getRemainingPath());
 
-        if (this.methodHasBody()) {
-            this.controllerInjectable.put(InputStream.class, this.exchange::getInputStream);
+            if (this.methodHasBody()) {
+                this.controllerInjectable.put(InputStream.class, this.exchange::getInputStream);
+            }
+
+            final List<Object> methodArgs = this.resolveMethodArgs();
+
+            this.safeHttpExecute(() -> this.executeMethod(methodArgs));
+        } catch (final Exception e) {
+            this.logger.error("An error occurred.", e);
+
+            // This is an error in Underflow itself. Setting status code to 500 and ending the exchange.
+            this.exchange.setStatusCode(500);
+            this.exchange.endExchange();
         }
-
-        final List<Object> methodArgs = this.resolveMethodArgs();
-
-        this.safeHttpExecute(() -> {
-            this.executeMethod(methodArgs);
-        });
     }
 
     /**
@@ -214,7 +228,7 @@ public class ContextHandler implements MDCContext {
 
             if (pNamed != null && this.pathMatcher.hasGroup(pNamed.value())) {
                 final String value = this.pathMatcher.getGroup(pNamed.value());
-                methodArgs.add(Converters.convert(pClass, value));
+                methodArgs.add(this.queryConvert(pNamed.converter(), pClass, value));
             } else if (pQuery != null) {
                 final Deque<String> values = this.queryString.getValuesFor(pQuery.value());
                 if (values.isEmpty() && pQuery.defaultValue().value().length > 0) {
@@ -222,13 +236,15 @@ public class ContextHandler implements MDCContext {
                 }
                 if (pQuery.listProperty().backedType() != QueryListProperty.NoBackedType.class) {
                     final Class<?> backedType = pQuery.listProperty().backedType();
-                    final List<java.lang.Object> list = values.stream().map(v -> Converters.convert(backedType, v)).collect(Collectors.toList());
+                    final List<java.lang.Object> list = values.stream()
+                            .map(v -> this.queryConvert(pQuery.converter(), backedType, v))
+                            .collect(Collectors.toList());
                     methodArgs.add(list);
                 } else {
                     if (values.isEmpty()) {
                         methodArgs.add(null);
                     } else {
-                        methodArgs.add(Converters.convert(pClass, values.getFirst()));
+                        methodArgs.add(this.queryConvert(pQuery.converter(), pClass, values.getFirst()));
                     }
                 }
             } else if (this.controllerInjectable.containsKey(pClass)) {
@@ -244,6 +260,40 @@ public class ContextHandler implements MDCContext {
         }
 
         return methodArgs;
+    }
+
+    /**
+     * Query arg convert object.
+     *
+     * @param queryConverter the query converter
+     * @param pClass         the p class
+     * @param value          the value
+     * @return the object
+     */
+    private Object queryConvert(final QueryConverter queryConverter, final Class<?> pClass, final String value) {
+        if (queryConverter != null && !queryConverter.value().equals(NoConverter.class)) {
+            if (!this.runtimeConverter.containsKey(queryConverter.value())) {
+                try {
+                    this.runtimeConverter.put(queryConverter.value(),
+                            queryConverter.value().getDeclaredConstructor().newInstance());
+                } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    this.logger.error("Unable to instantiate the converter {}", queryConverter.value().getCanonicalName());
+                    throw new RuntimeException(e);
+                }
+            }
+
+            final IConverter<?> converter = this.runtimeConverter.get(queryConverter.value());
+
+            if (!pClass.isAssignableFrom(converter.getBackedType())) {
+                this.logger.error("Invalid converter. Converter {} is able to handle {} but {} was given as argument.",
+                        converter.getClass().getCanonicalName(), converter.getBackedType().getCanonicalName(),
+                        pClass.getCanonicalName());
+                throw new RuntimeException("Invalid converter.");
+            }
+            return converter.bind(value);
+        } else {
+            return Converters.convert(pClass, value);
+        }
     }
 
     /**

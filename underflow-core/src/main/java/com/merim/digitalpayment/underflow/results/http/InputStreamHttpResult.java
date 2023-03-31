@@ -28,6 +28,11 @@ public class InputStreamHttpResult extends BaseHttpResult {
     private final IoCallback ioCallback;
 
     /**
+     * The Buffer.
+     */
+    private final byte[] buffer;
+
+    /**
      * The Server exchange.
      */
     private HttpServerExchange serverExchange;
@@ -37,12 +42,36 @@ public class InputStreamHttpResult extends BaseHttpResult {
      *
      * @param httpCode   the http code
      * @param data       the data
+     * @param chunkSize  the chunk size
      * @param ioCallback the io callback
      */
-    public InputStreamHttpResult(final int httpCode, final InputStream data, final IoCallback ioCallback) {
+    public InputStreamHttpResult(final int httpCode, final InputStream data, final int chunkSize, final IoCallback ioCallback) {
         super(httpCode);
         this.data = data;
         this.ioCallback = ioCallback;
+        this.buffer = new byte[chunkSize];
+    }
+
+    /**
+     * Instantiates a new Input stream http result.
+     *
+     * @param httpCode   the http code
+     * @param data       the data
+     * @param ioCallback the io callback
+     */
+    public InputStreamHttpResult(final int httpCode, final InputStream data, final IoCallback ioCallback) {
+        this(httpCode, data, 1024 * 32, ioCallback);
+    }
+
+    /**
+     * Instantiates a new Input stream http result.
+     *
+     * @param httpCode  the http code
+     * @param data      the data
+     * @param chunkSize the chunk size
+     */
+    public InputStreamHttpResult(final int httpCode, final InputStream data, final int chunkSize) {
+        this(httpCode, data, chunkSize, IoCallback.END_EXCHANGE);
     }
 
     /**
@@ -69,12 +98,10 @@ public class InputStreamHttpResult extends BaseHttpResult {
      * @param sender the sender
      */
     public void accept(final Sender sender) {
-        final byte[] buffer = new byte[1024 * 64];
-
         try {
-            final int length = this.data.read(buffer);
+            final int length = this.data.read(this.buffer);
             if (length > -1) {
-                final ByteBuffer wrap = ByteBuffer.wrap(buffer, 0, length);
+                final ByteBuffer wrap = ByteBuffer.wrap(this.buffer, 0, length);
                 sender.send(wrap, new IoCallback() {
                     @Override
                     public void onComplete(final HttpServerExchange httpServerExchange, final Sender sender) {

@@ -42,4 +42,11 @@ public @interface Query {
      * @return the default value
      */
     DefaultValue defaultValue() default @DefaultValue();
+
+    /**
+     * Query converter query converter.
+     *
+     * @return the query converter
+     */
+    QueryConverter converter() default @QueryConverter();
 }

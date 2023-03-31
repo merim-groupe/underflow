@@ -2,6 +2,7 @@ package com.merim.digitalpayment.underflow.tests.sample;
 
 import com.merim.digitalpayment.underflow.annotation.method.GET;
 import com.merim.digitalpayment.underflow.annotation.routing.*;
+import com.merim.digitalpayment.underflow.converters.IConverter;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import io.undertow.server.HttpServerExchange;
@@ -83,5 +84,84 @@ public class RouteTestHandler extends FlowTemplateHandler {
         return this.ok(this.getTemplate("routes/display-list.ftl"), new HashMap<String, Object>() {{
             this.put("listData", dataList);
         }});
+    }
+
+    /**
+     * GET example with custom converter
+     * <p>
+     * http://localhost:8080/routes/query-converter
+     * http://localhost:8080/routes/query-converter?data=ab:cd
+     * http://localhost:8080/routes/query-converter?data=qwe:rty:ignored
+     * ...
+     * </p>
+     *
+     * @param complexObject the complex object
+     * @return the result
+     */
+    @GET
+    @Path("/query-converter")
+    public Result queryConveter(@Query(value = "data", required = true,
+            defaultValue = @DefaultValue("123:456"),
+            converter = @QueryConverter(MyComplexObject.Converter.class)) final MyComplexObject complexObject) {
+        return this.ok(String.format("%s === %s", complexObject.left, complexObject.right));
+    }
+
+    /**
+     * GET example with custom converter
+     * <p>
+     * http://localhost:8080/routes/path-converter/ab:cd
+     * http://localhost:8080/routes/path-converter/qwe:rty:ignored
+     * ...
+     * </p>
+     *
+     * @param complexObject the complex object
+     * @return the result
+     */
+    @GET
+    @Path("/path-converter/(?<data>.+)")
+    public Result pathConverter(@Named(value = "data",
+            converter = @QueryConverter(MyComplexObject.Converter.class)) final MyComplexObject complexObject) {
+        return this.ok(String.format("%s === %s", complexObject.left, complexObject.right));
+    }
+
+    /**
+     * The type My complex object.
+     */
+    public static class MyComplexObject {
+
+        /**
+         * The Left.
+         */
+        String left;
+
+        /**
+         * The Right.
+         */
+        String right;
+
+        /**
+         * The type Converter.
+         */
+        public static class Converter implements IConverter<MyComplexObject> {
+
+            @Override
+            public MyComplexObject bind(final String representation) {
+                final MyComplexObject myComplexObject = new MyComplexObject();
+                final String[] split = representation.split(":");
+                myComplexObject.left = split[0];
+                myComplexObject.right = split.length > 1 ? split[1] : "";
+                return myComplexObject;
+            }
+
+            @Override
+            public String unbind(final MyComplexObject object) {
+                return object.left + ":" + object.right;
+            }
+
+            @Override
+            public Class<MyComplexObject> getBackedType() {
+                return MyComplexObject.class;
+            }
+        }
     }
 }

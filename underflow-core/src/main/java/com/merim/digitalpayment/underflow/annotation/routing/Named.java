@@ -14,10 +14,18 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Named {
+
     /**
      * Value string.
      *
      * @return the string
      */
     String value();
+
+    /**
+     * Query converter query converter.
+     *
+     * @return the query converter
+     */
+    QueryConverter converter() default @QueryConverter();
 }
