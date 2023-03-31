@@ -270,7 +270,7 @@ public class ContextHandler implements MDCContext {
      * @param value          the value
      * @return the object
      */
-    private Object queryConvert(final QueryConverter queryConverter, final Class<?> pClass, final String value) {
+    private Object queryConvert(final Converter queryConverter, final Class<?> pClass, final String value) {
         if (queryConverter != null && !queryConverter.value().equals(NoConverter.class)) {
             if (!this.runtimeConverter.containsKey(queryConverter.value())) {
                 try {

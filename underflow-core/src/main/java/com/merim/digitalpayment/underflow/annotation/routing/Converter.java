@@ -13,7 +13,7 @@ import java.lang.annotation.RetentionPolicy;
  * @since 23.03.31
  */
 @Retention(RetentionPolicy.RUNTIME)
-public @interface QueryConverter {
+public @interface Converter {
 
     Class<? extends IConverter<?>> value() default NoConverter.class;
 }

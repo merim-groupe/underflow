@@ -27,5 +27,5 @@ public @interface Named {
      *
      * @return the query converter
      */
-    QueryConverter converter() default @QueryConverter();
+    Converter converter() default @Converter();
 }

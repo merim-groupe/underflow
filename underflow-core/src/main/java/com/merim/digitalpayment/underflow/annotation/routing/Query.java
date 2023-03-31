@@ -48,5 +48,5 @@ public @interface Query {
      *
      * @return the query converter
      */
-    QueryConverter converter() default @QueryConverter();
+    Converter converter() default @Converter();
 }

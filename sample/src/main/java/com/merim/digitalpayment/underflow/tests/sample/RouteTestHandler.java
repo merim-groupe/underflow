@@ -102,7 +102,7 @@ public class RouteTestHandler extends FlowTemplateHandler {
     @Path("/query-converter")
     public Result queryConveter(@Query(value = "data", required = true,
             defaultValue = @DefaultValue("123:456"),
-            converter = @QueryConverter(MyComplexObject.Converter.class)) final MyComplexObject complexObject) {
+            converter = @Converter(MyComplexObject.Converter.class)) final MyComplexObject complexObject) {
         return this.ok(String.format("%s === %s", complexObject.left, complexObject.right));
     }
 
@@ -120,7 +120,7 @@ public class RouteTestHandler extends FlowTemplateHandler {
     @GET
     @Path("/path-converter/(?<data>.+)")
     public Result pathConverter(@Named(value = "data",
-            converter = @QueryConverter(MyComplexObject.Converter.class)) final MyComplexObject complexObject) {
+            converter = @Converter(MyComplexObject.Converter.class)) final MyComplexObject complexObject) {
         return this.ok(String.format("%s === %s", complexObject.left, complexObject.right));
     }
 
