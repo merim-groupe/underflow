@@ -41,7 +41,19 @@ public class PathMatcher {
      * @param ignoreCase   the ignore case
      */
     public PathMatcher(final String relativePath, final String searchValue, final boolean ignoreCase) {
-        this(relativePath, null, searchValue, ignoreCase);
+        this(relativePath, null, searchValue, ignoreCase, false);
+    }
+
+    /**
+     * Instantiates a new Path matcher.
+     *
+     * @param relativePath the relative path
+     * @param searchValue  the search value
+     * @param ignoreCase   the ignore case
+     * @param lazySearch   the lazy search
+     */
+    public PathMatcher(final String relativePath, final String searchValue, final boolean ignoreCase, final boolean lazySearch) {
+        this(relativePath, null, searchValue, ignoreCase, lazySearch);
     }
 
     /**
@@ -53,6 +65,19 @@ public class PathMatcher {
      * @param ignoreCase   the ignore case
      */
     public PathMatcher(final String relativePath, final String searchPrefix, final String searchValue, final boolean ignoreCase) {
+        this(relativePath, searchPrefix, searchValue, ignoreCase, false);
+    }
+
+    /**
+     * Instantiates a new Path matcher.
+     *
+     * @param relativePath the relative path
+     * @param searchPrefix the search prefix
+     * @param searchValue  the search value
+     * @param ignoreCase   the ignore case
+     * @param lazySearch   the lazy search
+     */
+    public PathMatcher(final String relativePath, final String searchPrefix, final String searchValue, final boolean ignoreCase, final boolean lazySearch) {
         String search = "";
 
         if (searchPrefix != null && !searchPrefix.isEmpty()) {
@@ -67,16 +92,25 @@ public class PathMatcher {
             }
         }
 
+        final String endCapture;
+
         // Only add the search value if it is not an "empty path". This allows @Path("") and @Path("/")
         if (!searchValue.isEmpty() && !searchValue.equals("/")) {
             // Add / in front of the search because the slash after the previous search is not captured.
             if (!searchValue.startsWith("/")) {
-                search += "/";
+                search = "/" + search;
             }
             search += searchValue;
+            // If Lazy, keep capturing with /... or end of line.
+            // Else expect end.
+            endCapture = lazySearch ? "/|$" : "$";
+        } else {
+            // If Lazy, keep capturing with /... or end of line.
+            // Else either / or nothing followed by the end.
+            endCapture = lazySearch ? "/|$" : "/?$";
         }
 
-        final String format = String.format("^(?<pathCapture>%s)(?:/|$)", search);
+        final String format = String.format("^(?<pathCapture>%s)(?:%s)", search, endCapture);
         final int patternFlag = ignoreCase ? Pattern.CASE_INSENSITIVE : 0;
         final Pattern pattern = Pattern.compile(format, patternFlag);
 
@@ -92,7 +126,7 @@ public class PathMatcher {
      * @param path         the path
      */
     public PathMatcher(final String relativePath, final PathPrefix pathPrefix, final Path path) {
-        this(relativePath, pathPrefix == null ? null : pathPrefix.value(), path.value(), path.ignoreCase());
+        this(relativePath, pathPrefix == null ? null : pathPrefix.value(), path.value(), path.ignoreCase(), path.lazyMatch());
     }
 
     /**

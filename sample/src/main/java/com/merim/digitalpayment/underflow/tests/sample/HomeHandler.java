@@ -167,7 +167,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @return the result
      */
     @GET
-    @Path("/hasQueryParam")
+    @Path(value = "/hasQueryParam")
     public Result hasQueryParam(@Query(value = "download", required = false) final String download) {
         if (download == null) {
             return this.ok("download was not on the query parameters");

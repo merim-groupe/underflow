@@ -15,5 +15,10 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Converter {
 
+    /**
+     * Value class.
+     *
+     * @return the class
+     */
     Class<? extends IConverter<?>> value() default NoConverter.class;
 }

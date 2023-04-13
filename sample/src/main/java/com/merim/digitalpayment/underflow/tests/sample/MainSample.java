@@ -24,6 +24,9 @@ public class MainSample {
         MainSample.runServer();
     }
 
+    /**
+     * Run server.
+     */
     public static void runServer() {
         final UnderflowServer underflowServer = UnderflowServer.create()
                 .addHttpListener(8080, "localhost")
