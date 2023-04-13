@@ -29,12 +29,12 @@ public @interface Path {
     /**
      * Lazy match will not try to match the entire request.
      * Example:
-     * <pre>{@code
-     *  @Path(value="/api", lazyMatch=true)
+     * <pre>
+     * {@code @Path(value="/api", lazyMatch=true)}
      *   Will match with /api/foo, /api/bar, etc
-     *  @Path("/api")
+     * {@code @Path("/api")}
      *   Will only match with /api. /api/foo wont be a match.
-     * }</pre>
+     * </pre>
      *
      * @return the boolean
      */
