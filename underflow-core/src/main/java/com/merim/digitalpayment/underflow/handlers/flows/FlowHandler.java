@@ -32,7 +32,7 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
     /**
      * The Logger.
      */
-    final protected Logger logger;
+    protected final Logger logger;
 
     /**
      * The Flow security.
@@ -67,7 +67,7 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
                 context.addInjectable(this.flowSecurity);
                 if (this.flowSecurity != null) {
                     final Optional<?> optionalUser = this.flowSecurity.isLogged(exchange);
-                    optionalUser.ifPresent(user -> context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), user));
+                    context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), optionalUser.orElse(null));
 
                     if (secured.isPresent()) {
                         if (optionalUser.isPresent()) {

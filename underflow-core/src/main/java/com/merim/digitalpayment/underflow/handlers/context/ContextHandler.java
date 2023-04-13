@@ -7,6 +7,7 @@ import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.converters.Converters;
 import com.merim.digitalpayment.underflow.converters.IConverter;
 import com.merim.digitalpayment.underflow.converters.NoConverter;
+import com.merim.digitalpayment.underflow.enums.MethodType;
 import com.merim.digitalpayment.underflow.handlers.context.path.PathMatcher;
 import com.merim.digitalpayment.underflow.handlers.context.path.QueryString;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
@@ -64,6 +65,11 @@ public class ContextHandler implements MDCContext {
     private final Map<Class<?>, IConverter<?>> runtimeConverter;
 
     /**
+     * The Method type.
+     */
+    private MethodType methodType;
+
+    /**
      * The Method.
      */
     private Method method;
@@ -89,6 +95,7 @@ public class ContextHandler implements MDCContext {
         this.logger = LoggerFactory.getLogger(ContextHandler.class);
         this.handler = handler;
         this.exchange = exchange;
+        this.methodType = MethodType.UNSUPPORTED;
         this.method = null;
         this.pathMatcher = null;
         this.queryString = null;
@@ -108,13 +115,15 @@ public class ContextHandler implements MDCContext {
         final Class<? extends FlowHandler> hClass = this.handler.getClass();
 
         for (final Method classMethod : hClass.getMethods()) {
-            if (classMethod.getReturnType().isAssignableFrom(Result.class) && this.methodMatch(classMethod, annotationForMethod)) {
-                final PathMatcher matcher = this.getPathMatcher(hClass, classMethod);
+            final MethodType type = MethodType.resolve(classMethod);
+            if (type != MethodType.UNSUPPORTED && this.methodMatch(classMethod, annotationForMethod)) {
+                final PathMatcher matcher = this.getPathMatcher(hClass, classMethod, type);
                 final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), classMethod);
                 if (matcher.find() && parameter.checkRequired()) {
                     // Try to find "a match" or "the best match".
                     if (this.method == null || matcher.getRemainingPath().length() < this.pathMatcher.getRemainingPath().length()) {
                         this.method = classMethod;
+                        this.methodType = type;
                         this.pathMatcher = matcher;
                         this.queryString = parameter;
                     }
@@ -155,12 +164,14 @@ public class ContextHandler implements MDCContext {
      */
     private boolean hasFallbackMethod(final Class<?> aClass) {
         for (final Method classMethod : aClass.getMethods()) {
-            if (classMethod.isAnnotationPresent(Fallback.class) && classMethod.getReturnType().isAssignableFrom(Result.class)) {
+            final MethodType type = MethodType.resolve(classMethod);
+            if (classMethod.isAnnotationPresent(Fallback.class) && type != MethodType.UNSUPPORTED) {
                 final PathMatcher matcher = new PathMatcher(this.exchange.getRelativePath(), ".*", true);
                 final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), classMethod);
 
                 if (matcher.find() && parameter.checkRequired()) {
                     this.method = classMethod;
+                    this.methodType = type;
                     this.pathMatcher = matcher;
                     this.queryString = parameter;
 
@@ -297,21 +308,6 @@ public class ContextHandler implements MDCContext {
     }
 
     /**
-     * As optional or object object.
-     *
-     * @param pClass the p class
-     * @param value  the value
-     * @return the object
-     */
-    private Object asOptionalOrObject(final Class<?> pClass, final Object value) {
-        if (pClass.isAssignableFrom(Optional.class)) {
-            return Optional.ofNullable(value);
-        } else {
-            return value;
-        }
-    }
-
-    /**
      * Safe http execute.
      *
      * @param logic the logic
@@ -335,8 +331,13 @@ public class ContextHandler implements MDCContext {
      */
     private void executeMethod(final List<Object> methodArgs) {
         try {
-            final Result result = (Result) this.method.invoke(this.handler, methodArgs.toArray());
-            result.process(this.exchange);
+            if (this.methodType == MethodType.RESULT) {
+                final Result result = (Result) this.method.invoke(this.handler, methodArgs.toArray());
+                result.process(this.exchange);
+            } else if (this.methodType == MethodType.HANDLER) {
+                final FlowHandler subHandler = (FlowHandler) this.method.invoke(this.handler, methodArgs.toArray());
+                subHandler.handleRequest(this.exchange);
+            }
         } catch (final Throwable e) {
             Throwable cause = e;
             if (e instanceof InvocationTargetException) {
@@ -358,16 +359,17 @@ public class ContextHandler implements MDCContext {
      * @param method the method
      * @return the path matcher
      */
-    private PathMatcher getPathMatcher(final Class<? extends FlowHandler> hClass, final Method method) {
+    private PathMatcher getPathMatcher(final Class<? extends FlowHandler> hClass, final Method method, final MethodType type) {
         final PathPrefix pathPrefix = hClass.getAnnotation(PathPrefix.class);
+        final boolean forceLazy = (type == MethodType.HANDLER);
 
         if (method.isAnnotationPresent(Path.class)) {
             final Path path = method.getAnnotation(Path.class);
-            return new PathMatcher(this.exchange.getRelativePath(), pathPrefix, path);
+            return new PathMatcher(this.exchange.getRelativePath(), pathPrefix, path, forceLazy);
         } else if (method.isAnnotationPresent(Paths.class)) {
             final Paths paths = method.getAnnotation(Paths.class);
             for (final Path path : paths.value()) {
-                final PathMatcher pathMatcher = new PathMatcher(this.exchange.getRelativePath(), pathPrefix, path);
+                final PathMatcher pathMatcher = new PathMatcher(this.exchange.getRelativePath(), pathPrefix, path, forceLazy);
                 if (pathMatcher.find()) {
                     pathMatcher.reset();
                     return pathMatcher;

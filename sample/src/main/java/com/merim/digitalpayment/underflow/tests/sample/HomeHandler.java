@@ -6,6 +6,7 @@ import com.merim.digitalpayment.underflow.annotation.routing.Path;
 import com.merim.digitalpayment.underflow.annotation.routing.Query;
 import com.merim.digitalpayment.underflow.annotation.routing.QueryListProperty;
 import com.merim.digitalpayment.underflow.annotation.security.Secured;
+import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyCookieSecurity;
@@ -58,6 +59,18 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
         dataModel.put("user", user);
 
         return this.ok(template, dataModel);
+    }
+
+    /**
+     * Gets sub handler.
+     *
+     * @return the sub handler
+     */
+    @ALL
+    @Path("/subhandler")
+    public FlowHandler getSubHandler() {
+        this.logger.info("Delegating to sub-handler.");
+        return this;
     }
 
     /**
@@ -124,7 +137,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     /**
      * Secured page result.
      *
-     * @param user the user
      * @return the result
      */
     @GET
@@ -148,12 +160,11 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     /**
      * Exception result.
      *
-     * @param user the user
      * @return the result
      */
     @GET
     @Path("/exception")
-    public Result exception(final MyUserRepresentation user) {
+    public Result exception() {
         if (true) {
             throw new RuntimeException("Sample Exception");
         }

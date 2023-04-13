@@ -130,6 +130,18 @@ public class PathMatcher {
     }
 
     /**
+     * Instantiates a new Path matcher.
+     *
+     * @param relativePath the relative path
+     * @param pathPrefix   the path prefix
+     * @param path         the path
+     * @param forcedLazy   the forced lazy
+     */
+    public PathMatcher(final String relativePath, final PathPrefix pathPrefix, final Path path, final boolean forcedLazy) {
+        this(relativePath, pathPrefix == null ? null : pathPrefix.value(), path.value(), path.ignoreCase(), path.lazyMatch() || forcedLazy);
+    }
+
+    /**
      * Gets no match instance.
      *
      * @return the no match path matcher
