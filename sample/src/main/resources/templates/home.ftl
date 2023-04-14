@@ -44,11 +44,25 @@
         <#else>
             Not connected.
 
+            <p>GET Login form</p>
             <form method="GET" action="/login">
                 <label for="login-name">Name:</label><br>
                 <input id="login-name" type="text" name="name"/><br><br>
                 <label for="login-scope">Scope (web required to access secured page):</label><br>
                 <input id="login-scope" type="text" name="scope[]" value="web"/><br><br>
+                <input type="submit" value="Login">
+            </form>
+
+            <br/>
+
+            <p>POST Login form</p>
+            <form method="POST" action="/login">
+                <label for="login-name">Name:</label><br>
+                <input id="login-name" type="text" name="name"/><br><br>
+                <label for="login-scope">Scope (web required to access secured page):</label><br>
+                <input id="login-scope" type="text" name="scope[]" value="web"/><br><br>
+                <input id="login-scope" type="text" name="scope[]" value=""/><br><br>
+                <input id="login-scope" type="text" name="scope[]" value=""/><br><br>
                 <input type="submit" value="Login">
             </form>
         </#if>

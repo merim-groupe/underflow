@@ -37,6 +37,20 @@ public interface WebForm {
     }
 
     /**
+     * Has form data boolean.
+     *
+     * @param exchange the exchange
+     * @return the boolean
+     */
+    default boolean hasFormData(final HttpServerExchange exchange) {
+        try {
+            return this.getFormData(exchange) != null;
+        } catch (final IOException ignore) {
+            return false;
+        }
+    }
+
+    /**
      * Gets form.
      *
      * @param <T>          the type parameter

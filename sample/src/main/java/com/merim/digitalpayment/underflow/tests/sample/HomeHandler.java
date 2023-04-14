@@ -9,6 +9,7 @@ import com.merim.digitalpayment.underflow.annotation.security.Secured;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
+import com.merim.digitalpayment.underflow.tests.sample.form.LoginForm;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyCookieSecurity;
 import com.merim.digitalpayment.underflow.tests.sample.security.MySecurityScope;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyUserRepresentation;
@@ -24,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The Test handler.
@@ -103,6 +105,36 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     }
 
     /**
+     * Login result.
+     *
+     * @param exchange the exchange
+     * @param user     the user
+     * @param security the security
+     * @return the result
+     */
+    @POST
+    @Path("/login")
+    public Result login(final HttpServerExchange exchange,
+                        final MyUserRepresentation user,
+                        final MyCookieSecurity security) {
+        final Function<LoginForm, Result> successLogic = loginForm -> {
+            final MyUserRepresentation newUser = new MyUserRepresentation(loginForm.getName(), loginForm.getScopes());
+            return this.redirect("/")
+                    .withCookie(security.newCookie(newUser));
+        };
+
+        if (user == null) {
+            if (this.hasFormData(exchange)) {
+                return this.getForm(exchange, LoginForm.class, successLogic, e -> this.badRequest("Invalid form."));
+            } else {
+                return this.getJsonForm(exchange, LoginForm.class, successLogic);
+            }
+        } else {
+            return this.ok("ALREADY LOGGED IN !");
+        }
+    }
+
+    /**
      * Logout result.
      * <p>
      * Example : http://localhost:8080/logout
@@ -137,6 +169,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     /**
      * Secured page result.
      *
+     * @param user the user
      * @return the result
      */
     @GET

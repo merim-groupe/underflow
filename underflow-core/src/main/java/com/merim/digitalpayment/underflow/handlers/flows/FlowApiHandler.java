@@ -11,6 +11,7 @@ import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.results.http.JsonResults;
 import com.merim.digitalpayment.underflow.security.FlowSecurity;
 import com.merim.digitalpayment.underflow.utils.SmartGZipBodyInput;
+import io.undertow.server.HttpServerExchange;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,6 +87,40 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
     }
 
     /**
+     * Gets json body.
+     *
+     * @param <T>      the type parameter
+     * @param mapper   the mapper
+     * @param exchange the exchange
+     * @param tClass   the t class
+     * @param logic    the logic
+     * @return the json body
+     */
+    protected <T> Result getJsonBody(
+            final ObjectMapper mapper,
+            final HttpServerExchange exchange,
+            final Class<T> tClass,
+            final Function<T, Result> logic) {
+        return this.getJsonBody(mapper, exchange.getInputStream(), tClass, logic);
+    }
+
+    /**
+     * Gets json body.
+     *
+     * @param <T>      the type parameter
+     * @param exchange the exchange
+     * @param tClass   the t class
+     * @param logic    the logic
+     * @return the json body
+     */
+    protected <T> Result getJsonBody(
+            final HttpServerExchange exchange,
+            final Class<T> tClass,
+            final Function<T, Result> logic) {
+        return this.getJsonBody(Application.getMapper(), exchange, tClass, logic);
+    }
+
+    /**
      * Gets json form.
      *
      * @param <T>             the type parameter
@@ -124,6 +159,40 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
             final Class<T> tClass,
             final Function<T, Result> logic) {
         return this.getJsonForm(Application.getMapper(), bodyInputStream, tClass, logic);
+    }
+
+    /**
+     * Gets json form.
+     *
+     * @param <T>      the type parameter
+     * @param mapper   the mapper
+     * @param exchange the exchange
+     * @param tClass   the t class
+     * @param logic    the logic
+     * @return the json form
+     */
+    protected <T extends ApiForm> Result getJsonForm(
+            final ObjectMapper mapper,
+            final HttpServerExchange exchange,
+            final Class<T> tClass,
+            final Function<T, Result> logic) {
+        return this.getJsonForm(mapper, exchange.getInputStream(), tClass, logic);
+    }
+
+    /**
+     * Gets json form.
+     *
+     * @param <T>      the type parameter
+     * @param exchange the exchange
+     * @param tClass   the t class
+     * @param logic    the logic
+     * @return the json form
+     */
+    protected <T extends ApiForm> Result getJsonForm(
+            final HttpServerExchange exchange,
+            final Class<T> tClass,
+            final Function<T, Result> logic) {
+        return this.getJsonForm(Application.getMapper(), exchange, tClass, logic);
     }
 
     /**

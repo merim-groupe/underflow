@@ -20,12 +20,12 @@ import java.io.IOException;
  * @author Pierre Adam
  * @since 22.07.12
  */
-public class FlowTemplateHandler extends FlowHandler implements HtmlResults {
+public class FlowTemplateHandler extends FlowApiHandler implements HtmlResults {
 
     /**
      * The Template engine.
      */
-    final private TemplateEngine templateEngine;
+    private final TemplateEngine templateEngine;
 
     /**
      * Instantiates a new Flow template handler.
