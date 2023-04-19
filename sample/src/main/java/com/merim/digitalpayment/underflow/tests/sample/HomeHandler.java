@@ -1,10 +1,7 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
 import com.merim.digitalpayment.underflow.annotation.method.*;
-import com.merim.digitalpayment.underflow.annotation.routing.DefaultValue;
-import com.merim.digitalpayment.underflow.annotation.routing.Path;
-import com.merim.digitalpayment.underflow.annotation.routing.Query;
-import com.merim.digitalpayment.underflow.annotation.routing.QueryListProperty;
+import com.merim.digitalpayment.underflow.annotation.routing.*;
 import com.merim.digitalpayment.underflow.annotation.security.Secured;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
@@ -36,10 +33,16 @@ import java.util.function.Function;
 public class HomeHandler extends FlowTemplateHandler implements WebForm {
 
     /**
+     * The Stateless sub handler.
+     */
+    private final TestSubHandler statelessSubHandler;
+
+    /**
      * Instantiates a new Test handler.
      */
     public HomeHandler() {
         super("/templates", new MyCookieSecurity());
+        this.statelessSubHandler = new TestSubHandler();
     }
 
     /**
@@ -73,6 +76,19 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     public FlowHandler getSubHandler() {
         this.logger.info("Delegating to sub-handler.");
         return this;
+    }
+    
+    /**
+     * Gets sub handler.
+     *
+     * @param value the value
+     * @return the sub handler
+     */
+    @ALL
+    @Path("/statelessSubHandlerWithArgs/(?<value>[0-9]+)")
+    public FlowHandler getSubHandler(@Named("value") final Long value) {
+        this.logger.info("Delegating to sub-handler with the value {}", value);
+        return this.statelessSubHandler;
     }
 
     /**

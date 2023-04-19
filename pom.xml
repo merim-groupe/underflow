@@ -45,7 +45,7 @@
     </modules>
 
     <properties>
-        <revision>23.04u2-DEV</revision>
+        <revision>23.04u5-DEV</revision>
 
         <java.release>8</java.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

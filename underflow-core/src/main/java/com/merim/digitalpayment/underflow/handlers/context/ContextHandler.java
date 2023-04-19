@@ -45,6 +45,11 @@ public class ContextHandler implements MDCContext {
     private final Logger logger;
 
     /**
+     * The Handler logger.
+     */
+    private final Logger handlerLogger;
+
+    /**
      * The Handler.
      */
     private final FlowHandler handler;
@@ -63,6 +68,16 @@ public class ContextHandler implements MDCContext {
      * The Controller injectable.
      */
     private final Map<Class<?>, IConverter<?>> runtimeConverter;
+
+    /**
+     * The Matchers.
+     */
+    private final List<PathMatcher> matchers;
+
+    /**
+     * The Recalled named.
+     */
+    private final Map<String, String> recalledNamed;
 
     /**
      * The Method type.
@@ -89,10 +104,13 @@ public class ContextHandler implements MDCContext {
      *
      * @param handler  the handler
      * @param exchange the exchange
+     * @param matchers the previous matcher
      */
     public ContextHandler(final FlowHandler handler,
-                          final HttpServerExchange exchange) {
+                          final HttpServerExchange exchange,
+                          final List<PathMatcher> matchers) {
         this.logger = LoggerFactory.getLogger(ContextHandler.class);
+        this.handlerLogger = LoggerFactory.getLogger(handler.getClass());
         this.handler = handler;
         this.exchange = exchange;
         this.methodType = MethodType.UNSUPPORTED;
@@ -101,6 +119,8 @@ public class ContextHandler implements MDCContext {
         this.queryString = null;
         this.controllerInjectable = new HashMap<>();
         this.runtimeConverter = new HashMap<>();
+        this.matchers = matchers;
+        this.recalledNamed = new HashMap<>();
         this.controllerInjectable.put(FormData.class, () -> this.getFormData(this.exchange));
         this.controllerInjectable.put(HttpServerExchange.class, () -> this.exchange);
     }
@@ -113,6 +133,10 @@ public class ContextHandler implements MDCContext {
     public boolean isValid() {
         final Class<? extends Annotation> annotationForMethod = this.getAnnotationForMethod(this.exchange.getRequestMethod());
         final Class<? extends FlowHandler> hClass = this.handler.getClass();
+
+        if (!this.solveRecalledNamed()) {
+            return false;
+        }
 
         for (final Method classMethod : hClass.getMethods()) {
             final MethodType type = MethodType.resolve(classMethod);
@@ -136,6 +160,55 @@ public class ContextHandler implements MDCContext {
         }
 
         return this.hasFallbackMethod(hClass);
+    }
+
+    /**
+     * Solve recalled named boolean.
+     *
+     * @return the boolean
+     */
+    private boolean solveRecalledNamed() {
+        final MultipleRecallNamed multipleRecall = this.handler.getClass().getAnnotation(MultipleRecallNamed.class);
+        final RecallNamed singleRecall = this.handler.getClass().getAnnotation(RecallNamed.class);
+
+        if (singleRecall != null && !this.solveSingleRecallNamed(singleRecall)) {
+            return false;
+        }
+
+        if (multipleRecall != null) {
+            for (final RecallNamed recall : multipleRecall.value()) {
+                if (!this.solveSingleRecallNamed(recall)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Solve single recall named boolean.
+     *
+     * @param recall the recall
+     * @return the boolean
+     */
+    private boolean solveSingleRecallNamed(final RecallNamed recall) {
+        for (final PathMatcher matcher : this.matchers) {
+            if (matcher.hasGroup(recall.value())) {
+                final String value = matcher.getGroup(recall.value());
+                this.recalledNamed.put(recall.value(), value);
+                return true;
+            }
+        }
+
+        if (recall.failOnMissing()) {
+            return false;
+        } else {
+            this.handlerLogger.warn("A @RecallNamed(\"{}\") argument was requested for the handler {}. " +
+                            "This argument was not found on the path. Please check your @Path from your parent handlers.",
+                    recall.value(), this.handler.getClass().getSimpleName());
+            return true;
+        }
     }
 
     /**
@@ -237,9 +310,18 @@ public class ContextHandler implements MDCContext {
             final Query pQuery = parameter.getAnnotation(Query.class);
             final Optional<?> appInject = Application.getInstanceOptional(pClass);
 
-            if (pNamed != null && this.pathMatcher.hasGroup(pNamed.value())) {
-                final String value = this.pathMatcher.getGroup(pNamed.value());
-                methodArgs.add(this.queryConvert(pNamed.converter(), pClass, value));
+            if (pNamed != null) {
+                if (this.pathMatcher.hasGroup(pNamed.value())) {
+                    final String value = this.pathMatcher.getGroup(pNamed.value());
+                    methodArgs.add(this.queryConvert(pNamed.converter(), pClass, value));
+                } else if (this.recalledNamed.containsKey(pNamed.value())) {
+                    methodArgs.add(this.queryConvert(pNamed.converter(), pClass, this.recalledNamed.get(pNamed.value())));
+                } else {
+                    this.handlerLogger.warn("A @Named(\"{}\") argument was requested for the method {}.{}. " +
+                                    "This argument was not found on the path. Please check your @Path syntaxes.",
+                            pNamed.value(), this.handler.getClass().getSimpleName(), this.method.getName());
+                    methodArgs.add(null);
+                }
             } else if (pQuery != null) {
                 final Deque<String> values = this.queryString.getValuesFor(pQuery.value());
                 if (values.isEmpty() && pQuery.defaultValue().value().length > 0) {
@@ -263,9 +345,9 @@ public class ContextHandler implements MDCContext {
             } else if (appInject.isPresent()) {
                 methodArgs.add(appInject.get());
             } else {
-                LoggerFactory.getLogger(this.handler.getClass()).warn("Unable to resolve the argument <{}@{}> for the method {}." +
+                this.handlerLogger.warn("Unable to resolve the argument <{}@{}> for the method {}.{}." +
                                 "Please use the annotation @Named or @Query to specify how to resolve this argument.",
-                        parameter.getName(), pClass.getCanonicalName(), this.method.getName());
+                        parameter.getName(), pClass.getSimpleName(), this.handler.getClass().getSimpleName(), this.method.getName());
                 methodArgs.add(null);
             }
         }
@@ -336,7 +418,8 @@ public class ContextHandler implements MDCContext {
                 result.process(this.exchange);
             } else if (this.methodType == MethodType.HANDLER) {
                 final FlowHandler subHandler = (FlowHandler) this.method.invoke(this.handler, methodArgs.toArray());
-                subHandler.handleRequest(this.exchange);
+                this.matchers.add(this.pathMatcher);
+                subHandler.handleRequest(this.exchange, this.matchers);
             }
         } catch (final Throwable e) {
             Throwable cause = e;
@@ -357,6 +440,7 @@ public class ContextHandler implements MDCContext {
      *
      * @param hClass the h class
      * @param method the method
+     * @param type   the type
      * @return the path matcher
      */
     private PathMatcher getPathMatcher(final Class<? extends FlowHandler> hClass, final Method method, final MethodType type) {

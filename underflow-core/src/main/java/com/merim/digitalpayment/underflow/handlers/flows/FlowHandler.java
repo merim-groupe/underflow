@@ -2,6 +2,7 @@ package com.merim.digitalpayment.underflow.handlers.flows;
 
 import com.merim.digitalpayment.underflow.annotation.security.Secured;
 import com.merim.digitalpayment.underflow.handlers.context.ContextHandler;
+import com.merim.digitalpayment.underflow.handlers.context.path.PathMatcher;
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
 import com.merim.digitalpayment.underflow.mdc.MDCInterceptor;
 import com.merim.digitalpayment.underflow.mdc.MDCServerContext;
@@ -18,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -59,8 +62,18 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) {
+        this.handleRequest(exchange, new ArrayList<>());
+    }
+
+    /**
+     * Handle request.
+     *
+     * @param exchange        the exchange
+     * @param previousMatcher the previous matcher
+     */
+    public void handleRequest(final HttpServerExchange exchange, final List<PathMatcher> previousMatcher) {
         try (final MDCServerContext ignored = MDCInterceptor.getInstance().withMDCServerContext(exchange)) {
-            final ContextHandler context = new ContextHandler(this, exchange);
+            final ContextHandler context = new ContextHandler(this, exchange, previousMatcher);
 
             if (context.isValid()) {
                 final Optional<Secured> secured = context.requireSecurity();
