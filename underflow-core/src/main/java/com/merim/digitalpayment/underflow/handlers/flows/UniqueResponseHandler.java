@@ -4,6 +4,8 @@ import com.merim.digitalpayment.underflow.annotation.method.ALL;
 import com.merim.digitalpayment.underflow.annotation.routing.Path;
 import com.merim.digitalpayment.underflow.results.Result;
 
+import java.util.function.Supplier;
+
 /**
  * UniqueResponseHandler.
  *
@@ -15,14 +17,23 @@ public class UniqueResponseHandler extends FlowHandler {
     /**
      * The Response.
      */
-    private final Result response;
+    private final Supplier<Result> response;
+
+    /**
+     * Instantiates a new Unique response handler.
+     *
+     * @param result the result
+     */
+    public UniqueResponseHandler(final Result result) {
+        this.response = () -> result;
+    }
 
     /**
      * Instantiates a new Unique response handler.
      *
      * @param response the response
      */
-    public UniqueResponseHandler(final Result response) {
+    public UniqueResponseHandler(final Supplier<Result> response) {
         this.response = response;
     }
 
@@ -34,6 +45,6 @@ public class UniqueResponseHandler extends FlowHandler {
     @ALL
     @Path(value = "", lazyMatch = true)
     public Result getResponse() {
-        return this.response;
+        return this.response.get();
     }
 }
