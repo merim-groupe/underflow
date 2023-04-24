@@ -36,6 +36,14 @@ public interface UnderflowServer {
     UnderflowServer addPrefixPath(final String prefix, final HttpHandler handler);
 
     /**
+     * With request logger underflow server.
+     *
+     * @param enable the enable
+     * @return the underflow server
+     */
+    UnderflowServer withRequestLogger(final boolean enable);
+
+    /**
      * Add shutdown hook.
      *
      * @param hook the hook

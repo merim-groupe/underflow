@@ -4,7 +4,6 @@ import com.merim.digitalpayment.underflow.handlers.flows.FlowAssetsHandler;
 import com.merim.digitalpayment.underflow.handlers.flows.assets.ResourceAssetLoader;
 import com.merim.digitalpayment.underflow.handlers.http.CORSHandler;
 import com.merim.digitalpayment.underflow.handlers.http.CORSLegacyHandler;
-import com.merim.digitalpayment.underflow.handlers.http.RequestLoggerHandler;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 
 /**
@@ -31,14 +30,15 @@ public class MainSample {
         final UnderflowServer underflowServer = UnderflowServer.create()
                 .addHttpListener(8080, "localhost")
                 .withShutdownSignalHandling()
-                .addPrefixPath("/", new RequestLoggerHandler(new HomeHandler()))
-                .addPrefixPath("/assets", new RequestLoggerHandler(new FlowAssetsHandler(new ResourceAssetLoader(MainSample.class, "/assets"))))
-                .addPrefixPath("/routes", new RequestLoggerHandler(new RouteTestHandler()))
-                .addPrefixPath("/event", new RequestLoggerHandler(new ServerEventTestHandler()))
-                .addPrefixPath("/api", new RequestLoggerHandler(new ApiTestHandler()))
-                .addPrefixPath("/api/CORS", new RequestLoggerHandler(new CORSHandler(new ApiTestHandler())))
-                .addPrefixPath("/api/CORSLegacy", new RequestLoggerHandler(new CORSLegacyHandler(new ApiTestHandler(), true)))
-                .addPrefixPath("/prefix", new RequestLoggerHandler(new PathPrefixHandler()))
+                .addPrefixPath("/", new HomeHandler())
+                .addPrefixPath("/assets", new FlowAssetsHandler(new ResourceAssetLoader(MainSample.class, "/assets")))
+                .addPrefixPath("/routes", new RouteTestHandler())
+                .addPrefixPath("/event", new ServerEventTestHandler())
+                .addPrefixPath("/api", new ApiTestHandler())
+                .addPrefixPath("/api/CORS", new CORSHandler(new ApiTestHandler()))
+                .addPrefixPath("/api/CORSLegacy", new CORSLegacyHandler(new ApiTestHandler(), true))
+                .addPrefixPath("/prefix", new PathPrefixHandler())
+                .withRequestLogger(true)
                 .addToShutdown(() -> {
                     System.out.println("Shutting down server !");
                 });

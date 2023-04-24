@@ -18,5 +18,10 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.merim.digitalpayment.underflow</groupId>
+            <artifactId>underflow-core</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 </project>

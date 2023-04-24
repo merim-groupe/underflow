@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.server;
 
+import com.merim.digitalpayment.underflow.handlers.http.RequestLoggerHandler;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -9,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -33,6 +36,11 @@ class UnderflowServerImpl implements UnderflowServer {
     private final Logger logger;
 
     /**
+     * The Underlying handlers.
+     */
+    private final Map<String, HttpHandler> handlers;
+
+    /**
      * The Path handler.
      */
     private final PathHandler pathHandler;
@@ -53,6 +61,11 @@ class UnderflowServerImpl implements UnderflowServer {
     private final Undertow.Builder builder;
 
     /**
+     * The Use logger handler.
+     */
+    private boolean useLoggerHandler;
+
+    /**
      * The Server.
      */
     private Undertow server;
@@ -67,10 +80,12 @@ class UnderflowServerImpl implements UnderflowServer {
      */
     public UnderflowServerImpl() {
         this.logger = LoggerFactory.getLogger(UnderflowServerImpl.class);
+        this.handlers = new HashMap<>();
         this.pathHandler = Handlers.path();
         this.shutdownHandler = new GracefulShutdownHandler(this.pathHandler);
         this.shutdownHooks = new ArrayList<>();
         this.shutdownSignalHandling = false;
+        this.useLoggerHandler = false;
         this.builder = Undertow.builder()
                 .setIoThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2, 2))
                 .setWorkerThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2 * 8, 16));
@@ -78,7 +93,13 @@ class UnderflowServerImpl implements UnderflowServer {
 
     @Override
     public UnderflowServerImpl addPrefixPath(final String prefix, final HttpHandler handler) {
-        this.pathHandler.addPrefixPath(prefix, handler);
+        this.handlers.put(prefix, handler);
+        return this;
+    }
+
+    @Override
+    public UnderflowServer withRequestLogger(final boolean enable) {
+        this.useLoggerHandler = enable;
         return this;
     }
 
@@ -111,6 +132,14 @@ class UnderflowServerImpl implements UnderflowServer {
         if (this.shutdownSignalHandling) {
             ShutdownHandlingFactory.get().accept(this);
         }
+
+        this.handlers.forEach((path, handler) -> {
+            if (this.useLoggerHandler) {
+                this.pathHandler.addPrefixPath(path, new RequestLoggerHandler(handler));
+            } else {
+                this.pathHandler.addPrefixPath(path, handler);
+            }
+        });
 
         //  Create the Http Server
         this.server = this.builder
