@@ -1,6 +1,7 @@
 package com.merim.digitalpayment.underflow.server;
 
 import com.merim.digitalpayment.underflow.handlers.http.RequestLoggerHandler;
+import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -9,10 +10,7 @@ import io.undertow.server.handlers.PathHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -38,7 +36,7 @@ class UnderflowServerImpl implements UnderflowServer {
     /**
      * The Underlying handlers.
      */
-    private final Map<String, HttpHandler> handlers;
+    private final Map<String, HandlerData> handlers;
 
     /**
      * The Path handler.
@@ -92,8 +90,8 @@ class UnderflowServerImpl implements UnderflowServer {
     }
 
     @Override
-    public UnderflowServerImpl addPrefixPath(final String prefix, final HttpHandler handler) {
-        this.handlers.put(prefix, handler);
+    public UnderflowServerImpl addPrefixPath(final String prefix, final HttpHandler handler, final UnderflowOption... options) {
+        this.handlers.put(prefix, new HandlerData(handler, options));
         return this;
     }
 
@@ -133,11 +131,12 @@ class UnderflowServerImpl implements UnderflowServer {
             ShutdownHandlingFactory.get().accept(this);
         }
 
-        this.handlers.forEach((path, handler) -> {
-            if (this.useLoggerHandler) {
-                this.pathHandler.addPrefixPath(path, new RequestLoggerHandler(handler));
+        this.handlers.forEach((path, handlerData) -> {
+            if ((this.useLoggerHandler || handlerData.hasOption(UnderflowOption.WITH_REQUEST_LOGGER)) &&
+                    !handlerData.hasOption(UnderflowOption.WITHOUT_REQUEST_LOGGER)) {
+                this.pathHandler.addPrefixPath(path, new RequestLoggerHandler(handlerData.getHandler()));
             } else {
-                this.pathHandler.addPrefixPath(path, handler);
+                this.pathHandler.addPrefixPath(path, handlerData.getHandler());
             }
         });
 
@@ -184,6 +183,61 @@ class UnderflowServerImpl implements UnderflowServer {
                     this.logger.error("Failed to shutdown web server !");
                 }
             }).start());
+        }
+    }
+
+    /**
+     * The type Handler data.
+     */
+    private static class HandlerData {
+
+        /**
+         * The Handler.
+         */
+        private final HttpHandler handler;
+
+        /**
+         * The Options.
+         */
+        private final Set<UnderflowOption> options;
+
+        /**
+         * Instantiates a new Handler data.
+         *
+         * @param handler the handler
+         * @param options the options
+         */
+        public HandlerData(final HttpHandler handler, final UnderflowOption... options) {
+            this.handler = handler;
+            this.options = new HashSet<>(Arrays.asList(options));
+        }
+
+        /**
+         * Gets handler.
+         *
+         * @return the handler
+         */
+        public HttpHandler getHandler() {
+            return this.handler;
+        }
+
+        /**
+         * Gets options.
+         *
+         * @return the options
+         */
+        public Collection<UnderflowOption> getOptions() {
+            return this.options;
+        }
+
+        /**
+         * Has option boolean.
+         *
+         * @param option the option
+         * @return the boolean
+         */
+        public boolean hasOption(final UnderflowOption option) {
+            return this.options.contains(option);
         }
     }
 }

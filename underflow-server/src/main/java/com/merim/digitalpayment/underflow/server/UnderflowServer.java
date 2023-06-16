@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.server;
 
+import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public interface UnderflowServer {
      * @param handler the handler
      * @return the web server
      */
-    UnderflowServer addPrefixPath(final String prefix, final HttpHandler handler);
+    UnderflowServer addPrefixPath(final String prefix, final HttpHandler handler, final UnderflowOption... options);
 
     /**
      * With request logger underflow server.
