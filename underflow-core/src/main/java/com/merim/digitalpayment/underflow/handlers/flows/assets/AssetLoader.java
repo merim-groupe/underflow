@@ -1,6 +1,6 @@
 package com.merim.digitalpayment.underflow.handlers.flows.assets;
 
-import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * AssetLoader.
@@ -11,10 +11,10 @@ import java.io.InputStream;
 public interface AssetLoader {
 
     /**
-     * Open input stream.
+     * Load assets representation.
      *
      * @param path the path
-     * @return the input stream
+     * @return the assets representation
      */
-    InputStream open(String path);
+    Optional<AssetRepresentation> load(String path);
 }
