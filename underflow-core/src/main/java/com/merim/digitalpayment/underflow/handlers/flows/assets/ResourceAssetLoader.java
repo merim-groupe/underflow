@@ -64,11 +64,11 @@ public class ResourceAssetLoader implements AssetLoader {
         final String fullPath = this.convertPathToResource(Paths.get(this.basePath.toString(), path));
         final String etag;
 
-        if (this.etagCache.containsKey(fullPath)) {
+        if (this.etagCache != null && this.etagCache.containsKey(fullPath)) {
             etag = this.etagCache.get(fullPath);
         } else {
             etag = this.getResourceEtag(fullPath);
-            if (etag != null) {
+            if (etag != null && this.etagCache != null) {
                 this.etagCache.put(fullPath, etag);
             }
         }
