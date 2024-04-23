@@ -58,4 +58,9 @@ public class UnderflowTestApplication implements UnderflowTestServer {
     public void onServerCreated(@NonNull final UnderflowServer server) {
         this.application.onServerCreated(server);
     }
+
+    @Override
+    public void onServerStart(@NonNull final UnderflowServer server) {
+        this.application.onServerStart(server);
+    }
 }

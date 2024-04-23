@@ -68,6 +68,7 @@ public interface UnderflowApplication {
 
         try {
             final MainThreadLogic mainThreadLogic = application.mainThreadLogic();
+            application.onServerStart(server);
             if (mainThreadLogic == null) {
                 server.startAndWait();
             } else {
@@ -91,14 +92,14 @@ public interface UnderflowApplication {
     }
 
     /**
-     * Create server underflow server.
+     * Provide a server builder for the application.
      *
      * @return the underflow server
      */
     UnderflowServerBuilder createServerBuilder();
 
     /**
-     * On server created.
+     * Callback called just after the server being build from the builder.
      *
      * @param server the server
      */
@@ -106,7 +107,18 @@ public interface UnderflowApplication {
     }
 
     /**
-     * Main thread logic consumer.
+     * Callback called prior to the server being started.
+     *
+     * @param server the server
+     */
+    default void onServerStart(final UnderflowServer server) {
+    }
+
+    /**
+     * Provide a main thread logic.
+     * If this method is implemented you must be blocking while the server is running.
+     * One way of achieving this is to call UnderflowServer.waitForExit().
+     * Exiting the main thread logic will lead to the web server shutting down.
      *
      * @return the consumer
      */

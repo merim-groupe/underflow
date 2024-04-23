@@ -26,6 +26,13 @@ public interface UnderflowTestServer {
     void onServerCreated(final UnderflowServer server);
 
     /**
+     * On server created.
+     *
+     * @param server the server
+     */
+    void onServerStart(final UnderflowServer server);
+
+    /**
      * Build test server underflow server.
      *
      * @param port the port

@@ -46,13 +46,22 @@ public class UnderflowServerBuilder {
     private String host;
 
     /**
+     * Has the build been aborted.
+     */
+    private boolean aborted;
+
+    /**
      * Instantiates a new Underflow server builder.
+     *
+     * @param host the host
+     * @param port the port
      */
     UnderflowServerBuilder(@NonNull final String host, final int port) {
         this.handlers = new HashMap<>();
         this.shutdownHooks = new ArrayList<>();
         this.port = port;
         this.host = host;
+        this.aborted = false;
     }
 
     /**
@@ -103,6 +112,17 @@ public class UnderflowServerBuilder {
      * @return the underflow server
      */
     public UnderflowServer build() {
+        if (this.aborted) {
+            throw new IllegalStateException("Underflow server build has been previously aborted");
+        }
         return new UnderflowServerImpl(this.host, this.port, this.handlers, this.shutdownHooks);
+    }
+
+    /**
+     * Abort build and run shutdown hooks.
+     */
+    public void abortBuildAndShutdown() {
+        this.aborted = true;
+        this.shutdownHooks.forEach(Runnable::run);
     }
 }
