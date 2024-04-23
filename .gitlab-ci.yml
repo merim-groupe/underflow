@@ -1,7 +1,15 @@
-#https://gitlab.reboot-qsr.com/devops/ci-template/-/blob/master/JavaLib-Pipelines.gitlab-ci.yml
 include:
   - project: 'devops/ci-template'
-    file: '/JavaLib-Pipelines.gitlab-ci.yml'
+    file: '/java-build.gitlab-ci.yml'
 
-variables:
-  MAVEN_CLI_OPTS: "-P release"
+build:
+  extends: .maven-build
+
+deploy:
+  extends: .maven-deploy
+  needs:
+    - build
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_TAG == null
+      when: manual
