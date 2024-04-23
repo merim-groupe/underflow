@@ -4,6 +4,8 @@ import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.server.HttpHandler;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -33,6 +35,6 @@ public class HandlerData {
      */
     public HandlerData(final HttpHandler handler, final UnderflowOption... options) {
         this.handler = handler;
-        this.options = List.of(options);
+        this.options = new ArrayList<>(Arrays.asList(options));
     }
 }

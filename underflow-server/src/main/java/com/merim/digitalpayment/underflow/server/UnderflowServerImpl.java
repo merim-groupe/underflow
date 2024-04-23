@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +77,7 @@ class UnderflowServerImpl implements UnderflowServer {
     public UnderflowServerImpl(@NonNull final String host,
                                final int port,
                                @NonNull final Map<String, HandlerData> handlers) {
-        this(host, port, handlers, List.of());
+        this(host, port, handlers, new ArrayList<>());
     }
 
     /**
