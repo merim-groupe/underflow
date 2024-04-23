@@ -8,27 +8,33 @@ import lombok.NonNull;
 /**
  * UnderflowTestServer.
  *
+ * @param <A> the type parameter
  * @author Pierre Adam
  * @since 24.04.22
  */
-public class UnderflowTestApplication implements UnderflowTestServer {
+public class UnderflowTestApplication<A extends UnderflowApplication> implements UnderflowTestServer {
+
+    /**
+     * The Application class.
+     */
+    private final Class<A> applicationClass;
+
+    /**
+     * The Args.
+     */
+    private final String[] args;
 
     /**
      * The Application.
      */
-    private final UnderflowApplication application;
-
-    /**
-     * The Application.
-     */
-    private final UnderflowServerBuilder serverBuilder;
+    private UnderflowApplication application;
 
     /**
      * Instantiates a new Underflow test application.
      *
      * @param underflowApplicationClass the underflow application class
      */
-    public UnderflowTestApplication(@NonNull final Class<? extends UnderflowApplication> underflowApplicationClass) {
+    public UnderflowTestApplication(@NonNull final Class<A> underflowApplicationClass) {
         this(underflowApplicationClass, new String[0]);
     }
 
@@ -38,20 +44,36 @@ public class UnderflowTestApplication implements UnderflowTestServer {
      * @param underflowApplicationClass the underflow application class
      * @param args                      the args
      */
-    public UnderflowTestApplication(@NonNull final Class<? extends UnderflowApplication> underflowApplicationClass,
+    public UnderflowTestApplication(@NonNull final Class<A> underflowApplicationClass,
                                     @NonNull final String[] args) {
+        this.applicationClass = underflowApplicationClass;
+        this.args = args;
+        this.application = null;
+    }
+
+    /**
+     * Create application underflow application.
+     *
+     * @return the underflow application
+     */
+    public UnderflowApplication createApplication() {
         try {
-            this.application = underflowApplicationClass.getDeclaredConstructor().newInstance();
-            this.application.initialize(args);
-            this.serverBuilder = this.application.createServerBuilder();
+            return this.applicationClass.getDeclaredConstructor().newInstance();
         } catch (final Exception e) {
-            throw new RuntimeException(String.format("An error occurred while instantiating underflow application %s.", underflowApplicationClass.getName()), e);
+            throw new RuntimeException(String.format("An error occurred while instantiating underflow application %s.",
+                    this.applicationClass.getName()), e);
         }
     }
 
     @Override
     public UnderflowServerBuilder getUnderflowServerBuilder() {
-        return this.serverBuilder;
+        if (this.application == null) {
+            // Lazy load of the application
+            this.application = this.createApplication();
+            this.application.initialize(this.args);
+        }
+
+        return this.application.createServerBuilder();
     }
 
     @Override
