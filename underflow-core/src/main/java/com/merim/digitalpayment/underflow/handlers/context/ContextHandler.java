@@ -2,7 +2,6 @@ package com.merim.digitalpayment.underflow.handlers.context;
 
 import com.merim.digitalpayment.underflow.annotation.method.*;
 import com.merim.digitalpayment.underflow.annotation.routing.*;
-import com.merim.digitalpayment.underflow.annotation.security.Secured;
 import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.converters.Converters;
 import com.merim.digitalpayment.underflow.converters.IConverter;
@@ -13,11 +12,14 @@ import com.merim.digitalpayment.underflow.handlers.context.path.QueryString;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
 import com.merim.digitalpayment.underflow.results.Result;
+import com.merim.digitalpayment.underflow.security.annotations.Secured;
+import io.undertow.server.BlockingHttpExchange;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.util.HttpString;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,6 +89,7 @@ public class ContextHandler implements MDCContext {
     /**
      * The Method.
      */
+    @Getter
     private Method method;
 
     /**
@@ -221,15 +224,6 @@ public class ContextHandler implements MDCContext {
     }
 
     /**
-     * Gets method.
-     *
-     * @return the method
-     */
-    public Method getMethod() {
-        return this.method;
-    }
-
-    /**
      * Check that there is a fallback method for the call.
      *
      * @param aClass the class of the controller
@@ -267,9 +261,14 @@ public class ContextHandler implements MDCContext {
         } else {
             if (!this.exchange.isBlocking()) {
                 // Closable to fix after migration to Java 9+.
-                this.exchange.startBlocking();
+                try (final BlockingHttpExchange blocking = this.exchange.startBlocking()) {
+                    this.run();
+                } catch (final IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                this.run();
             }
-            this.run();
         }
     }
 

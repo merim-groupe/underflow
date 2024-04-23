@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.merim.digitalpayment.underflow</groupId>
-    <artifactId>build</artifactId>
+    <artifactId>underflow-bom</artifactId>
     <packaging>pom</packaging>
-    <version>${revision}</version>
+    <version>${project.version}</version>
 
     <organization>
         <name>Merim Digital Payment</name>
@@ -21,6 +21,7 @@
             <url>https://gitlab.reboot-qsr.com/api/v4/projects/152/packages/maven</url>
         </repository>
     </repositories>
+
     <distributionManagement>
         <repository>
             <id>gitlab-bk</id>
@@ -32,52 +33,86 @@
         </snapshotRepository>
     </distributionManagement>
 
-    <modules>
-        <module>underflow-api-form</module>
-        <module>underflow-context</module>
-        <module>underflow-converters</module>
-        <module>underflow-security</module>
-        <module>underflow-server</module>
-        <module>underflow-template</module>
-        <module>underflow-utils</module>
-        <module>underflow-core</module>
-        <module>sample</module>
-    </modules>
-
     <properties>
-        <revision>23.07-DEV</revision>
+        <project.version>24.04-DEV</project.version>
 
-        <java.release>8</java.release>
+        <maven.compiler.release>8</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <maven.install.skip>true</maven.install.skip>
         <maven.deploy.skip>true</maven.deploy.skip>
 
-        <undertow-version>2.3.7.Final</undertow-version>
+        <!-- https://mvnrepository.com/artifact/io.undertow/undertow-core -->
+        <undertow.version>2.3.13.Final</undertow.version>
 
         <!-- Common -->
-        <jackson-version>2.13.4</jackson-version> <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-        <apache-commons-io-version>2.11.0</apache-commons-io-version> <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-        <apache-commons-codec-version>1.16.0</apache-commons-codec-version> <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+        <jackson.version>2.17.0</jackson.version>
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <apache-commons-io.version>2.16.1</apache-commons-io.version>
+        <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
+        <apache-commons-codec.version>1.16.1</apache-commons-codec.version>
 
         <!-- Templates -->
-        <freemarker-version>2.3.31</freemarker-version> <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
+
+        <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
+        <freemarker.version>2.3.32</freemarker.version>
+
+        <!-- Logging -->
+
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <slf4j.version>1.7.36</slf4j.version><!-- MAXIMUM Java 1.8 Version -->
+
+        <!-- Testing -->
+
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+        <junit.version>5.9.0</junit.version>
+        <!-- https://mvnrepository.com/artifact/io.rest-assured/rest-assured -->
+        <rest-assured.version>5.4.0</rest-assured.version>
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
+        <mockito.version>5.11.0</mockito.version>
+        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+        <logback-classic.version>1.2.13</logback-classic.version><!-- MAXIMUM Java 1.8 Version -->
+
+        <!-- Build -->
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok-->
+        <lombok.version>1.18.30</lombok.version>
     </properties>
 
+    <modules>
+        <module>sample</module>
+        <module>underflow-api-form</module>
+        <module>underflow-context</module>
+        <module>underflow-converters</module>
+        <module>underflow-core</module>
+        <module>underflow-security</module>
+        <module>underflow-server</module>
+        <module>underflow-template</module>
+        <module>underflow-test</module>
+        <module>underflow-utils</module>
+    </modules>
+
     <dependencies>
-        <!-- slf4j -->
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.36</version>  <!-- MAXIMUM Java 1.8 Version -->
+            <version>${slf4j.version}</version>
         </dependency>
-
         <!-- https://mvnrepository.com/artifact/io.undertow/undertow-core -->
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
-            <version>${undertow-version}</version>
+            <version>${undertow.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -85,17 +120,73 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.9.0</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.11</version> <!-- MAXIMUM Java 1.8 Version -->
+            <version>${logback-classic.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-api-form</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-context</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-converters</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-template</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-utils</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-core</artifactId>
+                <version>${undertow.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <finalName>${project.name}</finalName>
@@ -133,7 +224,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>${java.release}</release>
+                    <release>${maven.compiler.release}</release>
                 </configuration>
                 <executions>
                     <execution>
@@ -142,7 +233,7 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <release>${java.release}</release>
+                            <release>${maven.compiler.release}</release>
                         </configuration>
                     </execution>
                     <execution>
@@ -152,7 +243,7 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <release>${java.release}</release>
+                            <release>${maven.compiler.release}</release>
                             <compileSourceRoots>
                                 <compileSourceRoot>${project.basedir}/src/main/java8</compileSourceRoot>
                             </compileSourceRoots>
@@ -233,7 +324,7 @@
                         <configuration>
                             <encoding>UTF-8</encoding>
                             <show>package</show>
-                            <source>${java.release}</source>
+                            <source>${maven.compiler.release}</source>
                             <quiet>true</quiet>
                         </configuration>
                         <executions>
@@ -308,7 +399,7 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.8.1</version>
                         <configuration>
-                            <release>${java.release}</release>
+                            <release>${maven.compiler.release}</release>
                         </configuration>
                         <executions>
                             <execution>
@@ -317,7 +408,7 @@
                                     <goal>testCompile</goal>
                                 </goals>
                                 <configuration>
-                                    <release>${java.release}</release>
+                                    <release>${maven.compiler.release}</release>
                                 </configuration>
                             </execution>
                         </executions>

@@ -6,8 +6,8 @@
 
     <parent>
         <groupId>com.merim.digitalpayment.underflow</groupId>
-        <artifactId>build</artifactId>
-        <version>${revision}</version>
+        <artifactId>underflow-bom</artifactId>
+        <version>${project.version}</version>
     </parent>
 
     <groupId>com.merim.digitalpayment.underflow</groupId>
@@ -22,28 +22,31 @@
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-core</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-template</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-server</artifactId>
-            <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>com.merim.digitalpayment.underflow</groupId>
+            <artifactId>underflow-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.undertow/undertow-core -->
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
-            <version>${undertow-version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.11</version> <!-- MAXIMUM Java 1.8 Version -->
+            <version>${logback-classic.version}</version> <!-- MAXIMUM Java 1.8 Version -->
         </dependency>
     </dependencies>
 </project>

@@ -1,4 +1,4 @@
-package com.merim.digitalpayment.underflow.tests.units;
+package com.merim.digitalpayment.underflow.core.tests;
 
 import com.merim.digitalpayment.underflow.handlers.context.path.PathMatcher;
 import org.junit.jupiter.api.*;

@@ -1,12 +1,5 @@
 package com.merim.digitalpayment.underflow.server;
 
-import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
-import io.undertow.Undertow;
-import io.undertow.server.HttpHandler;
-import org.slf4j.LoggerFactory;
-
-import java.util.function.Consumer;
-
 /**
  * UnderflowServer is a standardized implementation of an Undertow server.
  * The goal is to provide a standardized way of building a web server with
@@ -23,75 +16,23 @@ public interface UnderflowServer {
      *
      * @return the underflow server
      */
-    static UnderflowServer create() {
-        return new UnderflowServerImpl();
+    static UnderflowServerBuilder builder(final String host, final int port) {
+        return new UnderflowServerBuilder(host, port);
     }
 
     /**
-     * Add prefix path web server.
+     * Gets port.
      *
-     * @param prefix  the prefix
-     * @param handler the handler
-     * @return the web server
+     * @return the port
      */
-    UnderflowServer addPrefixPath(final String prefix, final HttpHandler handler, final UnderflowOption... options);
+    int getPort();
 
     /**
-     * With request logger underflow server.
+     * Get port string.
      *
-     * @param enable the enable
-     * @return the underflow server
+     * @return the string
      */
-    UnderflowServer withRequestLogger(final boolean enable);
-
-    /**
-     * Add shutdown hook.
-     *
-     * @param hook the hook
-     * @return the web server
-     */
-    UnderflowServer addShutdownHook(final Runnable hook);
-
-    /**
-     * Add shutdown hook.
-     *
-     * @param closeable the closeable
-     * @return the web server
-     */
-    default UnderflowServer addToShutdown(final AutoCloseable closeable) {
-        this.addShutdownHook(() -> {
-            try {
-                closeable.close();
-            } catch (final Exception e) {
-                LoggerFactory.getLogger(this.getClass()).error("An error occurred while shutting down.", e);
-            }
-        });
-        return this;
-    }
-
-    /**
-     * Add listen web server.
-     *
-     * @param port the port
-     * @param host the host
-     * @return the web server
-     */
-    UnderflowServer addHttpListener(final int port, final String host);
-
-    /**
-     * Alter builder web server.
-     *
-     * @param consumer the consumer
-     * @return the web server
-     */
-    UnderflowServer alterBuilder(final Consumer<Undertow.Builder> consumer);
-
-    /**
-     * With shutdown handling web server.
-     *
-     * @return the web server
-     */
-    UnderflowServer withShutdownSignalHandling();
+    String getHost();
 
     /**
      * Start the service

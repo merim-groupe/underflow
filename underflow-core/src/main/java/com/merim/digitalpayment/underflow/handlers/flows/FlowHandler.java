@@ -1,6 +1,5 @@
 package com.merim.digitalpayment.underflow.handlers.flows;
 
-import com.merim.digitalpayment.underflow.annotation.security.Secured;
 import com.merim.digitalpayment.underflow.handlers.context.ContextHandler;
 import com.merim.digitalpayment.underflow.handlers.context.path.PathMatcher;
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
@@ -12,6 +11,7 @@ import com.merim.digitalpayment.underflow.results.http.SenderHttpResult;
 import com.merim.digitalpayment.underflow.results.http.SenderResults;
 import com.merim.digitalpayment.underflow.results.http.StandardResults;
 import com.merim.digitalpayment.underflow.security.FlowSecurity;
+import com.merim.digitalpayment.underflow.security.annotations.Secured;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;

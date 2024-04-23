@@ -3,6 +3,7 @@ package com.merim.digitalpayment.underflow.security;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.HttpString;
+import lombok.NonNull;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
@@ -23,12 +24,13 @@ public abstract class HeaderSecurity<T, U extends Annotation> extends AFlowSecur
      * @param userRepresentationClass the user representation class
      * @param scopeClass              the scope class
      */
-    public HeaderSecurity(final Class<T> userRepresentationClass, final Class<U> scopeClass) {
+    public HeaderSecurity(@NonNull final Class<T> userRepresentationClass,
+                          @NonNull final Class<U> scopeClass) {
         super(userRepresentationClass, scopeClass);
     }
 
     @Override
-    public Optional<T> isLogged(final HttpServerExchange exchange) {
+    public Optional<T> isLogged(@NonNull final HttpServerExchange exchange) {
         final HeaderValues authorization = exchange.getRequestHeaders().get(new HttpString("authorization"));
 
         if (authorization == null || authorization.get(0) == null || authorization.get(0).trim().isEmpty()) {

@@ -3,6 +3,7 @@ package com.merim.digitalpayment.underflow.security;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
+import lombok.NonNull;
 
 import java.lang.annotation.Annotation;
 import java.sql.Date;
@@ -31,13 +32,15 @@ public abstract class CookieSecurity<T, U extends Annotation> extends AFlowSecur
      * @param userRepresentationClass the user representation class
      * @param scopeClass              the scope class
      */
-    public CookieSecurity(final String cookieName, final Class<T> userRepresentationClass, final Class<U> scopeClass) {
+    public CookieSecurity(@NonNull final String cookieName,
+                          @NonNull final Class<T> userRepresentationClass,
+                          @NonNull final Class<U> scopeClass) {
         super(userRepresentationClass, scopeClass);
         this.cookieName = cookieName;
     }
 
     @Override
-    public Optional<T> isLogged(final HttpServerExchange exchange) {
+    public Optional<T> isLogged(@NonNull final HttpServerExchange exchange) {
         final Cookie sessionCookie = exchange.getRequestCookie(this.cookieName);
 
         if (sessionCookie == null) {
@@ -64,7 +67,8 @@ public abstract class CookieSecurity<T, U extends Annotation> extends AFlowSecur
      * @param sessionCookie      the session cookie
      * @return the boolean
      */
-    protected Optional<Cookie> updateCookie(final T userRepresentation, final Cookie sessionCookie) {
+    protected Optional<Cookie> updateCookie(@NonNull final T userRepresentation,
+                                            @NonNull final Cookie sessionCookie) {
         return Optional.empty();
     }
 

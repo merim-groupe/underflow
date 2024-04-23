@@ -12,7 +12,7 @@ import java.util.Map;
 public class UnderflowMapUtils {
 
     /**
-     * Create LRU cache map.
+     * Create LRU cache map (Least Recently Used).
      *
      * @param <K>        the type parameter
      * @param <V>        the type parameter

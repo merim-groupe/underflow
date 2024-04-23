@@ -10,10 +10,8 @@
 
     <logger name="io.undertow.request.error-response" level="INFO"/>
     <logger name="org.xnio.nio" level="INFO"/>
-    <logger name="ch.qos.logback" level="WARN"/>
 
     <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
-

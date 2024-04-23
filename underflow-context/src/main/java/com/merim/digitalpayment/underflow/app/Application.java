@@ -15,31 +15,42 @@ import java.util.Optional;
 public class Application {
 
     /**
-     * The constant mode.
-     */
-    private static Mode mode;
-
-    /**
      * The constant mapper.
      */
     private static final ObjectMapper mapper;
-
     /**
      * The Instances.
      */
     private static final Map<Class<?>, Object> instances;
+    /**
+     * The constant mode.
+     */
+    private static Mode mode;
 
     static {
         mapper = new ObjectMapper();
-        Application.mapper.findAndRegisterModules();
-
-        if (Application.runFromJar()) {
-            Application.mode = Mode.PROD;
-        } else {
-            Application.mode = Mode.DEV;
-        }
-
         instances = new HashMap<>();
+
+        Application.mapper.findAndRegisterModules();
+        Application.mode = Mode.PROD;
+    }
+
+    /**
+     * Init mode.
+     *
+     * @param aClass the a class
+     */
+    public static void initMode(final Class<?> aClass) {
+        Application.initMode(Application.runFromJar(aClass) ? Mode.PROD : Mode.DEV);
+    }
+
+    /**
+     * Init mode.
+     *
+     * @param mode the mode
+     */
+    public static void initMode(final Mode mode) {
+        Application.mode = mode;
     }
 
     /**
@@ -72,10 +83,10 @@ public class Application {
     /**
      * Run from a jar.
      *
+     * @param aClass the a class
      * @return true if running from a jar.
      */
-    public static boolean runFromJar() {
-        final Class<Application> aClass = Application.class;
+    public static boolean runFromJar(final Class<?> aClass) {
         final String className = aClass.getName().replace('.', '/');
         final String classJar = aClass.getResource("/" + className + ".class").toString();
 

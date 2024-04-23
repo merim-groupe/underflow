@@ -6,8 +6,8 @@
 
     <parent>
         <groupId>com.merim.digitalpayment.underflow</groupId>
-        <artifactId>build</artifactId>
-        <version>${revision}</version>
+        <artifactId>underflow-bom</artifactId>
+        <version>${project.version}</version>
     </parent>
 
     <artifactId>underflow-context</artifactId>
@@ -22,13 +22,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${jackson-version}</version>
+            <version>${jackson.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson-version}</version>
+            <version>${jackson.version}</version>
         </dependency>
     </dependencies>
 </project>

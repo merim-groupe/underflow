@@ -1,17 +1,17 @@
 package com.merim.digitalpayment.underflow.server;
 
-import com.merim.digitalpayment.underflow.handlers.http.RequestLoggerHandler;
 import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.GracefulShutdownHandler;
 import io.undertow.server.handlers.PathHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.List;
+import java.util.Map;
 
 /**
  * UnderflowServer is a standardized implementation of an Undertow server.
@@ -21,22 +21,13 @@ import java.util.function.Consumer;
  * @author Pierre Adam
  * @since 22.09.27
  */
+@Slf4j
 class UnderflowServerImpl implements UnderflowServer {
 
     /**
      * The Shutdown.
      */
-    private static final Object waitLock = new Object();
-
-    /**
-     * The Logger.
-     */
-    private final Logger logger;
-
-    /**
-     * The Underlying handlers.
-     */
-    private final Map<String, HandlerData> handlers;
+    private final Object stopWaitLock = new Object();
 
     /**
      * The Path handler.
@@ -44,24 +35,26 @@ class UnderflowServerImpl implements UnderflowServer {
     private final PathHandler pathHandler;
 
     /**
-     * The Shutdown handler.
-     */
-    private final GracefulShutdownHandler shutdownHandler;
-
-    /**
      * The Shutdown hooks.
      */
     private final List<Runnable> shutdownHooks;
 
     /**
-     * The Builder.
+     * The Port.
      */
-    private final Undertow.Builder builder;
+    @Getter
+    private final int port;
 
     /**
-     * The Use logger handler.
+     * The Host.
      */
-    private boolean useLoggerHandler;
+    @Getter
+    private final String host;
+
+    /**
+     * The Shutdown handler.
+     */
+    private GracefulShutdownHandler shutdownHandler;
 
     /**
      * The Server.
@@ -69,98 +62,98 @@ class UnderflowServerImpl implements UnderflowServer {
     private Undertow server;
 
     /**
-     * The Shutdown signal handling.
+     * The Waiting for exit.
      */
-    private boolean shutdownSignalHandling;
+    private boolean waitingForExit;
 
     /**
-     * Instantiates a new Web server.
+     * Instantiates a new Underflow server.
+     *
+     * @param host     the host
+     * @param port     the port
+     * @param handlers the handlers
      */
-    public UnderflowServerImpl() {
-        this.logger = LoggerFactory.getLogger(UnderflowServerImpl.class);
-        this.handlers = new HashMap<>();
+    public UnderflowServerImpl(@NonNull final String host,
+                               final int port,
+                               @NonNull final Map<String, HandlerData> handlers) {
+        this(host, port, handlers, List.of());
+    }
+
+    /**
+     * Instantiates a new Underflow server.
+     *
+     * @param host          the host
+     * @param port          the port
+     * @param handlers      the handlers
+     * @param shutdownHooks the shutdown hooks
+     */
+    public UnderflowServerImpl(@NonNull final String host,
+                               final int port,
+                               @NonNull final Map<String, HandlerData> handlers,
+                               @NonNull final List<Runnable> shutdownHooks) {
+        this.host = host;
+        this.port = port;
         this.pathHandler = Handlers.path();
-        this.shutdownHandler = new GracefulShutdownHandler(this.pathHandler);
-        this.shutdownHooks = new ArrayList<>();
-        this.shutdownSignalHandling = false;
-        this.useLoggerHandler = false;
-        this.builder = Undertow.builder()
-                .setIoThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2, 2))
-                .setWorkerThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2 * 8, 16));
+        this.waitingForExit = false;
+        this.shutdownHooks = shutdownHooks;
+
+        // Process the handlers.
+        handlers.forEach((originalPath, handlerData) -> {
+            String path = originalPath;
+            HttpHandler handler = handlerData.getHandler();
+            for (final UnderflowOption option : handlerData.getOptions()) {
+                final String prevPath = path;
+                final HttpHandler prevHandler = handler;
+                path = option.alterPath(prevPath, prevHandler);
+                handler = option.alterHandler(prevPath, prevHandler);
+            }
+
+            this.pathHandler.addPrefixPath(path, handler);
+        });
     }
 
-    @Override
-    public UnderflowServerImpl addPrefixPath(final String prefix, final HttpHandler handler, final UnderflowOption... options) {
-        this.handlers.put(prefix, new HandlerData(handler, options));
-        return this;
-    }
-
-    @Override
-    public UnderflowServer withRequestLogger(final boolean enable) {
-        this.useLoggerHandler = enable;
-        return this;
-    }
-
-    @Override
-    public UnderflowServerImpl addShutdownHook(final Runnable hook) {
-        this.shutdownHooks.add(hook);
-        return this;
-    }
-
-    @Override
-    public UnderflowServerImpl addHttpListener(final int port, final String host) {
-        this.builder.addHttpListener(port, host);
-        return this;
-    }
-
-    @Override
-    public UnderflowServerImpl alterBuilder(final Consumer<Undertow.Builder> consumer) {
-        consumer.accept(this.builder);
-        return this;
-    }
-
-    @Override
-    public UnderflowServerImpl withShutdownSignalHandling() {
-        this.shutdownSignalHandling = true;
-        return this;
-    }
 
     @Override
     public void start() {
-        if (this.shutdownSignalHandling) {
-            ShutdownHandlingFactory.get().accept(this);
+        // Register the shutdown handling using a factory to abstract the version of Java.
+        ShutdownHandlingFactory.get().accept(this);
+
+        if (this.server == null) {
+            // Server doesn't exists yet. Creating and starting
+            this.shutdownHandler = new GracefulShutdownHandler(this.pathHandler);
+            this.server = Undertow.builder()
+                    .addHttpListener(this.port, this.host)
+                    .setIoThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2, 2))
+                    .setWorkerThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2 * 8, 16))
+                    .setHandler(this.shutdownHandler)
+                    .build();
+
+            this.server.start();
         }
-
-        this.handlers.forEach((path, handlerData) -> {
-            if ((this.useLoggerHandler || handlerData.hasOption(UnderflowOption.WITH_REQUEST_LOGGER)) &&
-                    !handlerData.hasOption(UnderflowOption.WITHOUT_REQUEST_LOGGER)) {
-                this.pathHandler.addPrefixPath(path, new RequestLoggerHandler(handlerData.getHandler()));
-            } else {
-                this.pathHandler.addPrefixPath(path, handlerData.getHandler());
-            }
-        });
-
-        //  Create the Http Server
-        this.server = this.builder
-                .setHandler(this.shutdownHandler)
-                .build();
-        this.server.start();
     }
 
     @Override
     public void stop() {
-        synchronized (UnderflowServerImpl.waitLock) {
-            UnderflowServerImpl.waitLock.notifyAll();
-            this.shutdownHandler.shutdown();
+        synchronized (this.stopWaitLock) {
+            if (this.waitingForExit) {
+                // Asynchronous way since waitForExit is currently waiting.
+                // Delegate the closure of the server to waiting thread.
+                this.stopWaitLock.notifyAll();
+            } else {
+                // Synchronous closure of the server.
+                this.stopServer();
+            }
         }
     }
 
     @Override
     public void waitForExit() throws InterruptedException {
         try {
-            synchronized (UnderflowServerImpl.waitLock) {
-                UnderflowServerImpl.waitLock.wait();
-                this.logger.debug("Stopping server from trigger.");
+            synchronized (this.stopWaitLock) {
+                this.waitingForExit = true;
+                this.stopWaitLock.wait();
+                this.waitingForExit = false;
+                UnderflowServerImpl.logger.debug("Stopping server from trigger.");
             }
         } finally {
             this.stopServer();
@@ -180,64 +173,9 @@ class UnderflowServerImpl implements UnderflowServer {
                     serverToClose.stop();
                     this.shutdownHooks.forEach(Runnable::run);
                 } else {
-                    this.logger.error("Failed to shutdown web server !");
+                    UnderflowServerImpl.logger.error("Failed to shutdown web server !");
                 }
             }).start());
-        }
-    }
-
-    /**
-     * The type Handler data.
-     */
-    private static class HandlerData {
-
-        /**
-         * The Handler.
-         */
-        private final HttpHandler handler;
-
-        /**
-         * The Options.
-         */
-        private final Set<UnderflowOption> options;
-
-        /**
-         * Instantiates a new Handler data.
-         *
-         * @param handler the handler
-         * @param options the options
-         */
-        public HandlerData(final HttpHandler handler, final UnderflowOption... options) {
-            this.handler = handler;
-            this.options = new HashSet<>(Arrays.asList(options));
-        }
-
-        /**
-         * Gets handler.
-         *
-         * @return the handler
-         */
-        public HttpHandler getHandler() {
-            return this.handler;
-        }
-
-        /**
-         * Gets options.
-         *
-         * @return the options
-         */
-        public Collection<UnderflowOption> getOptions() {
-            return this.options;
-        }
-
-        /**
-         * Has option boolean.
-         *
-         * @param option the option
-         * @return the boolean
-         */
-        public boolean hasOption(final UnderflowOption option) {
-            return this.options.contains(option);
         }
     }
 }

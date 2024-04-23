@@ -2,10 +2,12 @@ package com.merim.digitalpayment.underflow.tests.sample;
 
 import com.merim.digitalpayment.underflow.annotation.method.*;
 import com.merim.digitalpayment.underflow.annotation.routing.*;
-import com.merim.digitalpayment.underflow.annotation.security.Secured;
+import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
+import com.merim.digitalpayment.underflow.security.annotations.Secured;
+import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.tests.sample.form.LoginForm;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyCookieSecurity;
 import com.merim.digitalpayment.underflow.tests.sample.security.MySecurityScope;
@@ -66,6 +68,12 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
         return this.ok(template, dataModel);
     }
 
+    @GET
+    @Path("/test-text")
+    public Result stringAnswer() {
+        return this.ok("OK");
+    }
+
     /**
      * Gets sub handler.
      *
@@ -77,7 +85,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
         this.logger.info("Delegating to sub-handler.");
         return this;
     }
-    
+
     /**
      * Gets sub handler.
      *
@@ -326,5 +334,18 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
                 throw new RuntimeException(exception);
             }
         });
+    }
+
+    /**
+     * Stop result.
+     *
+     * @return the result
+     */
+    @GET
+    @Path("/stop")
+    public Result stop() {
+        Application.getInstance(UnderflowServer.class).stop();
+
+        return this.ok("OK !");
     }
 }

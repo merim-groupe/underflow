@@ -1,20 +1,34 @@
 package com.merim.digitalpayment.underflow.server.options;
 
+import io.undertow.server.HttpHandler;
+
 /**
  * UnderflowOption.
  *
  * @author Pierre Adam
- * @since 23.06.16
+ * @since 24.04.23
  */
-public enum UnderflowOption {
+public interface UnderflowOption {
 
     /**
-     * Without request logger underflow option.
+     * Alter path string.
+     *
+     * @param path    the path
+     * @param handler the handler
+     * @return the string
      */
-    WITHOUT_REQUEST_LOGGER,
+    default String alterPath(final String path, final HttpHandler handler) {
+        return path;
+    }
 
     /**
-     * With request logger underflow option.
+     * Http handler http handler.
+     *
+     * @param path    the path
+     * @param handler the handler
+     * @return the http handler
      */
-    WITH_REQUEST_LOGGER
+    default HttpHandler alterHandler(final String path, final HttpHandler handler) {
+        return handler;
+    }
 }

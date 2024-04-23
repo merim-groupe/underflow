@@ -6,8 +6,8 @@
 
     <parent>
         <groupId>com.merim.digitalpayment.underflow</groupId>
-        <artifactId>build</artifactId>
-        <version>${revision}</version>
+        <artifactId>underflow-bom</artifactId>
+        <version>${project.version}</version>
     </parent>
 
     <artifactId>underflow-utils</artifactId>
@@ -21,13 +21,13 @@
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-context</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>${apache-commons-io-version}</version>
+            <version>${apache-commons-io.version}</version>
         </dependency>
     </dependencies>
 </project>

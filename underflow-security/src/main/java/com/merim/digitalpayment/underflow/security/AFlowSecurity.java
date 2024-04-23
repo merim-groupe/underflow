@@ -1,5 +1,7 @@
 package com.merim.digitalpayment.underflow.security;
 
+import lombok.NonNull;
+
 import java.lang.annotation.Annotation;
 
 /**
@@ -17,7 +19,6 @@ public abstract class AFlowSecurity<T, U extends Annotation> implements FlowSecu
      */
     private final Class<U> scopeClass;
 
-
     /**
      * The User representation class.
      */
@@ -29,7 +30,8 @@ public abstract class AFlowSecurity<T, U extends Annotation> implements FlowSecu
      * @param userRepresentationClass the user representation class
      * @param scopeClass              the scope class
      */
-    public AFlowSecurity(final Class<T> userRepresentationClass, final Class<U> scopeClass) {
+    public AFlowSecurity(@NonNull final Class<T> userRepresentationClass,
+                         @NonNull final Class<U> scopeClass) {
         this.userRepresentationClass = userRepresentationClass;
         this.scopeClass = scopeClass;
     }

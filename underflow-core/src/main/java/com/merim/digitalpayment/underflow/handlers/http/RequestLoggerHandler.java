@@ -6,6 +6,8 @@ import io.undertow.server.HttpServerExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.function.Function;
+
 /**
  * RequestLoggerHandler.
  *
@@ -20,13 +22,17 @@ public class RequestLoggerHandler extends PassthroughsHandler {
     private final Logger logger;
 
     /**
+     * The Filter.
+     */
+    private final Function<HttpServerExchange, Boolean> filter;
+
+    /**
      * Instantiates a new Logging handler.
      *
      * @param underlying the underlying handler
      */
     public RequestLoggerHandler(final HttpHandler underlying) {
-        super(underlying);
-        this.logger = LoggerFactory.getLogger(this.getFinalBackedHandler().getClass());
+        this(underlying, null, null);
     }
 
     /**
@@ -36,14 +42,42 @@ public class RequestLoggerHandler extends PassthroughsHandler {
      * @param loggerName the logger name
      */
     public RequestLoggerHandler(final HttpHandler underlying, final String loggerName) {
+        this(underlying, null, loggerName);
+    }
+
+    /**
+     * Instantiates a new Request logger handler.
+     *
+     * @param underlying the underlying
+     * @param filter     the filter
+     */
+    public RequestLoggerHandler(final HttpHandler underlying,
+                                final Function<HttpServerExchange, Boolean> filter) {
+        this(underlying, filter, null);
+    }
+
+    /**
+     * Instantiates a new Request logger handler.
+     *
+     * @param underlying the underlying
+     * @param filter     the filter
+     * @param loggerName the logger name
+     */
+    public RequestLoggerHandler(final HttpHandler underlying,
+                                final Function<HttpServerExchange, Boolean> filter,
+                                final String loggerName) {
         super(underlying);
-        this.logger = LoggerFactory.getLogger(loggerName);
+        this.filter = filter != null ? filter : exchange -> true;
+        this.logger = loggerName != null ? LoggerFactory.getLogger(loggerName) :
+                LoggerFactory.getLogger(this.getFinalBackedHandler().getClass());
     }
 
     @Override
     protected void interceptRequest(final HttpServerExchange exchange) {
-        final String queryString = exchange.getQueryString().isEmpty() ? "" : "?" + exchange.getQueryString();
-        
-        this.logger.info("[{}] {}{}", exchange.getRequestMethod(), exchange.getRequestURL(), queryString);
+        if (this.filter.apply(exchange)) {
+            final String queryString = exchange.getQueryString().isEmpty() ? "" : "?" + exchange.getQueryString();
+
+            this.logger.info("[{}] {}{}", exchange.getRequestMethod(), exchange.getRequestURL(), queryString);
+        }
     }
 }

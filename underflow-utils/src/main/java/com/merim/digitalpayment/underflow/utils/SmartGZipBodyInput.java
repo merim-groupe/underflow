@@ -3,9 +3,9 @@ package com.merim.digitalpayment.underflow.utils;
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
 import com.merim.digitalpayment.underflow.mdc.MDCKeys;
 import io.undertow.server.HttpServerExchange;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,12 +19,8 @@ import java.util.zip.GZIPInputStream;
  * @author Pierre Adam
  * @since 21.08.05
  */
+@Slf4j
 public class SmartGZipBodyInput implements MDCContext {
-
-    /**
-     * The Logger.
-     */
-    private final Logger logger;
 
     /**
      * The Exchange.
@@ -36,7 +32,7 @@ public class SmartGZipBodyInput implements MDCContext {
      *
      * @param exchange the exchange
      */
-    public SmartGZipBodyInput(final HttpServerExchange exchange) {
+    public SmartGZipBodyInput(@NonNull final HttpServerExchange exchange) {
         this(exchange.getInputStream());
     }
 
@@ -45,14 +41,12 @@ public class SmartGZipBodyInput implements MDCContext {
      *
      * @param inputStream the input stream
      */
-    public SmartGZipBodyInput(final InputStream inputStream) {
-        this.logger = LoggerFactory.getLogger(SmartGZipBodyInput.class);
-
+    public SmartGZipBodyInput(@NonNull final InputStream inputStream) {
         byte[] bytes = null;
         try {
             bytes = IOUtils.toByteArray(this.resolveStream(inputStream));
         } catch (final IOException e) {
-            this.logger.error("An error occurred with the input stream.", e);
+            SmartGZipBodyInput.logger.error("An error occurred with the input stream.", e);
         }
         this.buffer = bytes != null ? bytes : new byte[]{};
 
@@ -84,7 +78,7 @@ public class SmartGZipBodyInput implements MDCContext {
      * @return the input stream
      * @throws IOException the io exception
      */
-    private InputStream resolveStream(final InputStream originalStream) throws IOException {
+    private InputStream resolveStream(@NonNull final InputStream originalStream) throws IOException {
         final PushbackInputStream inputStream = new PushbackInputStream(originalStream, 2);
 
         // If the size of the available bytes is bellow 10 (size of the GZip Header), return the stream as is.
