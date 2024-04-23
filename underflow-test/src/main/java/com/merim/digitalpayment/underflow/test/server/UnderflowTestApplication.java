@@ -27,7 +27,7 @@ public class UnderflowTestApplication<A extends UnderflowApplication> implements
     /**
      * The Application.
      */
-    private UnderflowApplication application;
+    private A application;
 
     /**
      * Instantiates a new Underflow test application.
@@ -56,7 +56,7 @@ public class UnderflowTestApplication<A extends UnderflowApplication> implements
      *
      * @return the underflow application
      */
-    public UnderflowApplication createApplication() {
+    public A createApplication() {
         try {
             return this.applicationClass.getDeclaredConstructor().newInstance();
         } catch (final Exception e) {
