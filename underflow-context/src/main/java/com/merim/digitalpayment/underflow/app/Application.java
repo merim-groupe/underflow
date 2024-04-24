@@ -18,10 +18,12 @@ public class Application {
      * The constant mapper.
      */
     private static final ObjectMapper mapper;
+
     /**
      * The Instances.
      */
     private static final Map<Class<?>, Object> instances;
+
     /**
      * The constant mode.
      */
@@ -125,5 +127,13 @@ public class Application {
      */
     public static <T> Optional<T> getInstanceOptional(final Class<T> tClass) {
         return Optional.ofNullable(Application.getInstance(tClass));
+    }
+
+    /**
+     * Reset the Application context to an initial state.
+     * This should not be called in a standard operation.
+     */
+    public static void resetApplication() {
+        Application.instances.clear();
     }
 }

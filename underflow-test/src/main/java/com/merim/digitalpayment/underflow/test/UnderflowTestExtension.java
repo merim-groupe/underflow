@@ -63,12 +63,14 @@ public class UnderflowTestExtension implements BeforeAllCallback, AfterAllCallba
     @Override
     public void afterAll(final ExtensionContext extensionContext) throws Exception {
         this.getCustomAnnotationValue(extensionContext).ifPresent(server -> {
-            this.testServer.onServerStop(server);
-            server.stop();
             try {
+                this.testServer.onServerStop(server);
+                server.stop();
                 server.waitForExit();
             } catch (final InterruptedException e) {
                 throw new RuntimeException(e);
+            } finally {
+                Application.resetApplication();
             }
         });
     }
