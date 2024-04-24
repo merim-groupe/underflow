@@ -33,18 +33,10 @@ public interface UnderflowTestServer {
     void onServerStart(final UnderflowServer server);
 
     /**
-     * Build test server underflow server.
+     * On server stop.
      *
-     * @param port the port
-     * @return the underflow server
+     * @param server the server
      */
-    default UnderflowServer buildTestServer(final int port) {
-        final UnderflowServer server = this.getUnderflowServerBuilder()
-                .setPort(port)
-                .setHost("0.0.0.0")
-                .build();
-
-        this.onServerCreated(server);
-        return server;
+    default void onServerStop(final UnderflowServer server) {
     }
 }

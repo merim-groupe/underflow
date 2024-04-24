@@ -81,6 +81,12 @@ public interface UnderflowApplication {
         } finally {
             server.stop();
         }
+
+        try {
+            server.waitForExit();
+        } catch (final InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

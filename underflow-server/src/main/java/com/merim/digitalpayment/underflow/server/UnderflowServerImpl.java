@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * UnderflowServer is a standardized implementation of an Undertow server.
@@ -26,9 +27,14 @@ import java.util.Map;
 class UnderflowServerImpl implements UnderflowServer {
 
     /**
-     * The Shutdown.
+     * The waiting for stop lock.
      */
-    private final Object stopWaitLock = new Object();
+    private final Object waitStopLock = new Object();
+
+    /**
+     * The shutdown lock.
+     */
+    private final Object shutdownLock = new Object();
 
     /**
      * The Path handler.
@@ -66,6 +72,11 @@ class UnderflowServerImpl implements UnderflowServer {
      * The Waiting for exit.
      */
     private boolean waitingForExit;
+
+    /**
+     * The Shutdown thread.
+     */
+    private Thread shutdownThread;
 
     /**
      * Instantiates a new Underflow server.
@@ -120,7 +131,15 @@ class UnderflowServerImpl implements UnderflowServer {
         ShutdownHandlingFactory.get().accept(this);
 
         if (this.server == null) {
-            // Server doesn't exists yet. Creating and starting
+            // Server doesn't exists yet.
+            if (this.shutdownThread != null) {
+                // If there is a shutdown thread currently running, waiting before starting a new server.
+                try {
+                    this.waitForExit();
+                } catch (final InterruptedException ignore) {
+                }
+            }
+
             this.shutdownHandler = new GracefulShutdownHandler(this.pathHandler);
             this.server = Undertow.builder()
                     .addHttpListener(this.port, this.host)
@@ -135,11 +154,11 @@ class UnderflowServerImpl implements UnderflowServer {
 
     @Override
     public void stop() {
-        synchronized (this.stopWaitLock) {
+        synchronized (this.waitStopLock) {
             if (this.waitingForExit) {
                 // Asynchronous way since waitForExit is currently waiting.
                 // Delegate the closure of the server to waiting thread.
-                this.stopWaitLock.notifyAll();
+                this.waitStopLock.notifyAll();
             } else {
                 // Synchronous closure of the server.
                 this.stopServer();
@@ -149,15 +168,32 @@ class UnderflowServerImpl implements UnderflowServer {
 
     @Override
     public void waitForExit() throws InterruptedException {
-        try {
-            synchronized (this.stopWaitLock) {
-                this.waitingForExit = true;
-                this.stopWaitLock.wait();
-                this.waitingForExit = false;
-                UnderflowServerImpl.logger.debug("Stopping server from trigger.");
+        if (this.server != null) {
+            try {
+                synchronized (this.waitStopLock) {
+                    this.waitingForExit = true;
+                    this.waitStopLock.wait();
+                    this.waitingForExit = false;
+                    UnderflowServerImpl.logger.debug("Stopping server from trigger.");
+                }
+            } finally {
+                this.stopServer();
             }
-        } finally {
-            this.stopServer();
+        }
+
+        synchronized (this.shutdownLock) {
+            if (this.shutdownThread != null) {
+                this.shutdownThread.join(60_000); // Allow 60s for the hooks to complete
+                if (this.shutdownThread.isAlive()) {
+                    this.shutdownThread.interrupt();
+                    this.shutdownThread.join(1_000);
+                    if (this.shutdownThread.isAlive()) {
+                        this.shutdownThread = null;
+                        throw new RuntimeException("Failed to shutdown web server gracefully within the specified time.");
+                    }
+                }
+                this.shutdownThread = null;
+            }
         }
     }
 
@@ -165,18 +201,36 @@ class UnderflowServerImpl implements UnderflowServer {
      * Stop server.
      */
     private synchronized void stopServer() {
-        if (this.server != null) {
-            final Undertow serverToClose = this.server;
-            this.server = null;
-            this.shutdownHandler.shutdown();
-            this.shutdownHandler.addShutdownListener(shutdownSuccessful -> new Thread(() -> {
-                if (shutdownSuccessful) {
+        if (this.server == null) {
+            // Server is already stopped.
+            return;
+        }
+
+        final Undertow serverToClose = this.server;
+        this.server = null;
+        final AtomicBoolean shutdownSuccessful = new AtomicBoolean();
+
+        synchronized (this.shutdownLock) {
+            this.shutdownThread = new Thread(() -> {
+                if (shutdownSuccessful.get()) {
                     serverToClose.stop();
-                    this.shutdownHooks.forEach(Runnable::run);
+                    this.shutdownHooks.forEach(runnable -> {
+                        try {
+                            runnable.run();
+                        } catch (final Exception e) {
+                            UnderflowServerImpl.logger.error("An error occurred while running a shutdown hook", e);
+                        }
+                    });
                 } else {
                     UnderflowServerImpl.logger.error("Failed to shutdown web server !");
                 }
-            }).start());
+            });
         }
+
+        this.shutdownHandler.shutdown();
+        this.shutdownHandler.addShutdownListener(success -> {
+            shutdownSuccessful.set(success);
+            this.shutdownThread.start();
+        });
     }
 }
