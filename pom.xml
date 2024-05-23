@@ -34,7 +34,7 @@
     </distributionManagement>
 
     <properties>
-        <project.version>1.0.4-DEV</project.version>
+        <project.version>1.0.7-DEV</project.version>
 
         <maven.compiler.release>8</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

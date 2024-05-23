@@ -6,6 +6,7 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,5 +37,6 @@ public class HandlerData {
     public HandlerData(final HttpHandler handler, final UnderflowOption... options) {
         this.handler = handler;
         this.options = new ArrayList<>(Arrays.asList(options));
+        Collections.reverse(this.options);
     }
 }
