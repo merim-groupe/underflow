@@ -21,7 +21,6 @@
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

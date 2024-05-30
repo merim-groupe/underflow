@@ -1,10 +1,9 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.method.GET;
-import com.merim.digitalpayment.underflow.annotation.routing.Path;
-import com.merim.digitalpayment.underflow.annotation.routing.PathPrefix;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 
 /**
  * The Sub test handler.
@@ -12,7 +11,6 @@ import com.merim.digitalpayment.underflow.results.Result;
  * @author Pierre Adam
  * @since 21.04.27
  */
-@PathPrefix("/foo")
 public class PathPrefixHandler extends FlowTemplateHandler {
 
     /**

@@ -1,15 +1,17 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.merim.digitalpayment.underflow.annotation.method.GET;
-import com.merim.digitalpayment.underflow.annotation.method.POST;
-import com.merim.digitalpayment.underflow.annotation.routing.Path;
 import com.merim.digitalpayment.underflow.api.forms.ApiForm;
 import com.merim.digitalpayment.underflow.api.forms.FormError;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowApiHandler;
 import com.merim.digitalpayment.underflow.mdc.MDCKeys;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.tests.sample.entities.ApiDescription;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.InputStream;
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.List;
  * @author Pierre Adam
  * @since 22.02.24
  */
+@Path("/api")
 public class ApiTestHandler extends FlowApiHandler {
 
     /**
@@ -52,8 +55,10 @@ public class ApiTestHandler extends FlowApiHandler {
     /**
      * The type Json body form.
      */
+    @Getter
+    @Setter
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private final static class JsonBodyForm implements ApiForm {
+    private static final class JsonBodyForm implements ApiForm {
 
         /**
          * The Id.
@@ -68,42 +73,6 @@ public class ApiTestHandler extends FlowApiHandler {
         @Override
         public List<FormError> isValid() {
             return null;
-        }
-
-        /**
-         * Gets id.
-         *
-         * @return the id
-         */
-        public Long getId() {
-            return this.id;
-        }
-
-        /**
-         * Sets id.
-         *
-         * @param id the id
-         */
-        public void setId(final Long id) {
-            this.id = id;
-        }
-
-        /**
-         * Gets name.
-         *
-         * @return the name
-         */
-        public String getName() {
-            return this.name;
-        }
-
-        /**
-         * Sets name.
-         *
-         * @param name the name
-         */
-        public void setName(final String name) {
-            this.name = name;
         }
     }
 }

@@ -1,11 +1,12 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.method.GET;
 import com.merim.digitalpayment.underflow.annotation.routing.*;
 import com.merim.digitalpayment.underflow.converters.IConverter;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import io.undertow.server.HttpServerExchange;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.UUID;
  * @author Pierre Adam
  * @since 21.04.27
  */
+@Path("/routes")
 public class RouteTestHandler extends FlowTemplateHandler {
 
     /**

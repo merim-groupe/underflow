@@ -1,30 +1,22 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.method.*;
-import com.merim.digitalpayment.underflow.annotation.routing.*;
-import com.merim.digitalpayment.underflow.app.Application;
-import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
-import com.merim.digitalpayment.underflow.security.annotations.Secured;
-import com.merim.digitalpayment.underflow.server.UnderflowServer;
-import com.merim.digitalpayment.underflow.tests.sample.form.LoginForm;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyCookieSecurity;
-import com.merim.digitalpayment.underflow.tests.sample.security.MySecurityScope;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyUserRepresentation;
 import com.merim.digitalpayment.underflow.web.forms.WebForm;
 import freemarker.template.Template;
-import io.undertow.io.IoCallback;
-import io.undertow.io.Sender;
-import io.undertow.server.HttpServerExchange;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * The Test handler.
@@ -32,19 +24,14 @@ import java.util.function.Function;
  * @author Pierre Adam
  * @since 21.04.27
  */
+@Path("/")
 public class HomeHandler extends FlowTemplateHandler implements WebForm {
-
-    /**
-     * The Stateless sub handler.
-     */
-    private final TestSubHandler statelessSubHandler;
 
     /**
      * Instantiates a new Test handler.
      */
     public HomeHandler() {
         super("/templates", new MyCookieSecurity());
-        this.statelessSubHandler = new TestSubHandler();
     }
 
     /**
@@ -54,6 +41,14 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @param security the security
      * @return the result
      */
+    @APIResponses(value = {
+            @APIResponse(responseCode = "400", description = "Invalid ID supplied",
+                    content = @Content(mediaType = "none")),
+            @APIResponse(responseCode = "404", description = "Pet not found", content = @Content(mediaType = "none")),
+            @APIResponse(responseCode = "200",
+                    description = "Pet found")
+    })
+    @Operation(summary = "Find pet by ID", description = "Returns a pet when ID is less than or equal to 10")
     @GET
     @Path("")
     public Result home(final MyUserRepresentation user, final MyCookieSecurity security) {
@@ -68,127 +63,131 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
         return this.ok(template, dataModel);
     }
 
+    @APIResponses(value = {
+            @APIResponse(responseCode = "200", description = "OK")
+    })
+    @Operation(summary = "Test text", description = "test for text answer")
     @GET
     @Path("/test-text")
     public Result stringAnswer() {
         return this.ok("OK");
     }
 
-    /**
-     * Gets sub handler.
-     *
-     * @return the sub handler
-     */
-    @ALL
-    @Path("/subhandler")
-    public FlowHandler getSubHandler() {
-        this.logger.info("Delegating to sub-handler.");
-        return this;
-    }
-
-    /**
-     * Gets sub handler.
-     *
-     * @param value the value
-     * @return the sub handler
-     */
-    @ALL
-    @Path("/statelessSubHandlerWithArgs/(?<value>[0-9]+)")
-    public FlowHandler getSubHandler(@Named("value") final Long value) {
-        this.logger.info("Delegating to sub-handler with the value {}", value);
-        return this.statelessSubHandler;
-    }
-
-    /**
-     * Login result.
-     * <p>
-     * Example : http://localhost:8080/login?name=Pierre&amp;scope=web&amp;scope=abc
-     * </p>
-     *
-     * @param user     the user
-     * @param security the security
-     * @param name     the name
-     * @param scopes   the scopes
-     * @return the result
-     */
-    @GET
-    @Path("/login")
-    public Result login(final MyUserRepresentation user,
-                        final MyCookieSecurity security,
-                        @Query(value = "name", defaultValue = @DefaultValue(value = "John Dummer")) final String name,
-                        @Query(value = "scope",
-                                listProperty = @QueryListProperty(backedType = String.class),
-                                defaultValue = @DefaultValue(value = "web")) final List<String> scopes) {
-        if (user == null) {
-            final MyUserRepresentation newUser = new MyUserRepresentation(name, scopes);
-            return this.redirect("/")
-                    .withCookie(security.newCookie(newUser));
-        } else {
-            return this.ok("ALREADY LOGGED IN !");
-        }
-    }
-
-    /**
-     * Login result.
-     *
-     * @param exchange the exchange
-     * @param user     the user
-     * @param security the security
-     * @return the result
-     */
-    @POST
-    @Path("/login")
-    public Result login(final HttpServerExchange exchange,
-                        final MyUserRepresentation user,
-                        final MyCookieSecurity security) {
-        final Function<LoginForm, Result> successLogic = loginForm -> {
-            final MyUserRepresentation newUser = new MyUserRepresentation(loginForm.getName(), loginForm.getScopes());
-            return this.redirect("/")
-                    .withCookie(security.newCookie(newUser));
-        };
-
-        if (user == null) {
-            if (this.hasFormData(exchange)) {
-                return this.getForm(exchange, LoginForm.class, successLogic, e -> this.badRequest("Invalid form."));
-            } else {
-                return this.getJsonForm(exchange, LoginForm.class, successLogic);
-            }
-        } else {
-            return this.ok("ALREADY LOGGED IN !");
-        }
-    }
-
-    /**
-     * Logout result.
-     * <p>
-     * Example : http://localhost:8080/logout
-     *
-     * @return the result
-     */
-    @GET
-    @Path("/logout")
-    public Result logout() {
-        return this.redirect("/").dropCookies();
-    }
-
-    /**
-     * Secured page result.
-     *
-     * @param user the user
-     * @return the result
-     */
-    @GET
-    @Secured
-    @MySecurityScope("web")
-    @Path("/secured")
-    public Result securedPage(final MyUserRepresentation user) {
-        final Map<String, Object> dataModel = new HashMap<>();
-        final Template template = this.getTemplate("secured-page.ftl");
-
-        dataModel.put("user", user);
-
-        return this.ok(template, dataModel);
-    }
+//    /**
+//     * Gets sub handler.
+//     *
+//     * @return the sub handler
+//     */
+//    @ALL
+//    @Path("/subhandler")
+//    public FlowHandler getSubHandler() {
+//        this.logger.info("Delegating to sub-handler.");
+//        return this;
+//    }
+//
+//    /**
+//     * Gets sub handler.
+//     *
+//     * @param value the value
+//     * @return the sub handler
+//     */
+//    @ALL
+//    @Path("/statelessSubHandlerWithArgs/(?<value>[0-9]+)")
+//    public FlowHandler getSubHandler(@Named("value") final Long value) {
+//        this.logger.info("Delegating to sub-handler with the value {}", value);
+//        return this.statelessSubHandler;
+//    }
+//
+//    /**
+//     * Login result.
+//     * <p>
+//     * Example : http://localhost:8080/login?name=Pierre&amp;scope=web&amp;scope=abc
+//     * </p>
+//     *
+//     * @param user     the user
+//     * @param security the security
+//     * @param name     the name
+//     * @param scopes   the scopes
+//     * @return the result
+//     */
+//    @GET
+//    @Path("/login")
+//    public Result login(final MyUserRepresentation user,
+//                        final MyCookieSecurity security,
+//                        @Query(value = "name", defaultValue = @DefaultValue(value = "John Dummer")) final String name,
+//                        @Query(value = "scope",
+//                                listProperty = @QueryListProperty(backedType = String.class),
+//                                defaultValue = @DefaultValue(value = "web")) final List<String> scopes) {
+//        if (user == null) {
+//            final MyUserRepresentation newUser = new MyUserRepresentation(name, scopes);
+//            return this.redirect("/")
+//                    .withCookie(security.newCookie(newUser));
+//        } else {
+//            return this.ok("ALREADY LOGGED IN !");
+//        }
+//    }
+//
+//    /**
+//     * Login result.
+//     *
+//     * @param exchange the exchange
+//     * @param user     the user
+//     * @param security the security
+//     * @return the result
+//     */
+//    @POST
+//    @Path("/login")
+//    public Result login(final HttpServerExchange exchange,
+//                        final MyUserRepresentation user,
+//                        final MyCookieSecurity security) {
+//        final Function<LoginForm, Result> successLogic = loginForm -> {
+//            final MyUserRepresentation newUser = new MyUserRepresentation(loginForm.getName(), loginForm.getScopes());
+//            return this.redirect("/")
+//                    .withCookie(security.newCookie(newUser));
+//        };
+//
+//        if (user == null) {
+//            if (this.hasFormData(exchange)) {
+//                return this.getForm(exchange, LoginForm.class, successLogic, e -> this.badRequest("Invalid form."));
+//            } else {
+//                return this.getJsonForm(exchange, LoginForm.class, successLogic);
+//            }
+//        } else {
+//            return this.ok("ALREADY LOGGED IN !");
+//        }
+//    }
+//
+//    /**
+//     * Logout result.
+//     * <p>
+//     * Example : http://localhost:8080/logout
+//     *
+//     * @return the result
+//     */
+//    @GET
+//    @Path("/logout")
+//    public Result logout() {
+//        return this.redirect("/").dropCookies();
+//    }
+//
+//    /**
+//     * Secured page result.
+//     *
+//     * @param user the user
+//     * @return the result
+//     */
+//    @GET
+//    @Secured
+//    @MySecurityScope("web")
+//    @Path("/secured")
+//    public Result securedPage(final MyUserRepresentation user) {
+//        final Map<String, Object> dataModel = new HashMap<>();
+//        final Template template = this.getTemplate("secured-page.ftl");
+//
+//        dataModel.put("user", user);
+//
+//        return this.ok(template, dataModel);
+//    }
 
     /**
      * Secured page result.
@@ -214,138 +213,138 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
         return this.ok(this.getTemplate("image-asset-resources.ftl"), null);
     }
 
-    /**
-     * Exception result.
-     *
-     * @return the result
-     */
-    @GET
-    @Path("/exception")
-    public Result exception() {
-        if (true) {
-            throw new RuntimeException("Sample Exception");
-        }
-        return this.ok("");
-    }
-
-    /**
-     * Has query param result.
-     *
-     * @param download the download
-     * @return the result
-     */
-    @GET
-    @Path(value = "/hasQueryParam")
-    public Result hasQueryParam(@Query(value = "download", required = false) final String download) {
-        if (download == null) {
-            return this.ok("download was not on the query parameters");
-        } else {
-            return this.ok("download was on the query parameters with the value \"" + download + "\"");
-        }
-    }
-
-    /**
-     * Post home.
-     *
-     * @return the result
-     */
-    @POST
-    @Path("")
-    public Result postHome() {
-        return this.ok("POST from Underflow");
-    }
-
-    /**
-     * Put home.
-     *
-     * @return the result
-     */
-    @PUT
-    @Path("")
-    public Result putHome() {
-        return this.ok("PUT from Underflow");
-    }
-
-    /**
-     * Patch home.
-     *
-     * @return the result
-     */
-    @PATCH
-    @Path("")
-    public Result patchHome() {
-        return this.ok("PATCH from Underflow");
-    }
-
-    /**
-     * Option home.
-     *
-     * @return the result
-     */
-    @OPTIONS
-    @Path("")
-    public Result optionHome() {
-        return this.ok("OPTIONS from Underflow");
-    }
-
-    /**
-     * Delete home.
-     *
-     * @return the result
-     */
-    @DELETE
-    @Path("")
-    public Result deleteHome() {
-        return this.ok("DELETE from Underflow");
-    }
-
-    /**
-     * Delete home.
-     *
-     * @return the result
-     */
-    @HEAD
-    @Path("")
-    public Result headHome() {
-        return this.ok("HEAD from Underflow");
-    }
-
-    /**
-     * Simple GET example.
-     *
-     * @param exchange the exchange
-     * @return the result
-     * @throws Exception the exception
-     */
-    @GET
-    @Path("/status")
-    @Path("/statusBis")
-    public Result status(final HttpServerExchange exchange) throws
-
-            Exception {
-        return this.ok("Status : ", new IoCallback() {
-            @Override
-            public void onComplete(final HttpServerExchange exchange, final Sender sender) {
-                sender.send("OK !", IoCallback.END_EXCHANGE);
-            }
-
-            @Override
-            public void onException(final HttpServerExchange exchange, final Sender sender, final IOException exception) {
-                throw new RuntimeException(exception);
-            }
-        });
-    }
-
-    /**
-     * Stop result.
-     *
-     * @return the result
-     */
-    @GET
-    @Path("/stop")
-    public Result stop() {
-        Application.getInstance(UnderflowServer.class).stop();
-
-        return this.ok("OK !");
-    }
+//    /**
+//     * Exception result.
+//     *
+//     * @return the result
+//     */
+//    @GET
+//    @Path("/exception")
+//    public Result exception() {
+//        if (true) {
+//            throw new RuntimeException("Sample Exception");
+//        }
+//        return this.ok("");
+//    }
+//
+//    /**
+//     * Has query param result.
+//     *
+//     * @param download the download
+//     * @return the result
+//     */
+//    @GET
+//    @Path(value = "/hasQueryParam")
+//    public Result hasQueryParam(@Query(value = "download", required = false) final String download) {
+//        if (download == null) {
+//            return this.ok("download was not on the query parameters");
+//        } else {
+//            return this.ok("download was on the query parameters with the value \"" + download + "\"");
+//        }
+//    }
+//
+//    /**
+//     * Post home.
+//     *
+//     * @return the result
+//     */
+//    @POST
+//    @Path("")
+//    public Result postHome() {
+//        return this.ok("POST from Underflow");
+//    }
+//
+//    /**
+//     * Put home.
+//     *
+//     * @return the result
+//     */
+//    @PUT
+//    @Path("")
+//    public Result putHome() {
+//        return this.ok("PUT from Underflow");
+//    }
+//
+//    /**
+//     * Patch home.
+//     *
+//     * @return the result
+//     */
+//    @PATCH
+//    @Path("")
+//    public Result patchHome() {
+//        return this.ok("PATCH from Underflow");
+//    }
+//
+//    /**
+//     * Option home.
+//     *
+//     * @return the result
+//     */
+//    @OPTIONS
+//    @Path("")
+//    public Result optionHome() {
+//        return this.ok("OPTIONS from Underflow");
+//    }
+//
+//    /**
+//     * Delete home.
+//     *
+//     * @return the result
+//     */
+//    @DELETE
+//    @Path("")
+//    public Result deleteHome() {
+//        return this.ok("DELETE from Underflow");
+//    }
+//
+//    /**
+//     * Delete home.
+//     *
+//     * @return the result
+//     */
+//    @HEAD
+//    @Path("")
+//    public Result headHome() {
+//        return this.ok("HEAD from Underflow");
+//    }
+//
+//    /**
+//     * Simple GET example.
+//     *
+//     * @param exchange the exchange
+//     * @return the result
+//     * @throws Exception the exception
+//     */
+//    @GET
+//    @Path("/status")
+//    @Path("/statusBis")
+//    public Result status(final HttpServerExchange exchange) throws
+//
+//            Exception {
+//        return this.ok("Status : ", new IoCallback() {
+//            @Override
+//            public void onComplete(final HttpServerExchange exchange, final Sender sender) {
+//                sender.send("OK !", IoCallback.END_EXCHANGE);
+//            }
+//
+//            @Override
+//            public void onException(final HttpServerExchange exchange, final Sender sender, final IOException exception) {
+//                throw new RuntimeException(exception);
+//            }
+//        });
+//    }
+//
+//    /**
+//     * Stop result.
+//     *
+//     * @return the result
+//     */
+//    @GET
+//    @Path("/stop")
+//    public Result stop() {
+//        Application.getInstance(UnderflowServer.class).stop();
+//
+//        return this.ok("OK !");
+//    }
 }

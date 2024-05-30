@@ -1,12 +1,12 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.method.GET;
-import com.merim.digitalpayment.underflow.annotation.routing.Path;
 import com.merim.digitalpayment.underflow.annotation.routing.Query;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowApiHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.results.ServerEventResult;
 import io.undertow.server.handlers.sse.ServerSentEventHandler;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 
 import java.io.IOException;
 
@@ -16,6 +16,7 @@ import java.io.IOException;
  * @author Pierre Adam
  * @since 21.11.22
  */
+@Path("/sse")
 public class ServerEventTestHandler extends FlowApiHandler {
 
     /**

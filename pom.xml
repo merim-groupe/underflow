@@ -45,6 +45,8 @@
         <!-- https://mvnrepository.com/artifact/io.undertow/undertow-core -->
         <undertow.version>2.3.13.Final</undertow.version>
 
+        <jakarta.version>3.0.0</jakarta.version>
+
         <!-- Common -->
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
@@ -91,6 +93,7 @@
         <module>underflow-template</module>
         <module>underflow-test</module>
         <module>underflow-utils</module>
+        <module>underflow-openapi</module>
     </modules>
 
     <dependencies>
@@ -177,6 +180,11 @@
             <dependency>
                 <groupId>com.merim.digitalpayment.underflow</groupId>
                 <artifactId>underflow-utils</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-openapi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

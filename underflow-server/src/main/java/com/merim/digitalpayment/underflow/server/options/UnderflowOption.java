@@ -11,17 +11,6 @@ import io.undertow.server.HttpHandler;
 public interface UnderflowOption {
 
     /**
-     * Alter path string.
-     *
-     * @param path    the path
-     * @param handler the handler
-     * @return the string
-     */
-    default String alterPath(final String path, final HttpHandler handler) {
-        return path;
-    }
-
-    /**
      * Http handler http handler.
      *
      * @param path    the path

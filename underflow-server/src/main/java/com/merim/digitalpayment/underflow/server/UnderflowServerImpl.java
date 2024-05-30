@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 22.09.27
  */
 @Slf4j
-class UnderflowServerImpl implements UnderflowServer {
+public class UnderflowServerImpl implements UnderflowServer {
 
     /**
      * The waiting for stop lock.
@@ -37,8 +37,26 @@ class UnderflowServerImpl implements UnderflowServer {
     private final Object shutdownLock = new Object();
 
     /**
+     * The Application.
+     */
+    @Getter
+    private final UnderflowApplication application;
+
+    /**
+     * The Class loader.
+     */
+    private final ClassLoader classLoader;
+
+    /**
+     * The Handlers.
+     */
+    @Getter
+    private final Map<String, HandlerData> handlers;
+
+    /**
      * The Path handler.
      */
+    @Getter
     private final PathHandler pathHandler;
 
     /**
@@ -66,6 +84,7 @@ class UnderflowServerImpl implements UnderflowServer {
     /**
      * The Server.
      */
+    @Getter
     private Undertow server;
 
     /**
@@ -81,47 +100,58 @@ class UnderflowServerImpl implements UnderflowServer {
     /**
      * Instantiates a new Underflow server.
      *
-     * @param host     the host
-     * @param port     the port
-     * @param handlers the handlers
+     * @param application the application
+     * @param host        the host
+     * @param port        the port
+     * @param handlers    the handlers
      */
-    public UnderflowServerImpl(@NonNull final String host,
+    public UnderflowServerImpl(@NonNull final UnderflowApplication application,
+                               final ClassLoader classLoader,
+                               @NonNull final String host,
                                final int port,
                                @NonNull final Map<String, HandlerData> handlers) {
-        this(host, port, handlers, new ArrayList<>());
+        this(application, classLoader, host, port, handlers, new ArrayList<>());
     }
 
     /**
      * Instantiates a new Underflow server.
      *
+     * @param application   the application
+     * @param classLoader   the class loader
      * @param host          the host
      * @param port          the port
      * @param handlers      the handlers
      * @param shutdownHooks the shutdown hooks
      */
-    public UnderflowServerImpl(@NonNull final String host,
+    public UnderflowServerImpl(@NonNull final UnderflowApplication application,
+                               final ClassLoader classLoader,
+                               @NonNull final String host,
                                final int port,
                                @NonNull final Map<String, HandlerData> handlers,
                                @NonNull final List<Runnable> shutdownHooks) {
+        this.application = application;
+        this.classLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         this.host = host;
         this.port = port;
+        this.handlers = handlers;
         this.pathHandler = Handlers.path();
         this.waitingForExit = false;
         this.shutdownHooks = shutdownHooks;
 
         // Process the handlers.
-        handlers.forEach((originalPath, handlerData) -> {
-            String path = originalPath;
+        handlers.forEach((path, handlerData) -> {
             HttpHandler handler = handlerData.getHandler();
             for (final UnderflowOption option : handlerData.getOptions()) {
-                final String prevPath = path;
-                final HttpHandler prevHandler = handler;
-                path = option.alterPath(prevPath, prevHandler);
-                handler = option.alterHandler(prevPath, prevHandler);
+                handler = option.alterHandler(path, handler);
             }
 
             this.pathHandler.addPrefixPath(path, handler);
         });
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return null;
     }
 
 

@@ -3,7 +3,7 @@ package com.merim.digitalpayment.underflow.test;
 import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.app.Mode;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
-import com.merim.digitalpayment.underflow.test.server.UnderflowTestServer;
+import com.merim.digitalpayment.underflow.test.server.UnderflowTestApplication;
 import io.restassured.RestAssured;
 import lombok.NonNull;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -23,9 +23,9 @@ import java.util.Optional;
 public class UnderflowTestExtension implements BeforeAllCallback, AfterAllCallback {
 
     /**
-     * The Test server.
+     * The Test application.
      */
-    private UnderflowTestServer testServer;
+    private UnderflowTestApplication<?> testApplication;
 
     /**
      * The current thread.
@@ -54,17 +54,17 @@ public class UnderflowTestExtension implements BeforeAllCallback, AfterAllCallba
 
     @Override
     public void beforeAll(final ExtensionContext extensionContext) throws Exception {
-        this.getCustomAnnotationValue(extensionContext).ifPresent(server -> {
-            this.testServer.onServerStart(server);
+        this.getServer(extensionContext).ifPresent(server -> {
+            this.testApplication.onServerStart(server);
             server.start();
         });
     }
 
     @Override
     public void afterAll(final ExtensionContext extensionContext) throws Exception {
-        this.getCustomAnnotationValue(extensionContext).ifPresent(server -> {
+        this.getServer(extensionContext).ifPresent(server -> {
             try {
-                this.testServer.onServerStop(server);
+                this.testApplication.onServerStop(server);
                 server.stop();
                 server.waitForExit();
             } catch (final InterruptedException e) {
@@ -81,10 +81,10 @@ public class UnderflowTestExtension implements BeforeAllCallback, AfterAllCallba
      * @param context the context
      * @return the custom annotation value
      */
-    private Optional<UnderflowServer> getCustomAnnotationValue(@NonNull final ExtensionContext context) {
+    private Optional<UnderflowServer> getServer(@NonNull final ExtensionContext context) {
         if (this.server == null) {
             final int availablePort = UnderflowTestExtension.getAvailablePort();
-            this.testServer = context.getElement()
+            this.testApplication = context.getElement()
                     .flatMap(element -> Optional.ofNullable(element.getAnnotation(UnderflowTest.class)))
                     .map(UnderflowTest::value)
                     .map(testServerClass -> {
@@ -96,12 +96,12 @@ public class UnderflowTestExtension implements BeforeAllCallback, AfterAllCallba
                     })
                     .orElseThrow(() -> new RuntimeException("No test server found."));
 
-            this.server = this.testServer.getUnderflowServerBuilder()
+            this.server = this.testApplication.getUnderflowServerBuilder()
                     .setPort(availablePort)
                     .setHost("0.0.0.0")
-                    .build();
+                    .build(this.testApplication.getApplication());
             Application.initMode(Mode.TEST); // Init again to avoid getting overridden
-            this.testServer.onServerCreated(this.server);
+            this.testApplication.onServerCreated(this.server);
             RestAssured.port = availablePort;
             RestAssured.baseURI = "http://localhost";
         }

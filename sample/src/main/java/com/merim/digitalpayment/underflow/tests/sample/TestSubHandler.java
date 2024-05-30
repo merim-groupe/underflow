@@ -1,11 +1,10 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.method.GET;
 import com.merim.digitalpayment.underflow.annotation.routing.Named;
-import com.merim.digitalpayment.underflow.annotation.routing.Path;
-import com.merim.digitalpayment.underflow.annotation.routing.RecallNamed;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowApiHandler;
 import com.merim.digitalpayment.underflow.results.Result;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 
 /**
  * TestSubHandler.
@@ -13,8 +12,8 @@ import com.merim.digitalpayment.underflow.results.Result;
  * @author Pierre Adam
  * @since 23.04.19
  */
-@RecallNamed(value = "value", failOnMissing = true)
-@RecallNamed(value = "test", failOnMissing = true)
+//@RecallNamed(value = "value", failOnMissing = true)
+//@RecallNamed(value = "test", failOnMissing = true)
 public class TestSubHandler extends FlowApiHandler {
 
     /**

@@ -58,7 +58,7 @@ public interface UnderflowApplication {
 
         try {
             final UnderflowServerBuilder builder = application.createServerBuilder();
-            server = builder.build();
+            server = builder.build(application);
             application.onServerCreated(server);
         } catch (final Exception e) {
             LoggerFactory.getLogger(UnderflowApplication.class)

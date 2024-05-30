@@ -1,6 +1,5 @@
 package com.merim.digitalpayment.underflow.enums;
 
-import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import org.wildfly.common.annotation.NotNull;
 
@@ -22,12 +21,7 @@ public enum MethodType {
     /**
      * Result method type.
      */
-    RESULT(Result.class),
-
-    /**
-     * Handler method type.
-     */
-    HANDLER(FlowHandler.class);
+    RESULT(Result.class);
 
     /**
      * The Expected return type.

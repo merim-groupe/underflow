@@ -65,15 +65,24 @@ public class UnderflowTestApplication<A extends UnderflowApplication> implements
         }
     }
 
-    @Override
-    public UnderflowServerBuilder getUnderflowServerBuilder() {
+    /**
+     * Gets application.
+     *
+     * @return the application
+     */
+    public A getApplication() {
         if (this.application == null) {
             // Lazy load of the application
             this.application = this.createApplication();
             this.application.initialize(this.args);
         }
 
-        return this.application.createServerBuilder();
+        return this.application;
+    }
+
+    @Override
+    public UnderflowServerBuilder getUnderflowServerBuilder() {
+        return this.getApplication().createServerBuilder();
     }
 
     @Override

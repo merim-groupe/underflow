@@ -14,6 +14,8 @@ public interface UnderflowServer {
     /**
      * Create underflow server.
      *
+     * @param host the host
+     * @param port the port
      * @return the underflow server
      */
     static UnderflowServerBuilder builder(final String host, final int port) {
@@ -60,4 +62,11 @@ public interface UnderflowServer {
      * Stop.
      */
     void stop();
+
+    /**
+     * Gets class loader.
+     *
+     * @return the class loader
+     */
+    ClassLoader getClassLoader();
 }
