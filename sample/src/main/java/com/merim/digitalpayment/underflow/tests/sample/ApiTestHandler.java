@@ -10,8 +10,14 @@ import com.merim.digitalpayment.underflow.tests.sample.entities.ApiDescription;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.MediaType;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 import java.io.InputStream;
 import java.util.List;
@@ -30,6 +36,17 @@ public class ApiTestHandler extends FlowApiHandler {
      *
      * @return the result
      */
+    @Operation(
+            summary = "Gives an example of the result for a JSON api.",
+            description = "The framework replies with a 200 containing an object that is being serialized to JSON in a single line."
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Success, return list of all contracts",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = ApiDescription.class))),
+    })
     @GET
     @Path("/")
     public Result apiHome() {

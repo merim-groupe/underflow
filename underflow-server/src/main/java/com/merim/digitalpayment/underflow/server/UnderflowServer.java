@@ -68,5 +68,5 @@ public interface UnderflowServer {
      *
      * @return the class loader
      */
-    ClassLoader getClassLoader();
+    ClassLoader getApplicationClassLoader();
 }

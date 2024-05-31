@@ -175,6 +175,7 @@ public class UnderflowServerBuilder {
         if (this.aborted) {
             throw new IllegalStateException("Underflow server build has been previously aborted");
         }
+
         return new UnderflowServerImpl(application, this.classLoader, this.host, this.port, this.handlers, this.shutdownHooks);
     }
 

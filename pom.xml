@@ -85,6 +85,7 @@
     <modules>
         <module>sample</module>
         <module>underflow-api-form</module>
+        <module>underflow-config</module>
         <module>underflow-context</module>
         <module>underflow-converters</module>
         <module>underflow-core</module>
@@ -140,6 +141,11 @@
             <dependency>
                 <groupId>com.merim.digitalpayment.underflow</groupId>
                 <artifactId>underflow-api-form</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-config</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

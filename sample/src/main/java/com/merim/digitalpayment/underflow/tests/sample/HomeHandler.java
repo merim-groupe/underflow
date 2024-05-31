@@ -9,9 +9,6 @@ import freemarker.template.Template;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -41,14 +38,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @param security the security
      * @return the result
      */
-    @APIResponses(value = {
-            @APIResponse(responseCode = "400", description = "Invalid ID supplied",
-                    content = @Content(mediaType = "none")),
-            @APIResponse(responseCode = "404", description = "Pet not found", content = @Content(mediaType = "none")),
-            @APIResponse(responseCode = "200",
-                    description = "Pet found")
-    })
-    @Operation(summary = "Find pet by ID", description = "Returns a pet when ID is less than or equal to 10")
+    @Operation(hidden = true)
     @GET
     @Path("")
     public Result home(final MyUserRepresentation user, final MyCookieSecurity security) {
@@ -63,10 +53,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
         return this.ok(template, dataModel);
     }
 
-    @APIResponses(value = {
-            @APIResponse(responseCode = "200", description = "OK")
-    })
-    @Operation(summary = "Test text", description = "test for text answer")
+    @Operation(hidden = true)
     @GET
     @Path("/test-text")
     public Result stringAnswer() {
@@ -195,6 +182,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @param user the user
      * @return the result
      */
+    @Operation(hidden = true)
     @GET
     @Path("/long-content")
     public Result longContent(final MyUserRepresentation user) {
@@ -207,6 +195,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @param user the user
      * @return the result
      */
+    @Operation(hidden = true)
     @GET
     @Path("/image-asset-resources")
     public Result imageAssetResources(final MyUserRepresentation user) {

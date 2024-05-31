@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,7 +44,8 @@ public class UnderflowServerImpl implements UnderflowServer {
     /**
      * The Class loader.
      */
-    private final ClassLoader classLoader;
+    @Getter
+    private final ClassLoader applicationClassLoader;
 
     /**
      * The Handlers.
@@ -100,37 +100,21 @@ public class UnderflowServerImpl implements UnderflowServer {
     /**
      * Instantiates a new Underflow server.
      *
-     * @param application the application
-     * @param host        the host
-     * @param port        the port
-     * @param handlers    the handlers
+     * @param application            the application
+     * @param applicationClassLoader the class loader
+     * @param host                   the host
+     * @param port                   the port
+     * @param handlers               the handlers
+     * @param shutdownHooks          the shutdown hooks
      */
-    public UnderflowServerImpl(@NonNull final UnderflowApplication application,
-                               final ClassLoader classLoader,
-                               @NonNull final String host,
-                               final int port,
-                               @NonNull final Map<String, HandlerData> handlers) {
-        this(application, classLoader, host, port, handlers, new ArrayList<>());
-    }
-
-    /**
-     * Instantiates a new Underflow server.
-     *
-     * @param application   the application
-     * @param classLoader   the class loader
-     * @param host          the host
-     * @param port          the port
-     * @param handlers      the handlers
-     * @param shutdownHooks the shutdown hooks
-     */
-    public UnderflowServerImpl(@NonNull final UnderflowApplication application,
-                               final ClassLoader classLoader,
-                               @NonNull final String host,
-                               final int port,
-                               @NonNull final Map<String, HandlerData> handlers,
-                               @NonNull final List<Runnable> shutdownHooks) {
+    UnderflowServerImpl(@NonNull final UnderflowApplication application,
+                        final ClassLoader applicationClassLoader,
+                        @NonNull final String host,
+                        final int port,
+                        @NonNull final Map<String, HandlerData> handlers,
+                        @NonNull final List<Runnable> shutdownHooks) {
         this.application = application;
-        this.classLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
+        this.applicationClassLoader = applicationClassLoader != null ? applicationClassLoader : Thread.currentThread().getContextClassLoader();
         this.host = host;
         this.port = port;
         this.handlers = handlers;
@@ -148,12 +132,6 @@ public class UnderflowServerImpl implements UnderflowServer {
             this.pathHandler.addPrefixPath(path, handler);
         });
     }
-
-    @Override
-    public ClassLoader getClassLoader() {
-        return null;
-    }
-
 
     @Override
     public void start() {

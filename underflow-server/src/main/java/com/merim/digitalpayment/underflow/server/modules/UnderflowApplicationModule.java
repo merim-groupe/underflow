@@ -9,7 +9,7 @@ import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
  * @author Pierre Adam
  * @since 24.05.27
  */
-public interface UnderflowServerModule {
+public interface UnderflowApplicationModule {
 
     /**
      * Priority int.
