@@ -24,4 +24,9 @@ public class DoubleConverter implements IConverter<Double> {
     public Class<Double> getBackedType() {
         return Double.class;
     }
+
+    @Override
+    public String getSyntax() {
+        return "\\d+(\\.\\d+)?";
+    }
 }

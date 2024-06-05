@@ -24,4 +24,9 @@ public class FloatConverter implements IConverter<Float> {
     public Class<Float> getBackedType() {
         return Float.class;
     }
+
+    @Override
+    public String getSyntax() {
+        return "\\d+(\\.\\d+)?";
+    }
 }

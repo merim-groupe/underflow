@@ -24,4 +24,9 @@ public class LongConverter implements IConverter<Long> {
     public Class<Long> getBackedType() {
         return Long.class;
     }
+
+    @Override
+    public String getSyntax() {
+        return "\\d+";
+    }
 }

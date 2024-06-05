@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.server;
 
+import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
 import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
@@ -10,6 +11,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,6 +67,11 @@ public class UnderflowServerImpl implements UnderflowServer {
     private final List<Runnable> shutdownHooks;
 
     /**
+     * The Modules.
+     */
+    private final Collection<UnderflowServerModule> modules;
+
+    /**
      * The Port.
      */
     @Getter
@@ -106,13 +113,15 @@ public class UnderflowServerImpl implements UnderflowServer {
      * @param port                   the port
      * @param handlers               the handlers
      * @param shutdownHooks          the shutdown hooks
+     * @param modules                the modules
      */
     UnderflowServerImpl(@NonNull final UnderflowApplication application,
                         final ClassLoader applicationClassLoader,
                         @NonNull final String host,
                         final int port,
                         @NonNull final Map<String, HandlerData> handlers,
-                        @NonNull final List<Runnable> shutdownHooks) {
+                        @NonNull final List<Runnable> shutdownHooks,
+                        final Collection<UnderflowServerModule> modules) {
         this.application = application;
         this.applicationClassLoader = applicationClassLoader != null ? applicationClassLoader : Thread.currentThread().getContextClassLoader();
         this.host = host;
@@ -121,6 +130,7 @@ public class UnderflowServerImpl implements UnderflowServer {
         this.pathHandler = Handlers.path();
         this.waitingForExit = false;
         this.shutdownHooks = shutdownHooks;
+        this.modules = modules;
 
         // Process the handlers.
         handlers.forEach((path, handlerData) -> {
@@ -157,6 +167,7 @@ public class UnderflowServerImpl implements UnderflowServer {
                     .build();
 
             this.server.start();
+            this.modules.forEach(module -> module.onServerCreated(this));
         }
     }
 

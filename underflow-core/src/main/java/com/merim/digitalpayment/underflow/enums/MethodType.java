@@ -19,6 +19,11 @@ public enum MethodType {
     UNSUPPORTED(null),
 
     /**
+     * String method type.
+     */
+    STRING(String.class),
+
+    /**
      * Result method type.
      */
     RESULT(Result.class);

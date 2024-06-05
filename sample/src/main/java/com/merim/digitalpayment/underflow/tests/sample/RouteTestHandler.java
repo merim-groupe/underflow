@@ -1,12 +1,12 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.routing.*;
+import com.merim.digitalpayment.underflow.annotation.routing.Converter;
+import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.converters.IConverter;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import io.undertow.server.HttpServerExchange;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
+import jakarta.ws.rs.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,8 +37,9 @@ public class RouteTestHandler extends FlowTemplateHandler {
      */
     @GET
     @Path("/")
+    @Produces()
     public Result pathWithQuery(final HttpServerExchange exchange,
-                                @Query(value = "bar", defaultValue = @DefaultValue(value = "default value")) final String bar) {
+                                @QueryParam("bar") @DefaultValue(value = "default value") final String bar) {
         return this.ok(this.getTemplate("routes/home.ftl"), null);
     }
 
@@ -54,10 +55,10 @@ public class RouteTestHandler extends FlowTemplateHandler {
      * @return the result
      */
     @GET
-    @Path("/(?<uuid>[0-9a-f]{8}-(?>[0-9a-f]{4}-){3}[0-9a-f]{12})")
+    @Path("/{uuid}")
     public Result uuidInPath(
-            @Named("uuid") final UUID uuid,
-            @Query(value = "arg", required = false) final String arg) {
+            @PathParam("uuid") final UUID uuid,
+            @QueryParam("arg") final String arg) {
         return this.ok(this.getTemplate("routes/display-text.ftl"), new HashMap<String, Object>() {{
             this.put("text", String.format("You called with the UUID=[%s] and arg=[%s]", uuid.toString(), arg == null ? "" : arg));
         }});
@@ -80,9 +81,7 @@ public class RouteTestHandler extends FlowTemplateHandler {
      */
     @GET
     @Path("/query-list")
-    public Result uuidInPath(@Query(value = "entry", required = false,
-            listProperty = @QueryListProperty(backedType = String.class),
-            defaultValue = @DefaultValue("default value from controller !")) final List<String> dataList) {
+    public Result uuidInPath(@QueryParam("entry") @QueryParamList(String.class) @DefaultValue("default value from controller !") final List<String> dataList) {
         return this.ok(this.getTemplate("routes/display-list.ftl"), new HashMap<String, Object>() {{
             this.put("listData", dataList);
         }});
@@ -102,9 +101,8 @@ public class RouteTestHandler extends FlowTemplateHandler {
      */
     @GET
     @Path("/query-converter")
-    public Result queryConveter(@Query(value = "data", required = true,
-            defaultValue = @DefaultValue("123:456"),
-            converter = @Converter(MyComplexObject.Converter.class)) final MyComplexObject complexObject) {
+    public Result queryConveter(@QueryParam("data") @DefaultValue("123:456")
+                                @Converter(MyComplexObject.Converter.class) final MyComplexObject complexObject) {
         return this.ok(String.format("%s === %s", complexObject.left, complexObject.right));
     }
 
@@ -120,9 +118,8 @@ public class RouteTestHandler extends FlowTemplateHandler {
      * @return the result
      */
     @GET
-    @Path("/path-converter/(?<data>.+)")
-    public Result pathConverter(@Named(value = "data",
-            converter = @Converter(MyComplexObject.Converter.class)) final MyComplexObject complexObject) {
+    @Path("/path-converter/{data}")
+    public Result pathConverter(@PathParam("data") @Converter(MyComplexObject.Converter.class) final MyComplexObject complexObject) {
         return this.ok(String.format("%s === %s", complexObject.left, complexObject.right));
     }
 

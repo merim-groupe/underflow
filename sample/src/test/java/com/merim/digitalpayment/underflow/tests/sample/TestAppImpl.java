@@ -1,6 +1,6 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.test.server.UnderflowTestApplication;
+import com.merim.digitalpayment.underflow.test.server.UnderflowTestApplicationImpl;
 
 /**
  * TestApp.
@@ -8,12 +8,12 @@ import com.merim.digitalpayment.underflow.test.server.UnderflowTestApplication;
  * @author Pierre Adam
  * @since 24.04.22
  */
-public class TestApp extends UnderflowTestApplication<MainSample> {
+public class TestAppImpl extends UnderflowTestApplicationImpl<MainSample> {
 
     /**
      * Instantiates a new Underflow test application.
      */
-    public TestApp() {
+    public TestAppImpl() {
         super(MainSample.class);
     }
 }

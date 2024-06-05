@@ -115,20 +115,19 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
                                 context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), optionalUser.get());
                             } else {
                                 // User is logged but doesn't have the right permissions.
-                                this.onForbidden().process(exchange);
+                                this.onForbidden().process(exchange, null);
                                 return;
                             }
                         } else {
                             // User is not logged while required.
-                            this.onUnauthorized().process(exchange);
+                            this.onUnauthorized().process(exchange, null);
                             return;
                         }
                     }
                 }
                 context.execute();
             } else {
-                final Result result = this.onNotFound();
-                result.process(exchange);
+                this.onNotFound().process(exchange, null);
             }
         } catch (final IOException e) {
             throw new RuntimeException(e);

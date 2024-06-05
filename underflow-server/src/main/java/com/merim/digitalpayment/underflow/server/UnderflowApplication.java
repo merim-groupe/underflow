@@ -1,13 +1,8 @@
 package com.merim.digitalpayment.underflow.server;
 
 import com.merim.digitalpayment.underflow.app.Application;
-import com.merim.digitalpayment.underflow.server.modules.UnderflowApplicationModule;
 import lombok.NonNull;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.function.Consumer;
 
 /**
  * UnderflowApplication.
@@ -51,12 +46,10 @@ public interface UnderflowApplication {
     static void run(@NonNull final UnderflowApplication application,
                     @NonNull final String[] args) {
         Application.initMode(application.getClass());
-        final Collection<? extends UnderflowApplicationModule> modules = application.getModules();
         final UnderflowServer server;
 
         try {
             application.initialize(args);
-            UnderflowApplication.onModules(modules, module -> module.initialize(args));
         } catch (final Exception e) {
             LoggerFactory.getLogger(UnderflowApplication.class)
                     .error("An error occurred while initializing the application.", e);
@@ -66,10 +59,8 @@ public interface UnderflowApplication {
         try {
             final UnderflowServerBuilder builder = application.createServerBuilder();
 
-            UnderflowApplication.onModules(modules, module -> module.register(builder));
             server = builder.build(application);
             application.onServerCreated(server);
-            UnderflowApplication.onModules(modules, module -> module.onServerCreated(server));
         } catch (final Exception e) {
             LoggerFactory.getLogger(UnderflowApplication.class)
                     .error("An error occurred while creating the server.", e);
@@ -79,7 +70,6 @@ public interface UnderflowApplication {
         try {
             final MainThreadLogic mainThreadLogic = application.mainThreadLogic();
             application.onServerStart(server);
-            UnderflowApplication.onModules(modules, module -> module.onServerStart(server));
 
             if (mainThreadLogic == null) {
                 server.startAndWait();
@@ -99,28 +89,6 @@ public interface UnderflowApplication {
         } catch (final InterruptedException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * On modules.
-     *
-     * @param modules  the modules
-     * @param onModule the on module
-     */
-    static void onModules(final Collection<? extends UnderflowApplicationModule> modules,
-                          final Consumer<? super UnderflowApplicationModule> onModule) {
-        modules.stream()
-                .sorted((o1, o2) -> o2.priority() - o1.priority())
-                .forEach(onModule);
-    }
-
-    /**
-     * Gets modules.
-     *
-     * @return the modules
-     */
-    default Collection<? extends UnderflowApplicationModule> getModules() {
-        return new ArrayList<>();
     }
 
     /**

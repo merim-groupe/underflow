@@ -1,6 +1,5 @@
 package com.merim.digitalpayment.underflow.handlers.flows;
 
-import com.merim.digitalpayment.underflow.annotation.routing.Named;
 import com.merim.digitalpayment.underflow.handlers.flows.assets.AssetLoader;
 import com.merim.digitalpayment.underflow.handlers.flows.assets.AssetRepresentation;
 import com.merim.digitalpayment.underflow.results.Result;
@@ -14,6 +13,7 @@ import io.undertow.util.StatusCodes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HEAD;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 
 import java.util.Optional;
 
@@ -58,9 +58,9 @@ public abstract class FlowAssetsHandler extends FlowHandler {
      * @return the asset
      */
     @GET
-    @Path("/(?<path>.+)")
+    @Path("/{path:.+}")
     @Secured
-    public Result getAsset(final HttpServerExchange exchange, @Named("path") final String path) {
+    public Result getAsset(final HttpServerExchange exchange, @PathParam("path") final String path) {
         final Optional<AssetRepresentation> assetRepresentation = this.assetLoader.load(path);
         if (assetRepresentation.isPresent()) {
             final AssetRepresentation asset = assetRepresentation.get();
@@ -116,9 +116,9 @@ public abstract class FlowAssetsHandler extends FlowHandler {
      * @return the asset head
      */
     @HEAD
-    @Path("/(?<path>.+)")
+    @Path("/{path:.+}")
     @Secured
-    public Result getAssetHead(final HttpServerExchange exchange, @Named("path") final String path) {
+    public Result getAssetHead(final HttpServerExchange exchange, @PathParam("path") final String path) {
         return this.getAsset(exchange, path);
     }
 }

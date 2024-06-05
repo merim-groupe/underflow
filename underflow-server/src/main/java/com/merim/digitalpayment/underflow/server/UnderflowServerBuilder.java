@@ -1,6 +1,7 @@
 package com.merim.digitalpayment.underflow.server;
 
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
+import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
 import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.server.HttpHandler;
 import lombok.Getter;
@@ -8,10 +9,8 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * UnderflowServerBuilderImpl.
@@ -31,6 +30,11 @@ public class UnderflowServerBuilder {
      * The Shutdown hooks.
      */
     private final List<Runnable> shutdownHooks;
+
+    /**
+     * The Modules.
+     */
+    private final List<UnderflowServerModule> modules;
 
     /**
      * The Class loader.
@@ -67,10 +71,38 @@ public class UnderflowServerBuilder {
     UnderflowServerBuilder(@NonNull final String host, final int port) {
         this.handlers = new HashMap<>();
         this.shutdownHooks = new ArrayList<>();
+        this.modules = new ArrayList<>();
         this.classLoader = null;
         this.port = port;
         this.host = host;
         this.aborted = false;
+    }
+
+    /**
+     * Add module underflow server builder.
+     *
+     * @param module the module
+     * @return the underflow server builder
+     */
+    public UnderflowServerBuilder addModule(@NonNull final UnderflowServerModule module) {
+        this.modules.add(module);
+
+        if (module.onServerStop() != null) {
+            this.addShutdownHook(module.onServerStop());
+        }
+
+        return this;
+    }
+
+    /**
+     * Gets modules.
+     *
+     * @return the modules
+     */
+    public Collection<UnderflowServerModule> getModules() {
+        return this.modules.stream()
+                .sorted((o1, o2) -> o2.priority() - o1.priority())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -172,11 +204,19 @@ public class UnderflowServerBuilder {
      * @return the underflow server
      */
     public UnderflowServer build(final UnderflowApplication application) {
+        final Collection<UnderflowServerModule> activeModules = this.getModules();
+
+        activeModules.forEach(module -> module.register(this));
+
         if (this.aborted) {
             throw new IllegalStateException("Underflow server build has been previously aborted");
         }
 
-        return new UnderflowServerImpl(application, this.classLoader, this.host, this.port, this.handlers, this.shutdownHooks);
+        final UnderflowServerImpl underflowServer = new UnderflowServerImpl(application, this.classLoader,
+                this.host, this.port, this.handlers, this.shutdownHooks, activeModules);
+        activeModules.forEach(module -> module.onServerCreated(underflowServer));
+
+        return underflowServer;
     }
 
     /**

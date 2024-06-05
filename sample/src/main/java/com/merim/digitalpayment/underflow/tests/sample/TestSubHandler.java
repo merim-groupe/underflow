@@ -1,6 +1,5 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.routing.Named;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowApiHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import jakarta.ws.rs.GET;
@@ -25,12 +24,12 @@ public class TestSubHandler extends FlowApiHandler {
     /**
      * Gets home.
      *
-     * @param value the value
      * @return the home
      */
     @GET
     @Path("/")
-    public Result getHome(@Named("value") final Long value) {
-        return this.ok("I have the value " + value + " from the parent handler");
+    public Result getHome() { // @PathParam("value") final Long value
+//        return this.ok("I have the value " + value + " from the parent handler");
+        return this.noContent();
     }
 }

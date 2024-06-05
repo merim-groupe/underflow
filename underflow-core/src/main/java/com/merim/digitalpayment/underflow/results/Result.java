@@ -2,6 +2,8 @@ package com.merim.digitalpayment.underflow.results;
 
 import io.undertow.server.HttpServerExchange;
 
+import java.lang.reflect.Method;
+
 /**
  * Result.
  *
@@ -15,5 +17,5 @@ public interface Result {
      *
      * @param exchange the exchange
      */
-    void process(final HttpServerExchange exchange);
+    void process(final HttpServerExchange exchange, final Method method);
 }

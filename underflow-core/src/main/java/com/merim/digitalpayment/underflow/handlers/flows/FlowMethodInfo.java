@@ -2,13 +2,12 @@ package com.merim.digitalpayment.underflow.handlers.flows;
 
 import com.merim.digitalpayment.underflow.enums.MethodType;
 import com.merim.digitalpayment.underflow.handlers.flows.exceptions.InvalidMethodException;
+import com.merim.digitalpayment.underflow.routing.RouteResolver;
 import jakarta.ws.rs.HttpMethod;
-import jakarta.ws.rs.Path;
 import lombok.Getter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.regex.Pattern;
 
 /**
  * FlowMethodInfo.
@@ -42,7 +41,7 @@ public class FlowMethodInfo {
     /**
      * The Path pattern.
      */
-    private final Pattern pathPattern;
+    private final RouteResolver route;
 
     /**
      * Instantiates a new Flow method info.
@@ -57,7 +56,7 @@ public class FlowMethodInfo {
         this.method = method;
         this.methodType = MethodType.resolve(method);
         this.httpMethod = FlowMethodInfo.extractHttpMethod(this.method);
-        this.pathPattern = Pattern.compile(FlowMethodInfo.getPathRegex(handlerInfo.getHandlerClass(), method), 0);
+        this.route = new RouteResolver(handlerInfo.getHandlerClass(), method, false);
         // TODO : QUERY STRING Handling here directly.
     }
 
@@ -85,35 +84,5 @@ public class FlowMethodInfo {
         }
 
         return httpMethod.value();
-    }
-
-    /**
-     * Gets path regex.
-     *
-     * @param hClass the h class
-     * @param method the method
-     * @return the path regex
-     */
-    private static String getPathRegex(final Class<? extends FlowHandler> hClass, final Method method) {
-        String pathRegex = hClass.getAnnotation(Path.class).value().replaceAll("(/)+$", "");
-
-        if (method.isAnnotationPresent(Path.class)) {
-            final String methodPath = method.getAnnotation(Path.class).value();
-            pathRegex = (pathRegex.isEmpty() ? "" : pathRegex + "/") + methodPath.replaceAll("(/)+$", "");
-        }
-
-        if (!pathRegex.startsWith("/")) {
-            pathRegex = "/" + pathRegex;
-        }
-
-        if (pathRegex.endsWith("/")) {
-            pathRegex = pathRegex.replaceAll("(/)+$", "");
-        }
-
-        if (pathRegex.isEmpty()) {
-            pathRegex = "/";
-        }
-
-        return "^" + pathRegex + "$";
     }
 }

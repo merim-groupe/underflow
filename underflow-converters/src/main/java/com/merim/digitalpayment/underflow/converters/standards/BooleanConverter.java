@@ -27,4 +27,9 @@ public class BooleanConverter implements IConverter<Boolean> {
     public Class<Boolean> getBackedType() {
         return Boolean.class;
     }
+
+    @Override
+    public String getSyntax() {
+        return "([Ff][Aa][Ll][Ss][Ee]|[Tt][Rr][Uu][Ee])"; // false|true non case sensitive
+    }
 }

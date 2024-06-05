@@ -26,4 +26,9 @@ public class BigDecimalConverter implements IConverter<BigDecimal> {
     public Class<BigDecimal> getBackedType() {
         return BigDecimal.class;
     }
+
+    @Override
+    public String getSyntax() {
+        return "\\d+(\\.\\d+)?";
+    }
 }

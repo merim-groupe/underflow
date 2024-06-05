@@ -1,6 +1,6 @@
 package com.merim.digitalpayment.underflow.test;
 
-import com.merim.digitalpayment.underflow.test.server.UnderflowTestApplication;
+import com.merim.digitalpayment.underflow.test.server.UnderflowTestApplicationImpl;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -26,5 +26,5 @@ public @interface UnderflowTest {
      *
      * @return the class
      */
-    Class<? extends UnderflowTestApplication<?>> value();
+    Class<? extends UnderflowTestApplicationImpl<?>> value();
 }

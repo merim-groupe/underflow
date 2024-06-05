@@ -9,7 +9,7 @@ import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
  * @author Pierre Adam
  * @since 24.05.27
  */
-public interface UnderflowApplicationModule {
+public interface UnderflowServerModule {
 
     /**
      * Priority int.
@@ -30,14 +30,6 @@ public interface UnderflowApplicationModule {
     }
 
     /**
-     * Initialize.
-     *
-     * @param args the args
-     */
-    default void initialize(final String[] args) {
-    }
-
-    /**
      * Callback called just after the server being build from the builder.
      *
      * @param server the server
@@ -51,5 +43,14 @@ public interface UnderflowApplicationModule {
      * @param server the server
      */
     default void onServerStart(final UnderflowServer server) {
+    }
+
+    /**
+     * On server stop.
+     *
+     * @return the runnable
+     */
+    default Runnable onServerStop() {
+        return null;
     }
 }

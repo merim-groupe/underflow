@@ -1,12 +1,13 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.routing.Query;
+import com.merim.digitalpayment.underflow.annotation.routing.QueryParamRequired;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowApiHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.results.ServerEventResult;
 import io.undertow.server.handlers.sse.ServerSentEventHandler;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
 
 import java.io.IOException;
 
@@ -50,7 +51,7 @@ public class ServerEventTestHandler extends FlowApiHandler {
      */
     @GET
     @Path("/broadcast")
-    public Result broadcast(@Query(value = "message", required = true) final String message) {
+    public Result broadcast(@QueryParam("message") @QueryParamRequired final String message) {
         this.sseh.getConnections().forEach(connection -> {
             connection.send(message);
         });

@@ -1,7 +1,9 @@
 package com.merim.digitalpayment.underflow.annotation.routing;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * QueryListProperty.
@@ -9,19 +11,14 @@ import java.lang.annotation.RetentionPolicy;
  * @author Pierre Adam
  * @since 21.04.28
  */
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface QueryListProperty {
-
-    /**
-     * The interface No backed type.
-     */
-    interface NoBackedType {
-    }
+public @interface QueryParamList {
 
     /**
      * Backed type class.
      *
      * @return the class
      */
-    Class<?> backedType() default NoBackedType.class;
+    Class<?> value();
 }

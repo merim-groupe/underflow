@@ -31,4 +31,13 @@ public interface IConverter<T> {
      * @return the backed type
      */
     Class<T> getBackedType();
+
+    /**
+     * Gets syntax.
+     *
+     * @return the syntax
+     */
+    default String getSyntax() {
+        return "[^/]+";
+    }
 }

@@ -18,7 +18,7 @@ import static io.restassured.RestAssured.given;
  * @author Pierre Adam
  * @since 24.04.22
  */
-@UnderflowTest(TestApp.class)
+@UnderflowTest(TestAppImpl.class)
 public class TestSample {
 
     @Test

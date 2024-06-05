@@ -3,7 +3,9 @@ package com.merim.digitalpayment.underflow.test;
 import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.app.Mode;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
-import com.merim.digitalpayment.underflow.test.server.UnderflowTestApplication;
+import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
+import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
+import com.merim.digitalpayment.underflow.test.server.UnderflowTestApplicationImpl;
 import io.restassured.RestAssured;
 import lombok.NonNull;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -25,7 +28,7 @@ public class UnderflowTestExtension implements BeforeAllCallback, AfterAllCallba
     /**
      * The Test application.
      */
-    private UnderflowTestApplication<?> testApplication;
+    private UnderflowTestApplicationImpl<?> testApplication;
 
     /**
      * The current thread.
@@ -96,9 +99,13 @@ public class UnderflowTestExtension implements BeforeAllCallback, AfterAllCallba
                     })
                     .orElseThrow(() -> new RuntimeException("No test server found."));
 
-            this.server = this.testApplication.getUnderflowServerBuilder()
+            final UnderflowServerBuilder builder = this.testApplication.getUnderflowServerBuilder()
                     .setPort(availablePort)
-                    .setHost("0.0.0.0")
+                    .setHost("0.0.0.0");
+
+            final Collection<UnderflowServerModule> modules = builder.getModules();
+
+            this.server = builder
                     .build(this.testApplication.getApplication());
             Application.initMode(Mode.TEST); // Init again to avoid getting overridden
             this.testApplication.onServerCreated(this.server);

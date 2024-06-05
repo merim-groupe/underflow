@@ -1,19 +1,25 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
+import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
+import com.merim.digitalpayment.underflow.security.annotations.Secured;
+import com.merim.digitalpayment.underflow.tests.sample.form.LoginForm;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyCookieSecurity;
+import com.merim.digitalpayment.underflow.tests.sample.security.MySecurityScope;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyUserRepresentation;
 import com.merim.digitalpayment.underflow.web.forms.WebForm;
 import freemarker.template.Template;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
+import io.undertow.server.HttpServerExchange;
+import jakarta.ws.rs.*;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The Test handler.
@@ -60,121 +66,98 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
         return this.ok("OK");
     }
 
-//    /**
-//     * Gets sub handler.
-//     *
-//     * @return the sub handler
-//     */
-//    @ALL
-//    @Path("/subhandler")
-//    public FlowHandler getSubHandler() {
-//        this.logger.info("Delegating to sub-handler.");
-//        return this;
-//    }
-//
-//    /**
-//     * Gets sub handler.
-//     *
-//     * @param value the value
-//     * @return the sub handler
-//     */
-//    @ALL
-//    @Path("/statelessSubHandlerWithArgs/(?<value>[0-9]+)")
-//    public FlowHandler getSubHandler(@Named("value") final Long value) {
-//        this.logger.info("Delegating to sub-handler with the value {}", value);
-//        return this.statelessSubHandler;
-//    }
-//
-//    /**
-//     * Login result.
-//     * <p>
-//     * Example : http://localhost:8080/login?name=Pierre&amp;scope=web&amp;scope=abc
-//     * </p>
-//     *
-//     * @param user     the user
-//     * @param security the security
-//     * @param name     the name
-//     * @param scopes   the scopes
-//     * @return the result
-//     */
-//    @GET
-//    @Path("/login")
-//    public Result login(final MyUserRepresentation user,
-//                        final MyCookieSecurity security,
-//                        @Query(value = "name", defaultValue = @DefaultValue(value = "John Dummer")) final String name,
-//                        @Query(value = "scope",
-//                                listProperty = @QueryListProperty(backedType = String.class),
-//                                defaultValue = @DefaultValue(value = "web")) final List<String> scopes) {
-//        if (user == null) {
-//            final MyUserRepresentation newUser = new MyUserRepresentation(name, scopes);
-//            return this.redirect("/")
-//                    .withCookie(security.newCookie(newUser));
-//        } else {
-//            return this.ok("ALREADY LOGGED IN !");
-//        }
-//    }
-//
-//    /**
-//     * Login result.
-//     *
-//     * @param exchange the exchange
-//     * @param user     the user
-//     * @param security the security
-//     * @return the result
-//     */
-//    @POST
-//    @Path("/login")
-//    public Result login(final HttpServerExchange exchange,
-//                        final MyUserRepresentation user,
-//                        final MyCookieSecurity security) {
-//        final Function<LoginForm, Result> successLogic = loginForm -> {
-//            final MyUserRepresentation newUser = new MyUserRepresentation(loginForm.getName(), loginForm.getScopes());
-//            return this.redirect("/")
-//                    .withCookie(security.newCookie(newUser));
-//        };
-//
-//        if (user == null) {
-//            if (this.hasFormData(exchange)) {
-//                return this.getForm(exchange, LoginForm.class, successLogic, e -> this.badRequest("Invalid form."));
-//            } else {
-//                return this.getJsonForm(exchange, LoginForm.class, successLogic);
-//            }
-//        } else {
-//            return this.ok("ALREADY LOGGED IN !");
-//        }
-//    }
-//
-//    /**
-//     * Logout result.
-//     * <p>
-//     * Example : http://localhost:8080/logout
-//     *
-//     * @return the result
-//     */
-//    @GET
-//    @Path("/logout")
-//    public Result logout() {
-//        return this.redirect("/").dropCookies();
-//    }
-//
-//    /**
-//     * Secured page result.
-//     *
-//     * @param user the user
-//     * @return the result
-//     */
-//    @GET
-//    @Secured
-//    @MySecurityScope("web")
-//    @Path("/secured")
-//    public Result securedPage(final MyUserRepresentation user) {
-//        final Map<String, Object> dataModel = new HashMap<>();
-//        final Template template = this.getTemplate("secured-page.ftl");
-//
-//        dataModel.put("user", user);
-//
-//        return this.ok(template, dataModel);
-//    }
+    /**
+     * Login result.
+     * <p>
+     * Example : http://localhost:8080/login?name=Pierre&amp;scope=web&amp;scope=abc
+     * </p>
+     *
+     * @param user     the user
+     * @param security the security
+     * @param name     the name
+     * @param scopes   the scopes
+     * @return the result
+     */
+    @Operation(hidden = true)
+    @GET
+    @Path("/login")
+    public Result login(final MyUserRepresentation user,
+                        final MyCookieSecurity security,
+                        @QueryParam("name") @DefaultValue("John Dummer") final String name,
+                        @QueryParam("scope") @QueryParamList(String.class) @DefaultValue("web") final List<String> scopes) {
+        if (user == null) {
+            final MyUserRepresentation newUser = new MyUserRepresentation(name, scopes);
+            return this.redirect("/")
+                    .withCookie(security.newCookie(newUser));
+        } else {
+            return this.ok("ALREADY LOGGED IN !");
+        }
+    }
+
+    /**
+     * Login result.
+     *
+     * @param exchange the exchange
+     * @param user     the user
+     * @param security the security
+     * @return the result
+     */
+    @Operation(hidden = true)
+    @POST
+    @Path("/login")
+    public Result login(final HttpServerExchange exchange,
+                        final MyUserRepresentation user,
+                        final MyCookieSecurity security) {
+        final Function<LoginForm, Result> successLogic = loginForm -> {
+            final MyUserRepresentation newUser = new MyUserRepresentation(loginForm.getName(), loginForm.getScopes());
+            return this.redirect("/")
+                    .withCookie(security.newCookie(newUser));
+        };
+
+        if (user == null) {
+            if (this.hasFormData(exchange)) {
+                return this.getForm(exchange, LoginForm.class, successLogic, e -> this.badRequest("Invalid form."));
+            } else {
+                return this.getJsonForm(exchange, LoginForm.class, successLogic);
+            }
+        } else {
+            return this.ok("ALREADY LOGGED IN !");
+        }
+    }
+
+    /**
+     * Logout result.
+     * <p>
+     * Example : http://localhost:8080/logout
+     *
+     * @return the result
+     */
+    @Operation(hidden = true)
+    @GET
+    @Path("/logout")
+    public Result logout() {
+        return this.redirect("/").dropCookies();
+    }
+
+    /**
+     * Secured page result.
+     *
+     * @param user the user
+     * @return the result
+     */
+    @Operation(hidden = true)
+    @GET
+    @Secured
+    @MySecurityScope("web")
+    @Path("/secured")
+    public Result securedPage(final MyUserRepresentation user) {
+        final Map<String, Object> dataModel = new HashMap<>();
+        final Template template = this.getTemplate("secured-page.ftl");
+
+        dataModel.put("user", user);
+
+        return this.ok(template, dataModel);
+    }
 
     /**
      * Secured page result.
