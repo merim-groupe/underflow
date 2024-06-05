@@ -56,7 +56,6 @@ public class RouteResolver {
      * @param hClass     the h class
      * @param method     the method
      * @param ignoreCase the ignore case
-     * @return the pattern
      */
     public RouteResolver(final Class<? extends FlowHandler> hClass, final Method method, final boolean ignoreCase) {
         this(RouteResolver.extractPath(hClass, method), method, ignoreCase);

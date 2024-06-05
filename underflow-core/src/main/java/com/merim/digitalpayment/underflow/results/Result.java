@@ -16,6 +16,7 @@ public interface Result {
      * Process the result.
      *
      * @param exchange the exchange
+     * @param method   the method
      */
     void process(final HttpServerExchange exchange, final Method method);
 }
