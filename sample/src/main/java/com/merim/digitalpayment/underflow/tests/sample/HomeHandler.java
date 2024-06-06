@@ -229,7 +229,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     @GET
     @Path("/ftl-exception-1")
     public Result ftlException1() {
-        return this.ok(this.getTemplate("bad-template.ftl"), new HashMap<>() {{
+        return this.ok(this.getTemplate("bad-template.ftl"), new HashMap<String, Object>() {{
             this.put("key", null);
         }});
     }
