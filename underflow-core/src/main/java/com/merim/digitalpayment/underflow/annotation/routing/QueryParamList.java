@@ -6,19 +6,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * MultipleRecallNamed.
+ * QueryListProperty.
  *
  * @author Pierre Adam
- * @since 23.04.19
+ * @since 21.04.28
  */
-@Target({ElementType.TYPE})
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MultipleRecallNamed {
+public @interface QueryParamList {
 
     /**
-     * Array of recall.
+     * Backed type class.
      *
-     * @return the array of recall
+     * @return the class
      */
-    RecallNamed[] value();
+    Class<?> value();
 }

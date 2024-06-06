@@ -1,7 +1,7 @@
 package com.merim.digitalpayment.underflow.handlers.flows;
 
 import com.merim.digitalpayment.underflow.handlers.context.ContextHandler;
-import com.merim.digitalpayment.underflow.handlers.context.path.PathMatcher;
+import com.merim.digitalpayment.underflow.handlers.flows.exceptions.InvalidMethodException;
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
 import com.merim.digitalpayment.underflow.mdc.MDCInterceptor;
 import com.merim.digitalpayment.underflow.mdc.MDCServerContext;
@@ -15,11 +15,14 @@ import com.merim.digitalpayment.underflow.security.annotations.Secured;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -43,11 +46,21 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
     private final FlowSecurity<?, ?> flowSecurity;
 
     /**
+     * The Handler info.
+     */
+    @Getter
+    private final FlowHandlerInfo handlerInfo;
+
+    /**
+     * The Methods.
+     */
+    private final List<FlowMethodInfo> methodsInfo;
+
+    /**
      * Instantiates a new Flow handler.
      */
     public FlowHandler() {
-        this.logger = LoggerFactory.getLogger(this.getClass());
-        this.flowSecurity = null;
+        this(null);
     }
 
     /**
@@ -58,22 +71,35 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
     public FlowHandler(final FlowSecurity<?, ?> flowSecurity) {
         this.logger = LoggerFactory.getLogger(this.getClass());
         this.flowSecurity = flowSecurity;
+        this.handlerInfo = FlowHandlerInfo.create(this.getClass(), this);
+        this.methodsInfo = FlowHandler.initMethodsInfo(this.handlerInfo);
+    }
+
+    /**
+     * Init methods info list.
+     *
+     * @param handlerInfo the handler info
+     * @return the list
+     */
+    private static List<FlowMethodInfo> initMethodsInfo(final FlowHandlerInfo handlerInfo) {
+        final List<FlowMethodInfo> results = new ArrayList<>();
+
+        final Method[] methods = handlerInfo.getHandlerClass().getMethods();
+        for (final Method method : methods) {
+            try {
+                final FlowMethodInfo flowMethodInfo = new FlowMethodInfo(handlerInfo, method);
+                results.add(flowMethodInfo);
+            } catch (final InvalidMethodException ignore) {
+            }
+        }
+
+        return results;
     }
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) {
-        this.handleRequest(exchange, new ArrayList<>());
-    }
-
-    /**
-     * Handle request.
-     *
-     * @param exchange        the exchange
-     * @param previousMatcher the previous matcher
-     */
-    public void handleRequest(final HttpServerExchange exchange, final List<PathMatcher> previousMatcher) {
         try (final MDCServerContext ignored = MDCInterceptor.getInstance().withMDCServerContext(exchange)) {
-            final ContextHandler context = new ContextHandler(this, exchange, previousMatcher);
+            final ContextHandler context = new ContextHandler(this, exchange);
 
             if (context.isValid()) {
                 final Optional<Secured> secured = context.requireSecurity();
@@ -89,24 +115,32 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
                                 context.addInjectableUnsafe(this.flowSecurity.userRepresentationClass(), optionalUser.get());
                             } else {
                                 // User is logged but doesn't have the right permissions.
-                                this.onForbidden().process(exchange);
+                                this.onForbidden().process(exchange, null);
                                 return;
                             }
                         } else {
                             // User is not logged while required.
-                            this.onUnauthorized().process(exchange);
+                            this.onUnauthorized().process(exchange, null);
                             return;
                         }
                     }
                 }
                 context.execute();
             } else {
-                final Result result = this.onNotFound();
-                result.process(exchange);
+                this.onNotFound().process(exchange, null);
             }
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Gets methods for.
+     *
+     * @return the methods for
+     */
+    public Collection<FlowMethodInfo> getMethodsInfo() {
+        return this.methodsInfo;
     }
 
     @Override

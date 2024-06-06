@@ -1,8 +1,8 @@
 package com.merim.digitalpayment.underflow.handlers.flows;
 
 import com.merim.digitalpayment.underflow.annotation.method.ALL;
-import com.merim.digitalpayment.underflow.annotation.routing.Path;
 import com.merim.digitalpayment.underflow.results.Result;
+import jakarta.ws.rs.Path;
 
 import java.util.function.Supplier;
 
@@ -43,7 +43,7 @@ public class UniqueResponseHandler extends FlowHandler {
      * @return the response
      */
     @ALL
-    @Path(value = "", lazyMatch = true)
+    @Path(value = "")
     public Result getResponse() {
         return this.response.get();
     }

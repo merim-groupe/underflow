@@ -6,26 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Named.
+ * QueryParamRequired.
  *
  * @author Pierre Adam
- * @since 21.04.27
+ * @since 24.06.04
  */
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Named {
-
-    /**
-     * Value string.
-     *
-     * @return the string
-     */
-    String value();
-
-    /**
-     * Query converter query converter.
-     *
-     * @return the query converter
-     */
-    Converter converter() default @Converter();
+public @interface QueryParamRequired {
 }

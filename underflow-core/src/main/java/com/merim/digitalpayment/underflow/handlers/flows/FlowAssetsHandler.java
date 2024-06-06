@@ -1,9 +1,5 @@
 package com.merim.digitalpayment.underflow.handlers.flows;
 
-import com.merim.digitalpayment.underflow.annotation.method.GET;
-import com.merim.digitalpayment.underflow.annotation.method.HEAD;
-import com.merim.digitalpayment.underflow.annotation.routing.Named;
-import com.merim.digitalpayment.underflow.annotation.routing.Path;
 import com.merim.digitalpayment.underflow.handlers.flows.assets.AssetLoader;
 import com.merim.digitalpayment.underflow.handlers.flows.assets.AssetRepresentation;
 import com.merim.digitalpayment.underflow.results.Result;
@@ -14,6 +10,12 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import io.undertow.util.StatusCodes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HEAD;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Context;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import java.util.Optional;
 
@@ -23,7 +25,7 @@ import java.util.Optional;
  * @author Pierre Adam
  * @since 22.07.21
  */
-public class FlowAssetsHandler extends FlowHandler {
+public abstract class FlowAssetsHandler extends FlowHandler {
 
     /**
      * The Resource base path.
@@ -53,14 +55,16 @@ public class FlowAssetsHandler extends FlowHandler {
     /**
      * Gets asset.
      *
-     * @param path the path
+     * @param exchange the exchange
+     * @param path     the path
      * @return the asset
      */
+    @Operation(hidden = true)
     @GET
-    @HEAD
-    @Path("/(?<path>.+)")
+    @Path("/{path:.+}")
     @Secured
-    public Result getAsset(final HttpServerExchange exchange, @Named("path") final String path) {
+    public Result getAsset(@Context final HttpServerExchange exchange,
+                           @PathParam("path") final String path) {
         final Optional<AssetRepresentation> assetRepresentation = this.assetLoader.load(path);
         if (assetRepresentation.isPresent()) {
             final AssetRepresentation asset = assetRepresentation.get();
@@ -106,5 +110,21 @@ public class FlowAssetsHandler extends FlowHandler {
         } else {
             return this.onNotFound();
         }
+    }
+
+    /**
+     * Gets asset head.
+     *
+     * @param exchange the exchange
+     * @param path     the path
+     * @return the asset head
+     */
+    @Operation(hidden = true)
+    @HEAD
+    @Path("/{path:.+}")
+    @Secured
+    public Result getAssetHead(@Context final HttpServerExchange exchange,
+                               @PathParam("path") final String path) {
+        return this.getAsset(exchange, path);
     }
 }

@@ -58,7 +58,8 @@ public interface UnderflowApplication {
 
         try {
             final UnderflowServerBuilder builder = application.createServerBuilder();
-            server = builder.build();
+
+            server = builder.build(application);
             application.onServerCreated(server);
         } catch (final Exception e) {
             LoggerFactory.getLogger(UnderflowApplication.class)
@@ -69,6 +70,7 @@ public interface UnderflowApplication {
         try {
             final MainThreadLogic mainThreadLogic = application.mainThreadLogic();
             application.onServerStart(server);
+
             if (mainThreadLogic == null) {
                 server.startAndWait();
             } else {

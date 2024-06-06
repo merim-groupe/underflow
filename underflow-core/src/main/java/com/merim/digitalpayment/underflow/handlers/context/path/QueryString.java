@@ -1,11 +1,16 @@
 package com.merim.digitalpayment.underflow.handlers.context.path;
 
-import com.merim.digitalpayment.underflow.annotation.routing.Query;
-import com.merim.digitalpayment.underflow.annotation.routing.QueryListProperty;
+import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
+import com.merim.digitalpayment.underflow.annotation.routing.QueryParamRequired;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.QueryParam;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -19,12 +24,7 @@ public class QueryString {
     /**
      * The Query representation.
      */
-    private final Map<String, Deque<String>> query;
-
-    /**
-     * The Properties.
-     */
-    private final List<Query> properties;
+    private final Map<String, QueryStringEntry> queryEntries;
 
     /**
      * Instantiates a new Query parameter.
@@ -34,30 +34,30 @@ public class QueryString {
      */
     public QueryString(final Map<String, Deque<String>> pathParameters,
                        final Method method) {
-        this.query = new HashMap<>();
-        this.properties = new ArrayList<>();
+        this.queryEntries = new HashMap<>();
 
         for (final Parameter parameter : method.getParameters()) {
-            if (parameter.isAnnotationPresent(Query.class)) {
-                final Query query = parameter.getAnnotation(Query.class);
-                this.properties.add(query);
-                if (query.listProperty().backedType().equals(QueryListProperty.NoBackedType.class)) {
-                    this.query.put(query.value(), pathParameters.get(query.value()));
-                } else {
-                    final String format = String.format("%s\\[\\d*\\]", query.value());
-                    final Pattern pattern = Pattern.compile(format);
+            if (parameter.isAnnotationPresent(QueryParam.class)) {
+                final QueryParam qQueryParam = parameter.getAnnotation(QueryParam.class);
+                final QueryParamList qQueryParamList = parameter.getAnnotation(QueryParamList.class);
+                final QueryParamRequired qQueryParamRequired = parameter.getAnnotation(QueryParamRequired.class);
+                final DefaultValue qDefaultValue = parameter.getAnnotation(DefaultValue.class);
 
-                    if (pathParameters.containsKey(query.value())) {
-                        this.query.put(query.value(), pathParameters.get(query.value()));
-                    }
+                final QueryStringEntry entry = new QueryStringEntry(qQueryParamRequired != null, qDefaultValue);
+                final String queryParamName = qQueryParam.value();
+                this.queryEntries.put(queryParamName, entry);
+
+                if (pathParameters.containsKey(queryParamName)) {
+                    entry.getData().addAll(pathParameters.get(queryParamName));
+                }
+
+                if (qQueryParamList != null) {
+                    final String format = String.format("%s\\[\\d*\\]", queryParamName);
+                    final Pattern pattern = Pattern.compile(format);
 
                     for (final String key : pathParameters.keySet()) {
                         if (pattern.matcher(key).matches()) {
-                            if (this.query.containsKey(query.value())) {
-                                this.query.get(query.value()).addAll(pathParameters.get(key));
-                            } else {
-                                this.query.put(query.value(), pathParameters.get(key));
-                            }
+                            entry.getData().addAll(pathParameters.get(key));
                         }
                     }
                 }
@@ -71,9 +71,8 @@ public class QueryString {
      * @return true if all requested parameters are persent
      */
     public boolean checkRequired() {
-        for (final Query parameter : this.properties) {
-            if (parameter.required()
-                    && this.query.get(parameter.value()) == null) {
+        for (final QueryStringEntry entry : this.queryEntries.values()) {
+            if (entry.isRequired() && entry.getDataOrDefault().isEmpty()) {
                 return false;
             }
         }
@@ -88,7 +87,7 @@ public class QueryString {
      * @return the boolean
      */
     public boolean hasKey(final String parameterName) {
-        return this.query.containsKey(parameterName);
+        return this.queryEntries.containsKey(parameterName);
     }
 
     /**
@@ -98,7 +97,10 @@ public class QueryString {
      * @return the values for
      */
     public Deque<String> getValuesFor(final String parameterName) {
-        final Deque<String> values = this.query.get(parameterName);
-        return values == null ? new ArrayDeque<>() : values;
+        if (this.queryEntries.containsKey(parameterName)) {
+            return this.queryEntries.get(parameterName).getDataOrDefault();
+        }
+
+        return new ArrayDeque<>();
     }
 }

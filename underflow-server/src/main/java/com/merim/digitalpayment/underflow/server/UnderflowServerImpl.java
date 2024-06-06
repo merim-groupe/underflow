@@ -1,5 +1,8 @@
 package com.merim.digitalpayment.underflow.server;
 
+import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
+import com.merim.digitalpayment.underflow.routing.RegexRouterHandler;
+import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
 import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
@@ -10,7 +13,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 22.09.27
  */
 @Slf4j
-class UnderflowServerImpl implements UnderflowServer {
+public class UnderflowServerImpl implements UnderflowServer {
 
     /**
      * The waiting for stop lock.
@@ -37,14 +40,38 @@ class UnderflowServerImpl implements UnderflowServer {
     private final Object shutdownLock = new Object();
 
     /**
+     * The Application.
+     */
+    @Getter
+    private final UnderflowApplication application;
+
+    /**
+     * The Class loader.
+     */
+    @Getter
+    private final ClassLoader applicationClassLoader;
+
+    /**
+     * The Handlers.
+     */
+    @Getter
+    private final Map<String, List<HandlerData>> handlers;
+
+    /**
      * The Path handler.
      */
+    @Getter
     private final PathHandler pathHandler;
 
     /**
      * The Shutdown hooks.
      */
     private final List<Runnable> shutdownHooks;
+
+    /**
+     * The Modules.
+     */
+    private final Collection<UnderflowServerModule> modules;
 
     /**
      * The Port.
@@ -66,6 +93,7 @@ class UnderflowServerImpl implements UnderflowServer {
     /**
      * The Server.
      */
+    @Getter
     private Undertow server;
 
     /**
@@ -81,49 +109,74 @@ class UnderflowServerImpl implements UnderflowServer {
     /**
      * Instantiates a new Underflow server.
      *
-     * @param host     the host
-     * @param port     the port
-     * @param handlers the handlers
+     * @param application            the application
+     * @param applicationClassLoader the class loader
+     * @param host                   the host
+     * @param port                   the port
+     * @param handlers               the handlers
+     * @param shutdownHooks          the shutdown hooks
+     * @param modules                the modules
      */
-    public UnderflowServerImpl(@NonNull final String host,
-                               final int port,
-                               @NonNull final Map<String, HandlerData> handlers) {
-        this(host, port, handlers, new ArrayList<>());
-    }
-
-    /**
-     * Instantiates a new Underflow server.
-     *
-     * @param host          the host
-     * @param port          the port
-     * @param handlers      the handlers
-     * @param shutdownHooks the shutdown hooks
-     */
-    public UnderflowServerImpl(@NonNull final String host,
-                               final int port,
-                               @NonNull final Map<String, HandlerData> handlers,
-                               @NonNull final List<Runnable> shutdownHooks) {
+    UnderflowServerImpl(@NonNull final UnderflowApplication application,
+                        final ClassLoader applicationClassLoader,
+                        @NonNull final String host,
+                        final int port,
+                        @NonNull final Map<String, List<HandlerData>> handlers,
+                        @NonNull final List<Runnable> shutdownHooks,
+                        final Collection<UnderflowServerModule> modules) {
+        this.application = application;
+        this.applicationClassLoader = applicationClassLoader != null ? applicationClassLoader : Thread.currentThread().getContextClassLoader();
         this.host = host;
         this.port = port;
+        this.handlers = handlers;
         this.pathHandler = Handlers.path();
         this.waitingForExit = false;
         this.shutdownHooks = shutdownHooks;
+        this.modules = modules;
 
         // Process the handlers.
-        handlers.forEach((originalPath, handlerData) -> {
-            String path = originalPath;
-            HttpHandler handler = handlerData.getHandler();
-            for (final UnderflowOption option : handlerData.getOptions()) {
-                final String prevPath = path;
-                final HttpHandler prevHandler = handler;
-                path = option.alterPath(prevPath, prevHandler);
-                handler = option.alterHandler(prevPath, prevHandler);
+        handlers.forEach((path, handlersData) -> {
+            if (handlersData.size() == 1) {
+                this.pathHandler.addPrefixPath(path, UnderflowServerImpl.createHandler(path, handlersData.get(0)));
+            } else if (handlersData.size() > 1) {
+                this.pathHandler.addPrefixPath(path, UnderflowServerImpl.createHandler(handlersData));
             }
-
-            this.pathHandler.addPrefixPath(path, handler);
         });
     }
 
+    private static HttpHandler createHandler(final List<HandlerData> handlersData) {
+        final RegexRouterHandler regexRouterHandler = new RegexRouterHandler();
+
+        for (final HandlerData handlerData : handlersData) {
+            if (!(handlerData.getHandler() instanceof FlowHandler)) {
+                throw new RuntimeException("Conflicting routes with HttpHandler not extending FlowHandler is not supported !");
+            }
+
+            final FlowHandler flowHandler = (FlowHandler) handlerData.getHandler();
+            final HttpHandler finalHandler = UnderflowServerImpl.createHandler(flowHandler.getHandlerInfo().getBasePath(), handlerData);
+
+            regexRouterHandler.addPrefixPath(flowHandler.getHandlerInfo().getVariableRegexPath(), finalHandler);
+        }
+
+        return regexRouterHandler;
+    }
+
+    /**
+     * Create handler http handler.
+     *
+     * @param path        the path
+     * @param handlerData the handler data
+     * @return the http handler
+     */
+    private static HttpHandler createHandler(final String path, final HandlerData handlerData) {
+        HttpHandler handler = handlerData.getHandler();
+
+        for (final UnderflowOption option : handlerData.getOptions()) {
+            handler = option.alterHandler(path, handler);
+        }
+
+        return handler;
+    }
 
     @Override
     public void start() {
@@ -149,6 +202,7 @@ class UnderflowServerImpl implements UnderflowServer {
                     .build();
 
             this.server.start();
+            this.modules.forEach(module -> module.onServerCreated(this));
         }
     }
 

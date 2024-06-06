@@ -1,9 +1,6 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.method.*;
-import com.merim.digitalpayment.underflow.annotation.routing.*;
-import com.merim.digitalpayment.underflow.app.Application;
-import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
+import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.security.annotations.Secured;
@@ -17,6 +14,10 @@ import freemarker.template.Template;
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -32,19 +33,14 @@ import java.util.function.Function;
  * @author Pierre Adam
  * @since 21.04.27
  */
+@Path("/")
 public class HomeHandler extends FlowTemplateHandler implements WebForm {
-
-    /**
-     * The Stateless sub handler.
-     */
-    private final TestSubHandler statelessSubHandler;
 
     /**
      * Instantiates a new Test handler.
      */
     public HomeHandler() {
         super("/templates", new MyCookieSecurity());
-        this.statelessSubHandler = new TestSubHandler();
     }
 
     /**
@@ -54,9 +50,12 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @param security the security
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
     @GET
     @Path("")
-    public Result home(final MyUserRepresentation user, final MyCookieSecurity security) {
+    public Result home(@Context final MyUserRepresentation user,
+                       @Context final MyCookieSecurity security) {
         final Map<String, Object> dataModel = new HashMap<>();
         final Template template = this.getTemplate("home.ftl");
 
@@ -68,35 +67,17 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
         return this.ok(template, dataModel);
     }
 
+    /**
+     * String answer result.
+     *
+     * @return the result
+     */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_PLAIN)
     @GET
     @Path("/test-text")
     public Result stringAnswer() {
         return this.ok("OK");
-    }
-
-    /**
-     * Gets sub handler.
-     *
-     * @return the sub handler
-     */
-    @ALL
-    @Path("/subhandler")
-    public FlowHandler getSubHandler() {
-        this.logger.info("Delegating to sub-handler.");
-        return this;
-    }
-
-    /**
-     * Gets sub handler.
-     *
-     * @param value the value
-     * @return the sub handler
-     */
-    @ALL
-    @Path("/statelessSubHandlerWithArgs/(?<value>[0-9]+)")
-    public FlowHandler getSubHandler(@Named("value") final Long value) {
-        this.logger.info("Delegating to sub-handler with the value {}", value);
-        return this.statelessSubHandler;
     }
 
     /**
@@ -111,14 +92,14 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @param scopes   the scopes
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_PLAIN)
     @GET
     @Path("/login")
-    public Result login(final MyUserRepresentation user,
-                        final MyCookieSecurity security,
-                        @Query(value = "name", defaultValue = @DefaultValue(value = "John Dummer")) final String name,
-                        @Query(value = "scope",
-                                listProperty = @QueryListProperty(backedType = String.class),
-                                defaultValue = @DefaultValue(value = "web")) final List<String> scopes) {
+    public Result login(@Context final MyUserRepresentation user,
+                        @Context final MyCookieSecurity security,
+                        @QueryParam("name") @DefaultValue("John Dummer") final String name,
+                        @QueryParam("scope") @QueryParamList(String.class) @DefaultValue("web") final List<String> scopes) {
         if (user == null) {
             final MyUserRepresentation newUser = new MyUserRepresentation(name, scopes);
             return this.redirect("/")
@@ -136,11 +117,13 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @param security the security
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_PLAIN)
     @POST
     @Path("/login")
-    public Result login(final HttpServerExchange exchange,
-                        final MyUserRepresentation user,
-                        final MyCookieSecurity security) {
+    public Result login(@Context final HttpServerExchange exchange,
+                        @Context final MyUserRepresentation user,
+                        @Context final MyCookieSecurity security) {
         final Function<LoginForm, Result> successLogic = loginForm -> {
             final MyUserRepresentation newUser = new MyUserRepresentation(loginForm.getName(), loginForm.getScopes());
             return this.redirect("/")
@@ -165,6 +148,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      *
      * @return the result
      */
+    @Operation(hidden = true)
     @GET
     @Path("/logout")
     public Result logout() {
@@ -177,11 +161,13 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @param user the user
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
     @GET
     @Secured
     @MySecurityScope("web")
     @Path("/secured")
-    public Result securedPage(final MyUserRepresentation user) {
+    public Result securedPage(@Context final MyUserRepresentation user) {
         final Map<String, Object> dataModel = new HashMap<>();
         final Template template = this.getTemplate("secured-page.ftl");
 
@@ -193,24 +179,26 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     /**
      * Secured page result.
      *
-     * @param user the user
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
     @GET
     @Path("/long-content")
-    public Result longContent(final MyUserRepresentation user) {
+    public Result longContent() {
         return this.ok(this.getTemplate("long-content.ftl"), null);
     }
 
     /**
      * Secured page result.
      *
-     * @param user the user
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
     @GET
     @Path("/image-asset-resources")
-    public Result imageAssetResources(final MyUserRepresentation user) {
+    public Result imageAssetResources() {
         return this.ok(this.getTemplate("image-asset-resources.ftl"), null);
     }
 
@@ -219,110 +207,57 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      *
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
     @GET
     @Path("/exception")
     public Result exception() {
-        if (true) {
+        if (true) { // Java trickery ignore this.
             throw new RuntimeException("Sample Exception");
         }
+
         return this.ok("");
     }
 
     /**
-     * Has query param result.
+     * Exception result.
      *
-     * @param download the download
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
     @GET
-    @Path(value = "/hasQueryParam")
-    public Result hasQueryParam(@Query(value = "download", required = false) final String download) {
-        if (download == null) {
-            return this.ok("download was not on the query parameters");
-        } else {
-            return this.ok("download was on the query parameters with the value \"" + download + "\"");
-        }
+    @Path("/ftl-exception-1")
+    public Result ftlException1() {
+        return this.ok(this.getTemplate("bad-template.ftl"), new HashMap<String, Object>() {{
+            this.put("key", null);
+        }});
     }
 
     /**
-     * Post home.
+     * Exception result.
      *
      * @return the result
      */
-    @POST
-    @Path("")
-    public Result postHome() {
-        return this.ok("POST from Underflow");
-    }
-
-    /**
-     * Put home.
-     *
-     * @return the result
-     */
-    @PUT
-    @Path("")
-    public Result putHome() {
-        return this.ok("PUT from Underflow");
-    }
-
-    /**
-     * Patch home.
-     *
-     * @return the result
-     */
-    @PATCH
-    @Path("")
-    public Result patchHome() {
-        return this.ok("PATCH from Underflow");
-    }
-
-    /**
-     * Option home.
-     *
-     * @return the result
-     */
-    @OPTIONS
-    @Path("")
-    public Result optionHome() {
-        return this.ok("OPTIONS from Underflow");
-    }
-
-    /**
-     * Delete home.
-     *
-     * @return the result
-     */
-    @DELETE
-    @Path("")
-    public Result deleteHome() {
-        return this.ok("DELETE from Underflow");
-    }
-
-    /**
-     * Delete home.
-     *
-     * @return the result
-     */
-    @HEAD
-    @Path("")
-    public Result headHome() {
-        return this.ok("HEAD from Underflow");
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_HTML)
+    @GET
+    @Path("/ftl-exception-2")
+    public Result ftlException2() {
+        return this.ok(this.getTemplate("throw-in-data-model.ftl"), new BadDataModel());
     }
 
     /**
      * Simple GET example.
      *
-     * @param exchange the exchange
      * @return the result
      * @throws Exception the exception
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_PLAIN)
     @GET
     @Path("/status")
-    @Path("/statusBis")
-    public Result status(final HttpServerExchange exchange) throws
-
-            Exception {
+    public Result status() throws Exception {
         return this.ok("Status : ", new IoCallback() {
             @Override
             public void onComplete(final HttpServerExchange exchange, final Sender sender) {
@@ -339,13 +274,31 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     /**
      * Stop result.
      *
+     * @param underflowServer the underflow server
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_PLAIN)
     @GET
     @Path("/stop")
-    public Result stop() {
-        Application.getInstance(UnderflowServer.class).stop();
+    public Result stop(@Context final UnderflowServer underflowServer) {
+        underflowServer.stop();
 
-        return this.ok("OK !");
+        return this.ok("Server is shutting down !");
+    }
+
+    /**
+     * The type Bad data model.
+     */
+    public static class BadDataModel {
+
+        /**
+         * Gets name.
+         *
+         * @return the name
+         */
+        public String throwAnException() {
+            throw new RuntimeException("Exception from DataModel");
+        }
     }
 }

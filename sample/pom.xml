@@ -33,6 +33,10 @@
         </dependency>
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
+            <artifactId>underflow-openapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-test</artifactId>
             <scope>test</scope>
         </dependency>
@@ -49,4 +53,36 @@
             <version>${logback-classic.version}</version> <!-- MAXIMUM Java 1.8 Version -->
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <name>Sonatype OSSRH Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>jandex-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>make-index</id>
+                        <goals>
+                            <goal>jandex</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

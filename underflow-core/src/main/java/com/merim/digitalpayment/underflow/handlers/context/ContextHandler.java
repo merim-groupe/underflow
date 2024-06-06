@@ -1,36 +1,38 @@
 package com.merim.digitalpayment.underflow.handlers.context;
 
-import com.merim.digitalpayment.underflow.annotation.method.*;
-import com.merim.digitalpayment.underflow.annotation.routing.*;
+import com.merim.digitalpayment.underflow.annotation.routing.Converter;
+import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.converters.Converters;
 import com.merim.digitalpayment.underflow.converters.IConverter;
-import com.merim.digitalpayment.underflow.converters.NoConverter;
 import com.merim.digitalpayment.underflow.enums.MethodType;
-import com.merim.digitalpayment.underflow.handlers.context.path.PathMatcher;
 import com.merim.digitalpayment.underflow.handlers.context.path.QueryString;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
+import com.merim.digitalpayment.underflow.handlers.flows.FlowMethodInfo;
 import com.merim.digitalpayment.underflow.mdc.MDCContext;
 import com.merim.digitalpayment.underflow.results.Result;
+import com.merim.digitalpayment.underflow.results.SimpleStringResult;
 import com.merim.digitalpayment.underflow.security.annotations.Secured;
 import io.undertow.server.BlockingHttpExchange;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.server.handlers.form.FormParserFactory;
-import io.undertow.util.HttpString;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -39,12 +41,8 @@ import java.util.stream.Collectors;
  * @author Pierre Adam
  * @since 21.04.27
  */
+@Slf4j
 public class ContextHandler implements MDCContext {
-
-    /**
-     * The Logger.
-     */
-    private final Logger logger;
 
     /**
      * The Handler logger.
@@ -67,21 +65,6 @@ public class ContextHandler implements MDCContext {
     private final Map<Class<?>, Supplier<Object>> controllerInjectable;
 
     /**
-     * The Controller injectable.
-     */
-    private final Map<Class<?>, IConverter<?>> runtimeConverter;
-
-    /**
-     * The Matchers.
-     */
-    private final List<PathMatcher> matchers;
-
-    /**
-     * The Recalled named.
-     */
-    private final Map<String, String> recalledNamed;
-
-    /**
      * The Method type.
      */
     private MethodType methodType;
@@ -93,9 +76,9 @@ public class ContextHandler implements MDCContext {
     private Method method;
 
     /**
-     * The Path matcher.
+     * The Matcher.
      */
-    private PathMatcher pathMatcher;
+    private Matcher pathMatcher;
 
     /**
      * The Query parameter.
@@ -107,12 +90,9 @@ public class ContextHandler implements MDCContext {
      *
      * @param handler  the handler
      * @param exchange the exchange
-     * @param matchers the previous matcher
      */
     public ContextHandler(final FlowHandler handler,
-                          final HttpServerExchange exchange,
-                          final List<PathMatcher> matchers) {
-        this.logger = LoggerFactory.getLogger(ContextHandler.class);
+                          final HttpServerExchange exchange) {
         this.handlerLogger = LoggerFactory.getLogger(handler.getClass());
         this.handler = handler;
         this.exchange = exchange;
@@ -121,9 +101,6 @@ public class ContextHandler implements MDCContext {
         this.pathMatcher = null;
         this.queryString = null;
         this.controllerInjectable = new HashMap<>();
-        this.runtimeConverter = new HashMap<>();
-        this.matchers = matchers;
-        this.recalledNamed = new HashMap<>();
         this.controllerInjectable.put(FormData.class, () -> this.getFormData(this.exchange));
         this.controllerInjectable.put(HttpServerExchange.class, () -> this.exchange);
     }
@@ -134,84 +111,30 @@ public class ContextHandler implements MDCContext {
      * @return true if there is a valid method
      */
     public boolean isValid() {
-        final Class<? extends Annotation> annotationForMethod = this.getAnnotationForMethod(this.exchange.getRequestMethod());
-        final Class<? extends FlowHandler> hClass = this.handler.getClass();
+        final String httpMethod = this.exchange.getRequestMethod().toString();
 
-        if (!this.solveRecalledNamed()) {
-            return false;
-        }
-
-        for (final Method classMethod : hClass.getMethods()) {
-            final MethodType type = MethodType.resolve(classMethod);
-            if (type != MethodType.UNSUPPORTED && this.methodMatch(classMethod, annotationForMethod)) {
-                final PathMatcher matcher = this.getPathMatcher(hClass, classMethod, type);
-                final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), classMethod);
-                if (matcher.find() && parameter.checkRequired()) {
-                    // Try to find "a match" or "the best match".
-                    if (this.method == null || matcher.getRemainingPath().length() < this.pathMatcher.getRemainingPath().length()) {
-                        this.method = classMethod;
-                        this.methodType = type;
-                        this.pathMatcher = matcher;
-                        this.queryString = parameter;
+        for (final FlowMethodInfo methodInfo : this.handler.getMethodsInfo()) {
+            if (methodInfo.getMethodType() != MethodType.UNSUPPORTED) {
+                if (Objects.equals(methodInfo.getHttpMethod(), httpMethod)) {
+                    final Matcher matcher = methodInfo.getRoute().getMatcherFor(this.exchange.getRequestPath());
+                    if (matcher.find()) {
+                        final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), methodInfo.getMethod());
+                        if (parameter.checkRequired()) {
+                            if (this.method == null) {
+                                this.method = methodInfo.getMethod();
+                                this.methodType = methodInfo.getMethodType();
+                                this.pathMatcher = matcher;
+                                this.queryString = parameter;
+                            }
+                        }
                     }
                 }
+            } else {
+                ContextHandler.logger.error("Method return type is not supported: {}", methodInfo.getMethod());
             }
         }
 
-        if (this.method != null) {
-            return true;
-        }
-
-        return this.hasFallbackMethod(hClass);
-    }
-
-    /**
-     * Solve recalled named boolean.
-     *
-     * @return the boolean
-     */
-    private boolean solveRecalledNamed() {
-        final MultipleRecallNamed multipleRecall = this.handler.getClass().getAnnotation(MultipleRecallNamed.class);
-        final RecallNamed singleRecall = this.handler.getClass().getAnnotation(RecallNamed.class);
-
-        if (singleRecall != null && !this.solveSingleRecallNamed(singleRecall)) {
-            return false;
-        }
-
-        if (multipleRecall != null) {
-            for (final RecallNamed recall : multipleRecall.value()) {
-                if (!this.solveSingleRecallNamed(recall)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Solve single recall named boolean.
-     *
-     * @param recall the recall
-     * @return the boolean
-     */
-    private boolean solveSingleRecallNamed(final RecallNamed recall) {
-        for (final PathMatcher matcher : this.matchers) {
-            if (matcher.hasGroup(recall.value())) {
-                final String value = matcher.getGroup(recall.value());
-                this.recalledNamed.put(recall.value(), value);
-                return true;
-            }
-        }
-
-        if (recall.failOnMissing()) {
-            return false;
-        } else {
-            this.handlerLogger.warn("A @RecallNamed(\"{}\") argument was requested for the handler {}. " +
-                            "This argument was not found on the path. Please check your @Path from your parent handlers.",
-                    recall.value(), this.handler.getClass().getSimpleName());
-            return true;
-        }
+        return this.method != null;
     }
 
     /**
@@ -221,33 +144,6 @@ public class ContextHandler implements MDCContext {
      */
     public Optional<Secured> requireSecurity() {
         return Optional.ofNullable(this.method.getAnnotation(Secured.class));
-    }
-
-    /**
-     * Check that there is a fallback method for the call.
-     *
-     * @param aClass the class of the controller
-     * @return the boolean
-     */
-    private boolean hasFallbackMethod(final Class<?> aClass) {
-        for (final Method classMethod : aClass.getMethods()) {
-            final MethodType type = MethodType.resolve(classMethod);
-            if (classMethod.isAnnotationPresent(Fallback.class) && type != MethodType.UNSUPPORTED) {
-                final PathMatcher matcher = new PathMatcher(this.exchange.getRelativePath(), ".*", true);
-                final QueryString parameter = new QueryString(this.exchange.getQueryParameters(), classMethod);
-
-                if (matcher.find() && parameter.checkRequired()) {
-                    this.method = classMethod;
-                    this.methodType = type;
-                    this.pathMatcher = matcher;
-                    this.queryString = parameter;
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -277,8 +173,6 @@ public class ContextHandler implements MDCContext {
      */
     private void run() {
         try {
-            this.exchange.setRelativePath(this.pathMatcher.getRemainingPath());
-
             if (this.methodHasBody()) {
                 this.controllerInjectable.put(InputStream.class, this.exchange::getInputStream);
             }
@@ -287,7 +181,7 @@ public class ContextHandler implements MDCContext {
 
             this.safeHttpExecute(() -> this.executeMethod(methodArgs));
         } catch (final Exception e) {
-            this.logger.error("An error occurred.", e);
+            ContextHandler.logger.error("An error occurred.", e);
 
             // This is an error in Underflow itself. Setting status code to 500 and ending the exchange.
             this.exchange.setStatusCode(500);
@@ -305,53 +199,84 @@ public class ContextHandler implements MDCContext {
 
         for (final Parameter parameter : this.method.getParameters()) {
             final Class<?> pClass = parameter.getType();
-            final Named pNamed = parameter.getAnnotation(Named.class);
-            final Query pQuery = parameter.getAnnotation(Query.class);
+            final Context pContext = parameter.getAnnotation(Context.class);
+            final Converter pConverter = parameter.getAnnotation(Converter.class);
+            final PathParam pPathParam = parameter.getAnnotation(PathParam.class);
+            final QueryParam pQueryParam = parameter.getAnnotation(QueryParam.class);
+//            final DefaultValue pDefaultValue = parameter.getAnnotation(DefaultValue.class);
             final Optional<?> appInject = Application.getInstanceOptional(pClass);
 
-            if (pNamed != null) {
-                if (this.pathMatcher.hasGroup(pNamed.value())) {
-                    final String value = this.pathMatcher.getGroup(pNamed.value());
-                    methodArgs.add(this.queryConvert(pNamed.converter(), pClass, value));
-                } else if (this.recalledNamed.containsKey(pNamed.value())) {
-                    methodArgs.add(this.queryConvert(pNamed.converter(), pClass, this.recalledNamed.get(pNamed.value())));
+            if (pPathParam != null) {
+                if (this.pathMatcherHasGroup(pPathParam.value())) {
+                    final String value = this.pathMatcherGetGroup(pPathParam.value());
+                    methodArgs.add(this.queryConvert(pConverter, pClass, value));
                 } else {
                     this.handlerLogger.warn("A @Named(\"{}\") argument was requested for the method {}.{}. " +
                                     "This argument was not found on the path. Please check your @Path syntaxes.",
-                            pNamed.value(), this.handler.getClass().getSimpleName(), this.method.getName());
+                            pPathParam.value(), this.handler.getClass().getSimpleName(), this.method.getName());
                     methodArgs.add(null);
                 }
-            } else if (pQuery != null) {
-                final Deque<String> values = this.queryString.getValuesFor(pQuery.value());
-                if (values.isEmpty() && pQuery.defaultValue().value().length > 0) {
-                    values.addAll(Arrays.asList(pQuery.defaultValue().value()));
-                }
-                if (pQuery.listProperty().backedType() != QueryListProperty.NoBackedType.class) {
-                    final Class<?> backedType = pQuery.listProperty().backedType();
-                    final List<java.lang.Object> list = values.stream()
-                            .map(v -> this.queryConvert(pQuery.converter(), backedType, v))
-                            .collect(Collectors.toList());
-                    methodArgs.add(list);
+            } else if (pQueryParam != null) {
+                final QueryParamList pQueryParamList = parameter.getAnnotation(QueryParamList.class);
+                final Deque<String> values = this.queryString.getValuesFor(pQueryParam.value());
+
+                if (pQueryParamList != null) {
+                    methodArgs.add(values.stream()
+                            .map(v -> this.queryConvert(pConverter, pQueryParamList.value(), v))
+                            .collect(Collectors.toList()));
                 } else {
                     if (values.isEmpty()) {
                         methodArgs.add(null);
                     } else {
-                        methodArgs.add(this.queryConvert(pQuery.converter(), pClass, values.getFirst()));
+                        methodArgs.add(this.queryConvert(pConverter, pClass, values.getFirst()));
                     }
                 }
-            } else if (this.controllerInjectable.containsKey(pClass)) {
-                methodArgs.add(this.controllerInjectable.get(pClass).get());
-            } else if (appInject.isPresent()) {
-                methodArgs.add(appInject.get());
+            } else if (pContext != null) {
+                if (this.controllerInjectable.containsKey(pClass)) {
+                    methodArgs.add(this.controllerInjectable.get(pClass).get());
+                } else if (appInject.isPresent()) {
+                    methodArgs.add(appInject.get());
+                } else {
+                    this.handlerLogger.warn("Unable to resolve the argument <{}@{}> for the method {}.{}. " +
+                                    "Please register the corresponding class with Application.register().",
+                            parameter.getName(), pClass.getSimpleName(), this.handler.getClass().getSimpleName(), this.method.getName());
+                    methodArgs.add(null);
+                }
             } else {
-                this.handlerLogger.warn("Unable to resolve the argument <{}@{}> for the method {}.{}." +
-                                "Please use the annotation @Named or @Query to specify how to resolve this argument.",
+                // TODO : Allow for automatic form resolution here.
+                this.handlerLogger.warn("Unable to resolve the argument <{}@{}> for the method {}.{}. " +
+                                "Please use the annotation @PathParam, @QueryParam, @Context to specify how to resolve this argument.",
                         parameter.getName(), pClass.getSimpleName(), this.handler.getClass().getSimpleName(), this.method.getName());
                 methodArgs.add(null);
             }
         }
 
         return methodArgs;
+    }
+
+    /**
+     * Path matcher has group boolean.
+     *
+     * @param groupName the group name
+     * @return the boolean
+     */
+    private boolean pathMatcherHasGroup(final String groupName) {
+        try {
+            final String group = this.pathMatcher.group(groupName);
+            return group != null;
+        } catch (final Exception ignore) {
+            return false;
+        }
+    }
+
+    /**
+     * Path matcher get group string.
+     *
+     * @param groupName the group name
+     * @return the string
+     */
+    private String pathMatcherGetGroup(final String groupName) {
+        return this.pathMatcher.group(groupName);
     }
 
     /**
@@ -363,21 +288,11 @@ public class ContextHandler implements MDCContext {
      * @return the object
      */
     private Object queryConvert(final Converter queryConverter, final Class<?> pClass, final String value) {
-        if (queryConverter != null && !queryConverter.value().equals(NoConverter.class)) {
-            if (!this.runtimeConverter.containsKey(queryConverter.value())) {
-                try {
-                    this.runtimeConverter.put(queryConverter.value(),
-                            queryConverter.value().getDeclaredConstructor().newInstance());
-                } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    this.logger.error("Unable to instantiate the converter {}", queryConverter.value().getCanonicalName());
-                    throw new RuntimeException(e);
-                }
-            }
-
-            final IConverter<?> converter = this.runtimeConverter.get(queryConverter.value());
+        if (queryConverter != null) {
+            final IConverter<?> converter = Converters.getRuntimeConverter(queryConverter.value());
 
             if (!pClass.isAssignableFrom(converter.getBackedType())) {
-                this.logger.error("Invalid converter. Converter {} is able to handle {} but {} was given as argument.",
+                ContextHandler.logger.error("Invalid converter. Converter {} is able to handle {} but {} was given as argument.",
                         converter.getClass().getCanonicalName(), converter.getBackedType().getCanonicalName(),
                         pClass.getCanonicalName());
                 throw new RuntimeException("Invalid converter.");
@@ -397,7 +312,7 @@ public class ContextHandler implements MDCContext {
         try {
             logic.run();
         } catch (final Exception e) {
-            this.logger.error("Something wrong happened.", e);
+            ContextHandler.logger.error("Something wrong happened.", e);
             if (!this.exchange.isResponseStarted()) {
                 this.exchange.setStatusCode(500);
             }
@@ -414,99 +329,22 @@ public class ContextHandler implements MDCContext {
         try {
             if (this.methodType == MethodType.RESULT) {
                 final Result result = (Result) this.method.invoke(this.handler, methodArgs.toArray());
-                result.process(this.exchange);
-            } else if (this.methodType == MethodType.HANDLER) {
-                final FlowHandler subHandler = (FlowHandler) this.method.invoke(this.handler, methodArgs.toArray());
-                this.matchers.add(this.pathMatcher);
-                subHandler.handleRequest(this.exchange, this.matchers);
+                result.process(this.exchange, this.method);
+            } else if (this.methodType == MethodType.STRING) {
+                final SimpleStringResult result = new SimpleStringResult((String) this.method.invoke(this.handler, methodArgs.toArray()));
+                result.process(this.exchange, this.method);
             }
         } catch (final Throwable e) {
             Throwable cause = e;
             if (e instanceof InvocationTargetException) {
                 cause = e.getCause();
             }
-            this.logger.error("Controller uncaught exception.", cause);
+            ContextHandler.logger.error("Controller uncaught exception.", cause);
             try {
-                this.handler.onException(cause).process(this.exchange);
+                this.handler.onException(cause).process(this.exchange, null);
             } catch (final Exception e2) {
                 throw new RuntimeException(e2);
             }
-        }
-    }
-
-    /**
-     * Gets path matcher for the given path pattern.
-     *
-     * @param hClass the h class
-     * @param method the method
-     * @param type   the type
-     * @return the path matcher
-     */
-    private PathMatcher getPathMatcher(final Class<? extends FlowHandler> hClass, final Method method, final MethodType type) {
-        final PathPrefix pathPrefix = hClass.getAnnotation(PathPrefix.class);
-        final boolean forceLazy = (type == MethodType.HANDLER);
-
-        if (method.isAnnotationPresent(Path.class)) {
-            final Path path = method.getAnnotation(Path.class);
-            return new PathMatcher(this.exchange.getRelativePath(), pathPrefix, path, forceLazy);
-        } else if (method.isAnnotationPresent(Paths.class)) {
-            final Paths paths = method.getAnnotation(Paths.class);
-            for (final Path path : paths.value()) {
-                final PathMatcher pathMatcher = new PathMatcher(this.exchange.getRelativePath(), pathPrefix, path, forceLazy);
-                if (pathMatcher.find()) {
-                    pathMatcher.reset();
-                    return pathMatcher;
-                }
-            }
-        }
-
-        return PathMatcher.noMatch();
-    }
-
-    /**
-     * Is.
-     *
-     * @param method              the method
-     * @param annotationForMethod the annotation for method
-     * @return the boolean
-     */
-    private boolean methodMatch(final Method method,
-                                final Class<? extends Annotation> annotationForMethod) {
-        if ((annotationForMethod != null && method.isAnnotationPresent(annotationForMethod))
-                || method.isAnnotationPresent(ALL.class)) {
-            return true;
-        }
-        if (method.isAnnotationPresent(CUSTOM.class)) {
-            final CUSTOM httpMethod = method.getAnnotation(CUSTOM.class);
-            return httpMethod.value().equals(this.exchange.getRequestMethod().toString());
-        }
-        return false;
-    }
-
-    /**
-     * Gets annotation for method.
-     *
-     * @param httpMethod the http method
-     * @return the annotation for method
-     */
-    private Class<? extends Annotation> getAnnotationForMethod(final HttpString httpMethod) {
-        switch (httpMethod.toString().toUpperCase(Locale.ROOT)) {
-            case "GET":
-                return GET.class;
-            case "POST":
-                return POST.class;
-            case "PATCH":
-                return PATCH.class;
-            case "PUT":
-                return PUT.class;
-            case "DELETE":
-                return DELETE.class;
-            case "OPTIONS":
-                return OPTIONS.class;
-            case "HEAD":
-                return HEAD.class;
-            default:
-                return null;
         }
     }
 
@@ -516,11 +354,9 @@ public class ContextHandler implements MDCContext {
      * @return the boolean
      */
     private boolean methodHasBody() {
-        final Optional<POST> post = Optional.ofNullable(this.method.getAnnotation(POST.class));
-        final Optional<PATCH> patch = Optional.ofNullable(this.method.getAnnotation(PATCH.class));
-        final Optional<PUT> put = Optional.ofNullable(this.method.getAnnotation(PUT.class));
-
-        return post.isPresent() || patch.isPresent() || put.isPresent();
+        return this.method.isAnnotationPresent(POST.class) ||
+                this.method.isAnnotationPresent(PATCH.class) ||
+                this.method.isAnnotationPresent(PUT.class);
     }
 
     /**
@@ -530,18 +366,23 @@ public class ContextHandler implements MDCContext {
      * @return the form data
      */
     private FormData getFormData(final HttpServerExchange exchange) {
-        final FormDataParser p = FormParserFactory.builder(true).build().createParser(exchange);
+        try (final FormDataParser p = FormParserFactory.builder(true)
+                .build()
+                .createParser(exchange)) {
 
-        if (p == null) {
-            return null;
-        }
-        p.setCharacterEncoding("UTF-8");
+            if (p == null) {
+                return null;
+            }
+            p.setCharacterEncoding("UTF-8");
 
-        try {
-            return p.parseBlocking();
+            try {
+                return p.parseBlocking();
+            } catch (final IOException e) {
+                ContextHandler.logger.error("Error while parsing form data.", e);
+                return null;
+            }
         } catch (final IOException e) {
-            this.logger.error("Error while parsing form data.", e);
-            return null;
+            throw new RuntimeException(e);
         }
     }
 

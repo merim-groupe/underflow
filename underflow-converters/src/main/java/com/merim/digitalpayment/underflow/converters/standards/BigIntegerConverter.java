@@ -26,4 +26,9 @@ public class BigIntegerConverter implements IConverter<BigInteger> {
     public Class<BigInteger> getBackedType() {
         return BigInteger.class;
     }
+
+    @Override
+    public String getSyntax() {
+        return "\\d+";
+    }
 }

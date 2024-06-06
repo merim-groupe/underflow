@@ -1,16 +1,17 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
 import com.merim.digitalpayment.underflow.app.Application;
-import com.merim.digitalpayment.underflow.handlers.flows.FlowAssetsHandler;
-import com.merim.digitalpayment.underflow.handlers.flows.assets.ResourceAssetLoader;
-import com.merim.digitalpayment.underflow.handlers.http.CORSHandler;
-import com.merim.digitalpayment.underflow.handlers.http.IDontCareAboutCORSPleaseHelpHandler;
+import com.merim.digitalpayment.underflow.openapi.OpenApiServerModule;
 import com.merim.digitalpayment.underflow.server.UnderflowApplication;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
 import com.merim.digitalpayment.underflow.server.options.UnderflowCORSOption;
 import com.merim.digitalpayment.underflow.server.options.UnderflowLoggerOption;
-import lombok.NoArgsConstructor;
+import jakarta.ws.rs.ApplicationPath;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
+import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
+import org.eclipse.microprofile.openapi.annotations.info.Info;
 
 /**
  * MainTest.
@@ -18,8 +19,22 @@ import lombok.NoArgsConstructor;
  * @author Pierre Adam
  * @since 21.04.27
  */
-@NoArgsConstructor
-public class MainSample implements UnderflowApplication {
+@Slf4j
+// TODO : Check how to handle ApplicationPath in the routing.
+@ApplicationPath("/") // This is only used for OpenAPI ! The server itself wont use it for now.
+@OpenAPIDefinition(info = @Info(title = "Underflow sample", version = "1.0", description = "GTFO",
+        termsOfService = "Dafuk you expect ??? it's a fucking sample ! Fuck off mate...",
+        extensions = {
+                @Extension(name = "GNARF", value = "FOO BAR"),
+                @Extension(name = "object", value = "{\"foo\": \"bar\", \"foo2\": \"bar2\"}", parseValue = true),
+                @Extension(name = "array", value = "[1, 2, 3, 4, \"foobar\"]", parseValue = true),
+                @Extension(name = "parsedNumber", value = "1", parseValue = true),
+                @Extension(name = "parsedBoolean", value = "true", parseValue = true),
+                @Extension(name = "nonParsedNumber", value = "1", parseValue = false),
+                @Extension(name = "nonParsedBoolean", value = "true", parseValue = false)
+        }
+))
+public class MainSample extends jakarta.ws.rs.core.Application implements UnderflowApplication {
 
     /**
      * Main.
@@ -36,15 +51,16 @@ public class MainSample implements UnderflowApplication {
 
     @Override
     public UnderflowServerBuilder createServerBuilder() {
-        return UnderflowServer.builder("localhost", 8080)
-                .addHandler("/", new HomeHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addHandler("/assets", new FlowAssetsHandler(new ResourceAssetLoader(MainSample.class, "/assets")), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addHandler("/routes", new RouteTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addHandler("/event", new ServerEventTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addHandler("/api", new ApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addHandler("/api/CORS", new CORSHandler(new ApiTestHandler()), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addHandler("/api/CORSLegacy", new IDontCareAboutCORSPleaseHelpHandler(new ApiTestHandler(), true), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addHandler("/prefix", new PathPrefixHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+        return UnderflowServer.builder("0.0.0.0", 8080)
+                .addModule(new OpenApiServerModule())
+                .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new RoutingConflict1TestHandler())
+                .addHandler(new RoutingConflict2TestHandler())
+                .addHandler(new RouteTestHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new ServerEventTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new ApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new CrudApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new HomeHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addShutdownHook(() -> System.out.println("Shutting down server !"));
     }
 

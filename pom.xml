@@ -34,7 +34,7 @@
     </distributionManagement>
 
     <properties>
-        <project.version>1.0.7-DEV</project.version>
+        <project.version>2.0.0-beta1</project.version>
 
         <maven.compiler.release>8</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,19 +45,34 @@
         <!-- https://mvnrepository.com/artifact/io.undertow/undertow-core -->
         <undertow.version>2.3.13.Final</undertow.version>
 
+        <!-- https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api -->
+        <jakarta.rs-api.version>4.0.0</jakarta.rs-api.version>
+
+        <!-- https://mvnrepository.com/artifact/io.smallrye/jandex -->
+        <jandex.version>3.2.0</jandex.version>
+
+        <!-- https://mvnrepository.com/artifact/org.eclipse.microprofile.openapi/microprofile-openapi-api -->
+        <!-- Must match the version used by smallrye.openapi.version -->
+        <microprofile.openapi.version>3.1.1</microprofile.openapi.version>
+
+        <!-- https://mvnrepository.com/artifact/io.smallrye/smallrye-open-api-core -->
+        <smallrye.openapi.version>3.10.0</smallrye.openapi.version>
+        <!-- https://mvnrepository.com/artifact/io.smallrye.config/smallrye-config -->
+        <smallrye.config.version>3.8.2</smallrye.config.version>
+
         <!-- Common -->
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-        <jackson.version>2.17.0</jackson.version>
+        <jackson.version>2.17.1</jackson.version>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <apache-commons-io.version>2.16.1</apache-commons-io.version>
         <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
-        <apache-commons-codec.version>1.16.1</apache-commons-codec.version>
+        <apache-commons-codec.version>1.17.0</apache-commons-codec.version>
 
         <!-- Templates -->
 
         <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
-        <freemarker.version>2.3.32</freemarker.version>
+        <freemarker.version>2.3.33</freemarker.version>
 
         <!-- Logging -->
 
@@ -67,11 +82,11 @@
         <!-- Testing -->
 
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
-        <junit.version>5.9.0</junit.version>
+        <junit.version>5.9.3</junit.version>
         <!-- https://mvnrepository.com/artifact/io.rest-assured/rest-assured -->
         <rest-assured.version>5.4.0</rest-assured.version>
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
-        <mockito.version>5.11.0</mockito.version>
+        <mockito.version>5.12.0</mockito.version>
         <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
         <logback-classic.version>1.2.13</logback-classic.version><!-- MAXIMUM Java 1.8 Version -->
 
@@ -83,6 +98,7 @@
     <modules>
         <module>sample</module>
         <module>underflow-api-form</module>
+        <!--        <module>underflow-config</module>-->
         <module>underflow-context</module>
         <module>underflow-converters</module>
         <module>underflow-core</module>
@@ -91,6 +107,7 @@
         <module>underflow-template</module>
         <module>underflow-test</module>
         <module>underflow-utils</module>
+        <module>underflow-openapi</module>
     </modules>
 
     <dependencies>
@@ -139,6 +156,11 @@
                 <artifactId>underflow-api-form</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <!--            <dependency>-->
+            <!--                <groupId>com.merim.digitalpayment.underflow</groupId>-->
+            <!--                <artifactId>underflow-config</artifactId>-->
+            <!--                <version>${project.version}</version>-->
+            <!--            </dependency>-->
             <dependency>
                 <groupId>com.merim.digitalpayment.underflow</groupId>
                 <artifactId>underflow-context</artifactId>
@@ -179,7 +201,11 @@
                 <artifactId>underflow-utils</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-openapi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-core</artifactId>

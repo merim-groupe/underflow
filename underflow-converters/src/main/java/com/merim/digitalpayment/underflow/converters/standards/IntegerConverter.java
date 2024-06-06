@@ -24,4 +24,9 @@ public class IntegerConverter implements IConverter<Integer> {
     public Class<Integer> getBackedType() {
         return Integer.class;
     }
+
+    @Override
+    public String getSyntax() {
+        return "\\d+";
+    }
 }

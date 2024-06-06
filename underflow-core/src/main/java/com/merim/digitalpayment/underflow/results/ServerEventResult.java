@@ -3,6 +3,8 @@ package com.merim.digitalpayment.underflow.results;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.sse.ServerSentEventHandler;
 
+import java.lang.reflect.Method;
+
 /**
  * ServerEventResult.
  *
@@ -43,7 +45,7 @@ public class ServerEventResult implements Result {
     }
 
     @Override
-    public void process(final HttpServerExchange exchange) {
+    public void process(final HttpServerExchange exchange, final Method method) {
         try {
             this.serverSentEventHandler.handleRequest(exchange);
             this.andThen.run();

@@ -10,7 +10,7 @@
             <b>Secured page</b> <a href="/secured">Here !</a>
         </p>
         <p>
-            <b>API page</b> <a href="/api">Here !</a>
+            <b>OpenAPI Docs</b> <a href="/docs">Here !</a>
         </p>
         <p>
             <b>Routing test page</b> <a href="/routes">Here !</a>
@@ -22,7 +22,15 @@
             <b>Assets loading from Java Resources</b> <a href="/image-asset-resources">Here !</a>
         </p>
         <p>
-            <b>DEV exception</b> <a href="/exception">Here !</a>
+            <b>DEV exceptions:</b>
+        </p>
+        <ul>
+            <li><a href="/exception">Java exception !</a></li>
+            <li><a href="/exception">FTL exception !</a></li>
+            <li><a href="/exception">Java exception in FTL !</a></li>
+        </ul>
+        <p>
+            <b>Stop the web server</b> <a href="/stop">Here !</a>
         </p>
     </div>
     <br/>

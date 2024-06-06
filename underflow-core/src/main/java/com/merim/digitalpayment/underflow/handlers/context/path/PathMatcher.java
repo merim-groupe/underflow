@@ -1,182 +1,20 @@
 package com.merim.digitalpayment.underflow.handlers.context.path;
 
-import com.merim.digitalpayment.underflow.annotation.routing.Path;
-import com.merim.digitalpayment.underflow.annotation.routing.PathPrefix;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * PathMatcher.
  *
  * @author Pierre Adam
- * @since 21.04.27
+ * @since 24.05.30
  */
-public class PathMatcher {
-
-    /**
-     * The constant NO_MATCH.
-     */
-    private static final PathMatcher NO_MATCH;
-
-    static {
-        NO_MATCH = new PathMatcher("", "notFound", false);
-    }
-
-    /**
-     * The Relative path.
-     */
-    private final String relativePath;
-
-    /**
-     * The Matcher.
-     */
-    private final Matcher matcher;
-
-    /**
-     * Instantiates a new Path matcher.
-     *
-     * @param relativePath the relative path
-     * @param searchValue  the search value
-     * @param ignoreCase   the ignore case
-     */
-    public PathMatcher(final String relativePath, final String searchValue, final boolean ignoreCase) {
-        this(relativePath, null, searchValue, ignoreCase, false);
-    }
-
-    /**
-     * Instantiates a new Path matcher.
-     *
-     * @param relativePath the relative path
-     * @param searchValue  the search value
-     * @param ignoreCase   the ignore case
-     * @param lazySearch   the lazy search
-     */
-    public PathMatcher(final String relativePath, final String searchValue, final boolean ignoreCase, final boolean lazySearch) {
-        this(relativePath, null, searchValue, ignoreCase, lazySearch);
-    }
-
-    /**
-     * Instantiates a new Path matcher.
-     *
-     * @param relativePath the relative path
-     * @param searchPrefix the search prefix
-     * @param searchValue  the search value
-     * @param ignoreCase   the ignore case
-     */
-    public PathMatcher(final String relativePath, final String searchPrefix, final String searchValue, final boolean ignoreCase) {
-        this(relativePath, searchPrefix, searchValue, ignoreCase, false);
-    }
-
-    /**
-     * Instantiates a new Path matcher.
-     *
-     * @param relativePath the relative path
-     * @param searchPrefix the search prefix
-     * @param searchValue  the search value
-     * @param ignoreCase   the ignore case
-     * @param lazySearch   the lazy search
-     */
-    public PathMatcher(final String relativePath, final String searchPrefix, final String searchValue, final boolean ignoreCase, final boolean lazySearch) {
-        String search = "";
-
-        if (searchPrefix != null && !searchPrefix.isEmpty()) {
-            search = searchPrefix;
-            // Add / in front of the search because the slash after the previous search is not captured.
-            if (!search.startsWith("/")) {
-                search = "/" + search;
-            }
-            // Remove tailing / to avoid double /.
-            if (search.endsWith("/")) {
-                search = search.substring(search.length() - 1);
-            }
-        }
-
-        final String endCapture;
-
-        // Only add the search value if it is not an "empty path". This allows @Path("") and @Path("/")
-        if (!searchValue.isEmpty() && !searchValue.equals("/")) {
-            // Add / in front of the search because the slash after the previous search is not captured.
-            if (!searchValue.startsWith("/")) {
-                search = "/" + search;
-            }
-            search += searchValue;
-            // If Lazy, keep capturing with /... or end of line.
-            // Else expect end.
-            endCapture = lazySearch ? "/|$" : "$";
-        } else {
-            // If Lazy, keep capturing with /... or end of line.
-            // Else either / or nothing followed by the end.
-            endCapture = lazySearch ? "/|$" : "/?$";
-        }
-
-        final String format = String.format("^(?<pathCapture>%s)(?:%s)", search, endCapture);
-        final int patternFlag = ignoreCase ? Pattern.CASE_INSENSITIVE : 0;
-        final Pattern pattern = Pattern.compile(format, patternFlag);
-
-        this.relativePath = relativePath;
-        this.matcher = pattern.matcher(relativePath);
-    }
-
-    /**
-     * Instantiates a new Path matcher.
-     *
-     * @param relativePath the relative path
-     * @param pathPrefix   the path prefix
-     * @param path         the path
-     */
-    public PathMatcher(final String relativePath, final PathPrefix pathPrefix, final Path path) {
-        this(relativePath, pathPrefix == null ? null : pathPrefix.value(), path.value(), path.ignoreCase(), path.lazyMatch());
-    }
-
-    /**
-     * Instantiates a new Path matcher.
-     *
-     * @param relativePath the relative path
-     * @param pathPrefix   the path prefix
-     * @param path         the path
-     * @param forcedLazy   the forced lazy
-     */
-    public PathMatcher(final String relativePath, final PathPrefix pathPrefix, final Path path, final boolean forcedLazy) {
-        this(relativePath, pathPrefix == null ? null : pathPrefix.value(), path.value(), path.ignoreCase(), path.lazyMatch() || forcedLazy);
-    }
-
-    /**
-     * Gets no match instance.
-     *
-     * @return the no match path matcher
-     */
-    public static PathMatcher noMatch() {
-        return PathMatcher.NO_MATCH;
-    }
+public interface PathMatcher {
 
     /**
      * Matches boolean.
      *
+     * @param pattern the pattern
      * @return true if matches
      */
-    public boolean find() {
-        return this.matcher.find();
-    }
-
-    /**
-     * Gets the full match.
-     *
-     * @return the match
-     */
-    public String getFullMatch() {
-        final String match = this.matcher.group().replaceAll("/$", "");
-        return match.isEmpty() ? "/" : match;
-    }
-
-    /**
-     * Gets the remaining path.
-     *
-     * @return the remaining path
-     */
-    public String getRemainingPath() {
-        return this.relativePath.substring(this.matcher.group("pathCapture").length());
-    }
+    boolean matches(String pattern);
 
     /**
      * Check if the matcher contains the given group.
@@ -184,14 +22,7 @@ public class PathMatcher {
      * @param groupName the group name
      * @return the boolean
      */
-    public boolean hasGroup(final String groupName) {
-        try {
-            final String group = this.matcher.group(groupName);
-            return group != null;
-        } catch (final Exception ignore) {
-            return false;
-        }
-    }
+    boolean hasGroup(final String groupName);
 
     /**
      * Gets the value matched in the given group.
@@ -199,14 +30,5 @@ public class PathMatcher {
      * @param groupName the group name
      * @return the group
      */
-    public String getGroup(final String groupName) {
-        return this.matcher.group(groupName);
-    }
-
-    /**
-     * Reset the matcher.
-     */
-    public void reset() {
-        this.matcher.reset();
-    }
+    String getGroup(final String groupName);
 }
