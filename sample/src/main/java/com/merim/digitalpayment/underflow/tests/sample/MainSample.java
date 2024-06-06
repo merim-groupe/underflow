@@ -20,8 +20,10 @@ import org.eclipse.microprofile.openapi.annotations.info.Info;
  * @since 21.04.27
  */
 @Slf4j
-@ApplicationPath("/")
-@OpenAPIDefinition(info = @Info(title = "Underflow sample", version = "1.0", description = "FUCK YOU", termsOfService = "DO NOT USE FUCKING IDIOT !",
+// TODO : Check how to handle ApplicationPath in the routing.
+@ApplicationPath("/") // This is only used for OpenAPI ! The server itself wont use it for now.
+@OpenAPIDefinition(info = @Info(title = "Underflow sample", version = "1.0", description = "GTFO",
+        termsOfService = "Dafuk you expect ??? it's a fucking sample ! Fuck off mate...",
         extensions = {
                 @Extension(name = "GNARF", value = "FOO BAR"),
                 @Extension(name = "object", value = "{\"foo\": \"bar\", \"foo2\": \"bar2\"}", parseValue = true),
@@ -51,6 +53,8 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
     public UnderflowServerBuilder createServerBuilder() {
         return UnderflowServer.builder("0.0.0.0", 8080)
                 .addModule(new OpenApiServerModule())
+                .addHandler(new RoutingConflict1TestHandler())
+                .addHandler(new RoutingConflict2TestHandler())
 //                .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
 //                .addHandler(new RouteTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
 //                .addHandler(new ServerEventTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)

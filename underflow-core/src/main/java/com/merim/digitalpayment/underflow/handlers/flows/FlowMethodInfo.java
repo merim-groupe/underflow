@@ -57,7 +57,6 @@ public class FlowMethodInfo {
         this.methodType = MethodType.resolve(method);
         this.httpMethod = FlowMethodInfo.extractHttpMethod(this.method);
         this.route = new RouteResolver(handlerInfo.getHandlerClass(), method, false);
-        // TODO : QUERY STRING Handling here directly.
     }
 
     /**

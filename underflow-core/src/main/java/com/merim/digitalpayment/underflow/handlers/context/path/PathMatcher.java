@@ -31,25 +31,4 @@ public interface PathMatcher {
      * @return the group
      */
     String getGroup(final String groupName);
-
-    /**
-     * The type Not matching path matcher.
-     */
-    class NotMatchingPathMatcher implements PathMatcher {
-
-        @Override
-        public boolean matches(final String pattern) {
-            return false;
-        }
-
-        @Override
-        public boolean hasGroup(final String groupName) {
-            return false;
-        }
-
-        @Override
-        public String getGroup(final String groupName) {
-            return "";
-        }
-    }
 }

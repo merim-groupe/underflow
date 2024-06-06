@@ -24,7 +24,7 @@ public class UnderflowServerBuilder {
     /**
      * The Underlying handlers.
      */
-    private final Map<String, HandlerData> handlers;
+    private final Map<String, List<HandlerData>> handlers;
 
     /**
      * The Shutdown hooks.
@@ -159,13 +159,14 @@ public class UnderflowServerBuilder {
      */
     private UnderflowServerBuilder internalAddHandler(@NonNull final String prefix,
                                                       @NonNull final HandlerData handlerData) {
-        if (this.handlers.containsKey(prefix)) {
-            throw new RuntimeException("The prefix " + prefix + " is already registered." +
-                    "If you are using @Path with a variable on your handler, " +
-                    "only the part before the variable is considered for the main routing.");
+        if (!this.handlers.containsKey(prefix)) {
+//            throw new RuntimeException("The prefix " + prefix + " is already registered." +
+//                    "If you are using @Path with a variable on your handler, " +
+//                    "only the part before the variable is considered for the main routing.");
+            this.handlers.put(prefix, new ArrayList<>());
         }
 
-        this.handlers.put(prefix, handlerData);
+        this.handlers.get(prefix).add(handlerData);
 
         return this;
     }

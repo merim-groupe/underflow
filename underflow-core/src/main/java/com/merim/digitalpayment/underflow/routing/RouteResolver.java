@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +26,7 @@ public class RouteResolver {
     /**
      * The constant routeArgumentPattern.
      */
-    private static final Pattern routeArgumentPattern = Pattern.compile("\\{(?<name>[\\w\\-_]+)(:(?<pattern>[\\w\\-_.+\\\\]+))?}");
+    public static final Pattern ROUTE_ARGUMENT_PATTERN = Pattern.compile("\\{(?<name>[\\w\\-_]+)(:(?<pattern>[\\w\\-_.+\\\\]+))?}");
 
     /**
      * The Raw route.
@@ -72,11 +73,7 @@ public class RouteResolver {
     private static Pattern routeToRegex(final String route,
                                         final Method method,
                                         final int flag) {
-        final String compiledRoute = RouteResolver.compileRoute(route, method);
-
-        RouteResolver.logger.info("Route :\n\r{}\n\r{}", route, compiledRoute);
-
-        return Pattern.compile(compiledRoute, flag);
+        return Pattern.compile(RouteResolver.compileRoute(route, method), flag);
     }
 
     /**
@@ -88,15 +85,27 @@ public class RouteResolver {
      */
     private static String compileRoute(final String route,
                                        final Method method) {
+        return RouteResolver.compileRoute(route, name -> RouteResolver.extractPattern(method, name));
+    }
+
+    /**
+     * Compile route string.
+     *
+     * @param route            the route
+     * @param patternExtractor the pattern extractor
+     * @return the string
+     */
+    public static String compileRoute(final String route,
+                                      final Function<String, String> patternExtractor) {
         final StringBuffer compiledRoute = new StringBuffer();
-        final Matcher matcher = RouteResolver.routeArgumentPattern.matcher(route);
+        final Matcher matcher = RouteResolver.ROUTE_ARGUMENT_PATTERN.matcher(route);
 
         while (matcher.find()) {
             final String name = matcher.group("name");
             String pattern = matcher.group("pattern");
 
             if (pattern == null) {
-                pattern = RouteResolver.extractPattern(method, name);
+                pattern = patternExtractor.apply(name);
             }
 
             // Do not use String.format here because it will break the escapement.
@@ -108,6 +117,62 @@ public class RouteResolver {
         matcher.appendTail(compiledRoute);
 
         return compiledRoute.toString();
+    }
+
+    /**
+     * Gets non variable path.
+     *
+     * @param basePath the base path
+     * @return the non variable path
+     */
+    public static String getNonVariablePath(final String basePath) {
+        final Matcher pathMatcher = RouteResolver.ROUTE_ARGUMENT_PATTERN.matcher(basePath);
+
+        if (pathMatcher.find()) {
+            int idx;
+
+            for (idx = pathMatcher.start(); idx > 0; idx--) {
+                if (basePath.charAt(idx) == '/') {
+                    break;
+                }
+            }
+
+            if (idx == 0) {
+                return "/";
+            }
+
+            return basePath.substring(0, idx);
+        }
+
+        return basePath;
+    }
+
+    /**
+     * Gets variable path.
+     *
+     * @param basePath the base path
+     * @return the variable path
+     */
+    public static String getVariablePath(final String basePath) {
+        final Matcher pathMatcher = RouteResolver.ROUTE_ARGUMENT_PATTERN.matcher(basePath);
+
+        if (pathMatcher.find()) {
+            int idx;
+
+            for (idx = pathMatcher.start(); idx > 0; idx--) {
+                if (basePath.charAt(idx) == '/') {
+                    break;
+                }
+            }
+
+            if (idx == 0) {
+                return basePath;
+            }
+
+            return basePath.substring(idx);
+        }
+
+        return "";
     }
 
     /**

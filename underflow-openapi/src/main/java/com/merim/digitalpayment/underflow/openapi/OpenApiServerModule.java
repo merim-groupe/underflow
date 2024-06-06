@@ -141,7 +141,6 @@ public class OpenApiServerModule implements UnderflowServerModule {
 
         for (final URL indexURL : indexURLs) {
             try (final InputStream indexIS = indexURL.openStream()) {
-//                OpenApiApplicationModule.logger.info("Adding Jandex index at {}", indexURL);
                 indices.add(new IndexReader(indexIS).read());
             } catch (final IOException ex) {
                 throw new IOException("Attempted to read from previously-located index file "
@@ -159,7 +158,6 @@ public class OpenApiServerModule implements UnderflowServerModule {
 
     @Override
     public void register(final UnderflowServerBuilder builder) {
-        OpenApiServerModule.logger.error("REGISTERING OPENAPI MODULE");
         builder.addHandler(new OpenApiHandler(() -> this.openAPI));
     }
 
@@ -254,6 +252,7 @@ public class OpenApiServerModule implements UnderflowServerModule {
         final Map<String, String> configProperties = new HashMap<>();
         final List<String> serverActiveHandlers = server.getHandlers().values()
                 .stream()
+                .flatMap(Collection::stream)
                 .map(handlerData -> handlerData.getHandler().getClass())
                 .map(Class::getName)
                 .collect(Collectors.toList());

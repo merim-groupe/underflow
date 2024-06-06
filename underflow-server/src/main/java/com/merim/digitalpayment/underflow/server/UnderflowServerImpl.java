@@ -1,5 +1,7 @@
 package com.merim.digitalpayment.underflow.server;
 
+import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
+import com.merim.digitalpayment.underflow.routing.RegexRouterHandler;
 import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
 import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.Handlers;
@@ -53,7 +55,7 @@ public class UnderflowServerImpl implements UnderflowServer {
      * The Handlers.
      */
     @Getter
-    private final Map<String, HandlerData> handlers;
+    private final Map<String, List<HandlerData>> handlers;
 
     /**
      * The Path handler.
@@ -119,7 +121,7 @@ public class UnderflowServerImpl implements UnderflowServer {
                         final ClassLoader applicationClassLoader,
                         @NonNull final String host,
                         final int port,
-                        @NonNull final Map<String, HandlerData> handlers,
+                        @NonNull final Map<String, List<HandlerData>> handlers,
                         @NonNull final List<Runnable> shutdownHooks,
                         final Collection<UnderflowServerModule> modules) {
         this.application = application;
@@ -133,14 +135,47 @@ public class UnderflowServerImpl implements UnderflowServer {
         this.modules = modules;
 
         // Process the handlers.
-        handlers.forEach((path, handlerData) -> {
-            HttpHandler handler = handlerData.getHandler();
-            for (final UnderflowOption option : handlerData.getOptions()) {
-                handler = option.alterHandler(path, handler);
+        handlers.forEach((path, handlersData) -> {
+            if (handlersData.size() == 1) {
+                this.pathHandler.addPrefixPath(path, UnderflowServerImpl.createHandler(path, handlersData.get(0)));
+            } else if (handlersData.size() > 1) {
+                this.pathHandler.addPrefixPath(path, UnderflowServerImpl.createHandler(handlersData));
+            }
+        });
+    }
+
+    private static HttpHandler createHandler(final List<HandlerData> handlersData) {
+        final RegexRouterHandler regexRouterHandler = new RegexRouterHandler();
+
+        for (final HandlerData handlerData : handlersData) {
+            if (!(handlerData.getHandler() instanceof FlowHandler)) {
+                throw new RuntimeException("Conflicting routes with HttpHandler not extending FlowHandler is not supported !");
             }
 
-            this.pathHandler.addPrefixPath(path, handler);
-        });
+            final FlowHandler flowHandler = (FlowHandler) handlerData.getHandler();
+            final HttpHandler finalHandler = UnderflowServerImpl.createHandler(flowHandler.getHandlerInfo().getBasePath(), handlerData);
+
+            regexRouterHandler.addPrefixPath(flowHandler.getHandlerInfo().getVariableRegexPath(), finalHandler);
+        }
+
+        return regexRouterHandler;
+    }
+
+    /**
+     * Create handler http handler.
+     *
+     * @param path        the path
+     * @param handlerData the handler data
+     * @return the http handler
+     */
+    private static HttpHandler createHandler(final String path, final HandlerData handlerData) {
+        HttpHandler handler = handlerData.getHandler();
+
+        for (final UnderflowOption option : handlerData.getOptions()) {
+            handler = option.alterHandler(path, handler);
+        }
+
+        return handler;
     }
 
     @Override

@@ -18,10 +18,5 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>io.smallrye.config</groupId>
-            <artifactId>smallrye-config</artifactId>
-            <version>3.8.2</version>
-        </dependency>
     </dependencies>
 </project>
