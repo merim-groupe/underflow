@@ -12,6 +12,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.List;
  * @author Pierre Adam
  * @since 22.02.24
  */
+@Tag(name = "Basic API Sample")
 @Path("/api")
 public class ApiTestHandler extends FlowApiHandler {
 

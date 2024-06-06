@@ -51,6 +51,10 @@
         <!-- https://mvnrepository.com/artifact/io.smallrye/jandex -->
         <jandex.version>3.2.0</jandex.version>
 
+        <!-- https://mvnrepository.com/artifact/org.eclipse.microprofile.openapi/microprofile-openapi-api -->
+        <!-- Must match the version used by smallrye.openapi.version -->
+        <microprofile.openapi.version>3.1.1</microprofile.openapi.version>
+
         <!-- https://mvnrepository.com/artifact/io.smallrye/smallrye-open-api-core -->
         <smallrye.openapi.version>3.10.0</smallrye.openapi.version>
         <!-- https://mvnrepository.com/artifact/io.smallrye.config/smallrye-config -->
@@ -59,16 +63,16 @@
         <!-- Common -->
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-        <jackson.version>2.17.0</jackson.version>
+        <jackson.version>2.17.1</jackson.version>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <apache-commons-io.version>2.16.1</apache-commons-io.version>
         <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
-        <apache-commons-codec.version>1.16.1</apache-commons-codec.version>
+        <apache-commons-codec.version>1.17.0</apache-commons-codec.version>
 
         <!-- Templates -->
 
         <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
-        <freemarker.version>2.3.32</freemarker.version>
+        <freemarker.version>2.3.33</freemarker.version>
 
         <!-- Logging -->
 
@@ -78,11 +82,11 @@
         <!-- Testing -->
 
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
-        <junit.version>5.9.0</junit.version>
+        <junit.version>5.9.3</junit.version>
         <!-- https://mvnrepository.com/artifact/io.rest-assured/rest-assured -->
         <rest-assured.version>5.4.0</rest-assured.version>
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
-        <mockito.version>5.11.0</mockito.version>
+        <mockito.version>5.12.0</mockito.version>
         <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
         <logback-classic.version>1.2.13</logback-classic.version><!-- MAXIMUM Java 1.8 Version -->
 

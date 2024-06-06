@@ -135,7 +135,8 @@ public class CrudApiTestHandler extends FlowApiHandler {
     @Produces(MediaType.APPLICATION_JSON)
     @GET
     @Path("/weird-add-multiple")
-    public Result weirdAddMultiple(@QueryParam("value") @QueryParamRequired @QueryParamList(String.class) @DefaultValue("default value !") final List<String> values) {
+    public Result weirdAddMultiple(@QueryParam("value") @QueryParamRequired @QueryParamList(String.class)
+                                   @DefaultValue("default value !") final List<String> values) {
         final List<TestStorageEntity> result = new ArrayList<>();
 
         for (final String value : values) {

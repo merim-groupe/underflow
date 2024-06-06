@@ -5,7 +5,8 @@
     <p>
         <a href="/">Back Home !</a>
     </p>
-    <p>
-        <a href="https://www.youtube.com/watch?v=VpATBBRajP8">https://www.youtube.com/watch?v=VpATBBRajP8</a>
-    </p>
+
+    <iframe id="ytplayer" type="text/html" width="640" height="360"
+            src="https://www.youtube.com/embed/UeEcHK0QWWU?autoplay=1&origin=http://localhost:8080"
+            frameborder="0"></iframe>
 </@base.page>

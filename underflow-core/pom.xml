@@ -66,6 +66,11 @@
             <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${jakarta.rs-api.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <version>${microprofile.openapi.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

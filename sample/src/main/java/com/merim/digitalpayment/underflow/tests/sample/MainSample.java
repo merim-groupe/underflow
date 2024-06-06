@@ -53,16 +53,13 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
     public UnderflowServerBuilder createServerBuilder() {
         return UnderflowServer.builder("0.0.0.0", 8080)
                 .addModule(new OpenApiServerModule())
+                .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new RoutingConflict1TestHandler())
                 .addHandler(new RoutingConflict2TestHandler())
-//                .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
-//                .addHandler(new RouteTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
-//                .addHandler(new ServerEventTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new RouteTestHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new ServerEventTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new ApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new CrudApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
-//                .addHandler("/api/CORS", new CORSHandler(new ApiTestHandler()), UnderflowLoggerOption.LOG_ALL_QUERY)
-//                .addHandler("/api/CORSLegacy", new IDontCareAboutCORSPleaseHelpHandler(new ApiTestHandler(), true), UnderflowLoggerOption.LOG_ALL_QUERY)
-//                .addHandler("/prefix", new PathPrefixHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new HomeHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addShutdownHook(() -> System.out.println("Shutting down server !"));
     }

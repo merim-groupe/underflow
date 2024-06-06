@@ -14,6 +14,8 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HEAD;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Context;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import java.util.Optional;
 
@@ -57,10 +59,12 @@ public abstract class FlowAssetsHandler extends FlowHandler {
      * @param path     the path
      * @return the asset
      */
+    @Operation(hidden = true)
     @GET
     @Path("/{path:.+}")
     @Secured
-    public Result getAsset(final HttpServerExchange exchange, @PathParam("path") final String path) {
+    public Result getAsset(@Context final HttpServerExchange exchange,
+                           @PathParam("path") final String path) {
         final Optional<AssetRepresentation> assetRepresentation = this.assetLoader.load(path);
         if (assetRepresentation.isPresent()) {
             final AssetRepresentation asset = assetRepresentation.get();
@@ -115,10 +119,12 @@ public abstract class FlowAssetsHandler extends FlowHandler {
      * @param path     the path
      * @return the asset head
      */
+    @Operation(hidden = true)
     @HEAD
     @Path("/{path:.+}")
     @Secured
-    public Result getAssetHead(final HttpServerExchange exchange, @PathParam("path") final String path) {
+    public Result getAssetHead(@Context final HttpServerExchange exchange,
+                               @PathParam("path") final String path) {
         return this.getAsset(exchange, path);
     }
 }

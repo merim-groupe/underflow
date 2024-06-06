@@ -84,7 +84,7 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
     private static List<FlowMethodInfo> initMethodsInfo(final FlowHandlerInfo handlerInfo) {
         final List<FlowMethodInfo> results = new ArrayList<>();
 
-        final Method[] methods = handlerInfo.getHandlerClass().getDeclaredMethods();
+        final Method[] methods = handlerInfo.getHandlerClass().getMethods();
         for (final Method method : methods) {
             try {
                 final FlowMethodInfo flowMethodInfo = new FlowMethodInfo(handlerInfo, method);

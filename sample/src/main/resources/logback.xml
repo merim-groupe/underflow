@@ -8,7 +8,7 @@
         </encoder>
     </appender>
 
-    <logger name="io.undertow.request.error-response" level="INFO"/>
+    <logger name="io.undertow.request" level="INFO"/>
     <logger name="org.xnio.nio" level="INFO"/>
     <logger name="ch.qos.logback" level="WARN"/>
     <logger name="io.smallrye.config" level="INFO"/>

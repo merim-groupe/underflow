@@ -19,6 +19,7 @@ import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.server.handlers.form.FormParserFactory;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -198,11 +199,11 @@ public class ContextHandler implements MDCContext {
 
         for (final Parameter parameter : this.method.getParameters()) {
             final Class<?> pClass = parameter.getType();
+            final Context pContext = parameter.getAnnotation(Context.class);
             final Converter pConverter = parameter.getAnnotation(Converter.class);
             final PathParam pPathParam = parameter.getAnnotation(PathParam.class);
             final QueryParam pQueryParam = parameter.getAnnotation(QueryParam.class);
-            final QueryParamList pQueryParamList = parameter.getAnnotation(QueryParamList.class);
-            final DefaultValue pDefaultValue = parameter.getAnnotation(DefaultValue.class);
+//            final DefaultValue pDefaultValue = parameter.getAnnotation(DefaultValue.class);
             final Optional<?> appInject = Application.getInstanceOptional(pClass);
 
             if (pPathParam != null) {
@@ -216,6 +217,7 @@ public class ContextHandler implements MDCContext {
                     methodArgs.add(null);
                 }
             } else if (pQueryParam != null) {
+                final QueryParamList pQueryParamList = parameter.getAnnotation(QueryParamList.class);
                 final Deque<String> values = this.queryString.getValuesFor(pQueryParam.value());
 
                 if (pQueryParamList != null) {
@@ -229,13 +231,21 @@ public class ContextHandler implements MDCContext {
                         methodArgs.add(this.queryConvert(pConverter, pClass, values.getFirst()));
                     }
                 }
-            } else if (this.controllerInjectable.containsKey(pClass)) {
-                methodArgs.add(this.controllerInjectable.get(pClass).get());
-            } else if (appInject.isPresent()) {
-                methodArgs.add(appInject.get());
+            } else if (pContext != null) {
+                if (this.controllerInjectable.containsKey(pClass)) {
+                    methodArgs.add(this.controllerInjectable.get(pClass).get());
+                } else if (appInject.isPresent()) {
+                    methodArgs.add(appInject.get());
+                } else {
+                    this.handlerLogger.warn("Unable to resolve the argument <{}@{}> for the method {}.{}. " +
+                                    "Please register the corresponding class with Application.register().",
+                            parameter.getName(), pClass.getSimpleName(), this.handler.getClass().getSimpleName(), this.method.getName());
+                    methodArgs.add(null);
+                }
             } else {
+                // TODO : Allow for automatic form resolution here.
                 this.handlerLogger.warn("Unable to resolve the argument <{}@{}> for the method {}.{}. " +
-                                "Please use the annotation @Named or @Query to specify how to resolve this argument.",
+                                "Please use the annotation @PathParam, @QueryParam, @Context to specify how to resolve this argument.",
                         parameter.getName(), pClass.getSimpleName(), this.handler.getClass().getSimpleName(), this.method.getName());
                 methodArgs.add(null);
             }

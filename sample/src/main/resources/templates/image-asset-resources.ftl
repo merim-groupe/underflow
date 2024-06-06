@@ -8,6 +8,9 @@
         </p>
     </div>
     <div>
-        <img src="/assets/image.jpg" width="100%"/>
+        <img src="/assets/image.jpg" style="width: min(100%, 800px)"/>
+    </div>
+    <div>
+        <img src="/assets/subfolder/author.jpg" style="width: min(100%, 400px)"/>
     </div>
 </@base.page>

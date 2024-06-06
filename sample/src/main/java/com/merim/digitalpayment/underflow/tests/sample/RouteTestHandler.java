@@ -7,6 +7,9 @@ import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import io.undertow.server.HttpServerExchange;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +21,7 @@ import java.util.UUID;
  * @author Pierre Adam
  * @since 21.04.27
  */
+@Tag(name = "Routing", description = "A collection of routes to test the routing and query parameters resolution")
 @Path("/routes")
 public class RouteTestHandler extends FlowTemplateHandler {
 
@@ -35,9 +39,9 @@ public class RouteTestHandler extends FlowTemplateHandler {
      * @param bar      the bar parameter from query string
      * @return the result
      */
+    @Produces(MediaType.TEXT_HTML)
     @GET
     @Path("/")
-    @Produces()
     public Result pathWithQuery(final HttpServerExchange exchange,
                                 @QueryParam("bar") @DefaultValue(value = "default value") final String bar) {
         return this.ok(this.getTemplate("routes/home.ftl"), null);
@@ -54,6 +58,7 @@ public class RouteTestHandler extends FlowTemplateHandler {
      * @param arg  the arg
      * @return the result
      */
+    @Produces(MediaType.TEXT_HTML)
     @GET
     @Path("/{uuid}")
     public Result uuidInPath(
@@ -79,6 +84,7 @@ public class RouteTestHandler extends FlowTemplateHandler {
      * @param dataList the data list
      * @return the result
      */
+    @Produces(MediaType.TEXT_HTML)
     @GET
     @Path("/query-list")
     public Result uuidInPath(@QueryParam("entry") @QueryParamList(String.class) @DefaultValue("default value from controller !") final List<String> dataList) {
@@ -99,6 +105,7 @@ public class RouteTestHandler extends FlowTemplateHandler {
      * @param complexObject the complex object
      * @return the result
      */
+    @Produces(MediaType.TEXT_HTML)
     @GET
     @Path("/query-converter")
     public Result queryConveter(@QueryParam("data") @DefaultValue("123:456")
@@ -117,6 +124,8 @@ public class RouteTestHandler extends FlowTemplateHandler {
      * @param complexObject the complex object
      * @return the result
      */
+    @Operation(hidden = true)
+    @Produces(MediaType.TEXT_PLAIN)
     @GET
     @Path("/path-converter/{data}")
     public Result pathConverter(@PathParam("data") @Converter(MyComplexObject.Converter.class) final MyComplexObject complexObject) {
