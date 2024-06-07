@@ -237,7 +237,6 @@ public class CrudApiTestHandler extends FlowApiHandler {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @RequestBody(required = true, description = "Information to create the entry")
     @RequestBodySchema(TestStorageForm.class)
     @PATCH
     @Path("/{id}")
@@ -278,7 +277,6 @@ public class CrudApiTestHandler extends FlowApiHandler {
             )
     })
     @Produces(MediaType.APPLICATION_JSON)
-    @RequestBodySchema(TestStorageForm.class)
     @DELETE
     @Path("/{id}")
     public Result delete(@PathParam("id") final Integer id) {

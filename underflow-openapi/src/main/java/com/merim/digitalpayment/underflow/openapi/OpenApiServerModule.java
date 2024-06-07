@@ -62,6 +62,11 @@ public class OpenApiServerModule implements UnderflowServerModule {
     private OpenAPI openAPI;
 
     /**
+     * The server.
+     */
+    private UnderflowServerImpl serverImpl;
+
+    /**
      * Instantiates a new Open api server module.
      *
      * @param oasFilters the oas filters
@@ -158,7 +163,13 @@ public class OpenApiServerModule implements UnderflowServerModule {
 
     @Override
     public void register(final UnderflowServerBuilder builder) {
-        builder.addHandler(new OpenApiHandler(() -> this.openAPI));
+        builder.addHandler(new OpenApiHandler(() -> {
+            if (Application.getMode() == Mode.PROD) {
+                return this.openAPI;
+            } else {
+                return this.createOpenAPI(this.serverImpl);
+            }
+        }));
     }
 
     @Override
