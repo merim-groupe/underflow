@@ -29,31 +29,12 @@ public class OpenApiHandler extends FlowHandler {
     private final Supplier<OpenAPI> openAPISupplier;
 
     /**
-     * The Open api.
-     */
-    private OpenAPI openAPI;
-
-    /**
      * Instantiates a new Open api handler.
      *
      * @param openAPISupplier the open api supplier
      */
     public OpenApiHandler(final Supplier<OpenAPI> openAPISupplier) {
         this.openAPISupplier = openAPISupplier;
-        this.openAPI = null;
-    }
-
-    /**
-     * Gets the openapi model.
-     *
-     * @return the openapi model
-     */
-    private OpenAPI getOpenAPI() {
-        if (this.openAPI == null) {
-            this.openAPI = this.openAPISupplier.get();
-        }
-
-        return this.openAPI;
     }
 
     /**
@@ -111,7 +92,7 @@ public class OpenApiHandler extends FlowHandler {
     @Path("openapi.yaml")
     public Result serveOpenAPIYaml() {
         try {
-            return this.ok(OpenApiSerializer.serialize(this.getOpenAPI(), Format.YAML));
+            return this.ok(OpenApiSerializer.serialize(this.openAPISupplier.get(), Format.YAML));
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -128,7 +109,7 @@ public class OpenApiHandler extends FlowHandler {
     @Path("openapi.json")
     public Result serveOpenAPIJson() {
         try {
-            return this.ok(OpenApiSerializer.serialize(this.getOpenAPI(), Format.JSON));
+            return this.ok(OpenApiSerializer.serialize(this.openAPISupplier.get(), Format.JSON));
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
