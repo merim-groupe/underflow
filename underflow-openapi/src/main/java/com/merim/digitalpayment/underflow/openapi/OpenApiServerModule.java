@@ -175,8 +175,8 @@ public class OpenApiServerModule implements UnderflowServerModule {
     @Override
     public void onServerCreated(final UnderflowServer server) {
         if (server instanceof UnderflowServerImpl) {
-            final UnderflowServerImpl serverImpl = (UnderflowServerImpl) server;
-            this.openAPI = this.createOpenAPI(serverImpl);
+            this.serverImpl = (UnderflowServerImpl) server;
+            this.openAPI = this.createOpenAPI(this.serverImpl);
         }
     }
 
