@@ -1,6 +1,8 @@
 package com.merim.digitalpayment.underflow.templates.dto;
 
 import freemarker.template.TemplateException;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +15,8 @@ import java.util.stream.Collectors;
  * @author Pierre Adam
  * @since 22.07.19
  */
+@Getter
+@Setter
 public class DevErrorDTO {
 
     /**
@@ -89,77 +93,5 @@ public class DevErrorDTO {
                 this.detail.add("--  caused by  --");
             }
         }
-    }
-
-    /**
-     * Gets title.
-     *
-     * @return the title
-     */
-    public String getTitle() {
-        return this.title == null ? "" : this.title;
-    }
-
-    /**
-     * Sets title.
-     *
-     * @param title the title
-     */
-    public void setTitle(final String title) {
-        this.title = title;
-    }
-
-    /**
-     * Gets message.
-     *
-     * @return the message
-     */
-    public String getMessage() {
-        return this.message == null ? "" : this.message;
-    }
-
-    /**
-     * Sets message.
-     *
-     * @param message the message
-     */
-    public void setMessage(final String message) {
-        this.message = message;
-    }
-
-    /**
-     * Gets location.
-     *
-     * @return the location
-     */
-    public String getLocation() {
-        return this.location == null ? "" : this.location;
-    }
-
-    /**
-     * Sets location.
-     *
-     * @param location the location
-     */
-    public void setLocation(final String location) {
-        this.location = location;
-    }
-
-    /**
-     * Gets detail.
-     *
-     * @return the detail
-     */
-    public List<String> getDetail() {
-        return this.detail == null ? new ArrayList<>() : this.detail;
-    }
-
-    /**
-     * Sets detail.
-     *
-     * @param detail the detail
-     */
-    public void setDetail(final List<String> detail) {
-        this.detail = detail.stream().map(s -> s == null ? "" : s).collect(Collectors.toList());
     }
 }

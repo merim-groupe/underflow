@@ -28,12 +28,30 @@ public class FlowTemplateHandler extends FlowApiHandler implements HtmlResults {
     private final TemplateEngine templateEngine;
 
     /**
+     * Instantiate a new flow template handler to avoid using possible altered methods by inheritance.
+     * This is made because class extending this class can automatically alter the DTO which would not be a desired behavior
+     * for the default implementation of the exception handling.
+     * If you wish to implement your own exception handling, you can use your own altered DTO if needed.
+     */
+    private final HtmlResults rawHtmlResult = new HtmlResults() {
+    };
+
+    /**
      * Instantiates a new Flow template handler.
      *
      * @param configuration the configuration
      */
     public FlowTemplateHandler(final Configuration configuration) {
         this(configuration, null);
+    }
+
+    /**
+     * Instantiates a new Flow template handler.
+     *
+     * @param templateEngine the template engine
+     */
+    private FlowTemplateHandler(final TemplateEngine templateEngine) {
+        this.templateEngine = templateEngine;
     }
 
     /**
@@ -103,25 +121,27 @@ public class FlowTemplateHandler extends FlowApiHandler implements HtmlResults {
 
     @Override
     public Result onNotFound() {
-        return this.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error404.ftl"), null);
+        return this.rawHtmlResult.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error404.ftl"), null);
     }
 
     @Override
     public Result onUnauthorized() {
-        return this.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error403.ftl"), null);
+        return this.rawHtmlResult.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error403.ftl"), null);
     }
 
     @Override
     public Result onForbidden() {
-        return this.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error403.ftl"), null);
+        return this.rawHtmlResult.notFound(TemplateSystem.getStandardErrorsTemplates().getTemplate("error403.ftl"), null);
     }
 
     @Override
     public Result onException(final Throwable exception) {
         if (Application.getMode() == Mode.PROD) {
-            return this.internalServerError(TemplateSystem.getStandardErrorsTemplates().getTemplate("error500.ftl"), null);
+            return this.rawHtmlResult.internalServerError(
+                    TemplateSystem.getStandardErrorsTemplates().getTemplate("error500.ftl"), null);
         } else {
-            return this.internalServerError(TemplateSystem.getFrameworkTemplateEngine().getTemplate("dev-error.ftl"), new DevErrorDTO(exception));
+            return this.rawHtmlResult.internalServerError(
+                    TemplateSystem.getFrameworkTemplateEngine().getTemplate("dev-error.ftl"), new DevErrorDTO(exception));
         }
     }
 }
