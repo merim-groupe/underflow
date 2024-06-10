@@ -46,7 +46,7 @@
         <undertow.version>2.3.13.Final</undertow.version>
 
         <!-- https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api -->
-        <jakarta.rs-api.version>4.0.0</jakarta.rs-api.version>
+        <jakarta.rs-api.version>3.1.0</jakarta.rs-api.version>
 
         <!-- https://mvnrepository.com/artifact/io.smallrye/jandex -->
         <jandex.version>3.2.0</jandex.version>
@@ -63,7 +63,7 @@
         <!-- Common -->
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-        <jackson.version>2.17.1</jackson.version>
+        <jackson.version>2.13.5</jackson.version>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <apache-commons-io.version>2.16.1</apache-commons-io.version>
         <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
@@ -72,7 +72,7 @@
         <!-- Templates -->
 
         <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
-        <freemarker.version>2.3.33</freemarker.version>
+        <freemarker.version>2.3.31</freemarker.version>
 
         <!-- Logging -->
 
