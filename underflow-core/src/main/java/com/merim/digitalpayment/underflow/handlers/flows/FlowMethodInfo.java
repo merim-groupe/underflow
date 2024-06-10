@@ -4,10 +4,16 @@ import com.merim.digitalpayment.underflow.enums.MethodType;
 import com.merim.digitalpayment.underflow.handlers.flows.exceptions.InvalidMethodException;
 import com.merim.digitalpayment.underflow.routing.RouteResolver;
 import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * FlowMethodInfo.
@@ -15,6 +21,7 @@ import java.lang.reflect.Method;
  * @author Pierre Adam
  * @since 24.05.30
  */
+@Slf4j
 @Getter
 public class FlowMethodInfo {
 
@@ -57,6 +64,7 @@ public class FlowMethodInfo {
         this.methodType = MethodType.resolve(method);
         this.httpMethod = FlowMethodInfo.extractHttpMethod(this.method);
         this.route = new RouteResolver(handlerInfo.getHandlerClass(), method, false);
+        this.checkMethod();
     }
 
     /**
@@ -83,5 +91,23 @@ public class FlowMethodInfo {
         }
 
         return httpMethod.value();
+    }
+
+    /**
+     * Check method.
+     */
+    private void checkMethod() {
+        Arrays.stream(this.method.getParameters())
+                .filter(parameter ->
+                        !parameter.isAnnotationPresent(Context.class) &&
+                                !parameter.isAnnotationPresent(QueryParam.class) &&
+                                !parameter.isAnnotationPresent(PathParam.class)
+                )
+                .forEach(parameter -> LoggerFactory
+                        .getLogger(this.method.getDeclaringClass())
+                        .warn("Unable to resolve the argument <{}@{}> for the method {}.{}. " +
+                                        "Please use the annotation @PathParam, @QueryParam, @Context to specify how to resolve this argument.",
+                                parameter.getName(), parameter.getType().getSimpleName(),
+                                this.method.getDeclaringClass().getSimpleName(), this.method.getName()));
     }
 }
