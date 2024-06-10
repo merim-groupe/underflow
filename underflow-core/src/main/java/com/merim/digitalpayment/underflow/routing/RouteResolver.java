@@ -26,7 +26,7 @@ public class RouteResolver {
     /**
      * The constant routeArgumentPattern.
      */
-    public static final Pattern ROUTE_ARGUMENT_PATTERN = Pattern.compile("\\{(?<name>[a-zA-Z\\-_]([\\w\\-_]+)?)(:(?<pattern>[^:]+))?}");
+    public static final Pattern ROUTE_ARGUMENT_PATTERN = Pattern.compile("\\{(?<name>[a-zA-Z\\-_][\\w\\-_]*?)(?::(?<pattern>(?:[^:{}]|\\{\\d+})+))?}");
 
     /**
      * The Raw route.
