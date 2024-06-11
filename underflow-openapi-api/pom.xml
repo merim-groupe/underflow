@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.merim.digitalpayment.underflow</groupId>
+        <artifactId>underflow-bom</artifactId>
+        <version>${project.version}</version>
+    </parent>
+
+    <artifactId>underflow-openapi-api</artifactId>
+    <description>This is a package only allowing for easy import of the necessary annotation for OpenAPI.</description>
+
+    <properties>
+        <maven.install.skip>false</maven.install.skip>
+        <maven.deploy.skip>false</maven.deploy.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <version>${microprofile.openapi.version}</version>
+        </dependency>
+    </dependencies>
+</project>

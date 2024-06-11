@@ -21,27 +21,26 @@
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-api-form</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.merim.digitalpayment.underflow</groupId>
+            <artifactId>underflow-openapi-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-context</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-converters</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-security</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-utils</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
         <dependency>
@@ -65,11 +64,6 @@
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${jakarta.rs-api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.microprofile.openapi</groupId>
-            <artifactId>microprofile-openapi-api</artifactId>
-            <version>${microprofile.openapi.version}</version>
         </dependency>
     </dependencies>
 

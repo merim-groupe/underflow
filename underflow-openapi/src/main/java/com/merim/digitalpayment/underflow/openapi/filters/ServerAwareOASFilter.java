@@ -1,4 +1,4 @@
-package com.merim.digitalpayment.underflow.openapi;
+package com.merim.digitalpayment.underflow.openapi.filters;
 
 import com.merim.digitalpayment.underflow.server.UnderflowServerImpl;
 import org.eclipse.microprofile.openapi.OASFilter;

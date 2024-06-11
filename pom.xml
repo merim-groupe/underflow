@@ -108,6 +108,7 @@
         <module>underflow-test</module>
         <module>underflow-utils</module>
         <module>underflow-openapi</module>
+        <module>underflow-openapi-api</module>
     </modules>
 
     <dependencies>
@@ -204,6 +205,11 @@
             <dependency>
                 <groupId>com.merim.digitalpayment.underflow</groupId>
                 <artifactId>underflow-openapi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-openapi-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

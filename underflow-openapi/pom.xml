@@ -23,6 +23,10 @@
             <artifactId>underflow-server</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.merim.digitalpayment.underflow</groupId>
+            <artifactId>underflow-openapi-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>jandex</artifactId>
             <version>${jandex.version}</version>

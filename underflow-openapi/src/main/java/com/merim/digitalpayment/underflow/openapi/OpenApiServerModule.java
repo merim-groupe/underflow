@@ -2,6 +2,7 @@ package com.merim.digitalpayment.underflow.openapi;
 
 import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.app.Mode;
+import com.merim.digitalpayment.underflow.openapi.filters.ServerAwareOASFilter;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
 import com.merim.digitalpayment.underflow.server.UnderflowServerImpl;
