@@ -206,7 +206,7 @@ public class OpenApiServerModule implements UnderflowServerModule {
         final OpenApiAnnotationScanner scanner = new OpenApiAnnotationScanner(config, filteredIndexView, new ArrayList<>());
         final OpenAPI openAPI = scanner.scan();
 
-        this.runFilters(openAPI);
+        this.runFilters(openAPI, server);
 
         return openAPI;
     }
@@ -215,9 +215,13 @@ public class OpenApiServerModule implements UnderflowServerModule {
      * Run filters.
      *
      * @param openAPI the open api
+     * @param server  the server
      */
-    private void runFilters(final OpenAPI openAPI) {
+    private void runFilters(final OpenAPI openAPI, final UnderflowServerImpl server) {
         for (final OASFilter filter : this.oasFilters) {
+            if (filter instanceof ServerAwareOASFilter) {
+                ((ServerAwareOASFilter) filter).registerServer(server);
+            }
             FilterUtil.applyFilter(filter, openAPI);
         }
     }
