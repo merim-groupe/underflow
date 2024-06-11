@@ -56,12 +56,14 @@ public class OpenApiServerModule implements UnderflowServerModule {
      * The Oas filters.
      */
     private final OASFilter[] oasFilters;
-
+    /**
+     * The Ui flavor.
+     */
+    private final OpenApiUiFlavor uiFlavor;
     /**
      * The Open api.
      */
     private OpenAPI openAPI;
-
     /**
      * The server.
      */
@@ -73,7 +75,19 @@ public class OpenApiServerModule implements UnderflowServerModule {
      * @param oasFilters the oas filters
      */
     public OpenApiServerModule(final OASFilter... oasFilters) {
+        this(OpenApiUiFlavor.SWAGGER_UI, oasFilters);
+    }
+
+    /**
+     * Instantiates a new Open api server module.
+     *
+     * @param uiFlavor   the ui flavor
+     * @param oasFilters the oas filters
+     */
+    public OpenApiServerModule(final OpenApiUiFlavor uiFlavor,
+                               final OASFilter... oasFilters) {
         this.openAPI = null;
+        this.uiFlavor = uiFlavor;
         this.oasFilters = oasFilters;
     }
 
@@ -164,7 +178,7 @@ public class OpenApiServerModule implements UnderflowServerModule {
 
     @Override
     public void register(final UnderflowServerBuilder builder) {
-        builder.addHandler(new OpenApiHandler(() -> {
+        builder.addHandler(new OpenApiHandler(this.uiFlavor, () -> {
             if (Application.getMode() == Mode.PROD) {
                 return this.openAPI;
             } else {
