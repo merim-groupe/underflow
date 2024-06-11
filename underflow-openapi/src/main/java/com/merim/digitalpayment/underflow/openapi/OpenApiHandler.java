@@ -2,17 +2,24 @@ package com.merim.digitalpayment.underflow.openapi;
 
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.results.Result;
+import io.smallrye.openapi.api.models.OpenAPIImpl;
+import io.smallrye.openapi.api.models.servers.ServerImpl;
 import io.smallrye.openapi.runtime.io.Format;
 import io.smallrye.openapi.runtime.io.OpenApiSerializer;
+import io.undertow.server.HttpServerExchange;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.servers.Server;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -35,6 +42,11 @@ public class OpenApiHandler extends FlowHandler {
     private final OpenApiUiFlavor uiFlavor;
 
     /**
+     * The Add current server.
+     */
+    private final boolean addCurrentServer;
+
+    /**
      * Instantiates a new Open api handler.
      *
      * @param uiFlavor        the ui flavor
@@ -44,6 +56,7 @@ public class OpenApiHandler extends FlowHandler {
                           final Supplier<OpenAPI> openAPISupplier) {
         this.uiFlavor = uiFlavor;
         this.openAPISupplier = openAPISupplier;
+        this.addCurrentServer = true;
     }
 
     /**
@@ -68,6 +81,11 @@ public class OpenApiHandler extends FlowHandler {
         }
     }
 
+    /**
+     * Stoplight documentation string.
+     *
+     * @return the string
+     */
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     @GET
@@ -94,6 +112,11 @@ public class OpenApiHandler extends FlowHandler {
                 "</html>\n";
     }
 
+    /**
+     * Redoc documentation string.
+     *
+     * @return the string
+     */
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     @GET
@@ -203,28 +226,30 @@ public class OpenApiHandler extends FlowHandler {
     /**
      * Serve the server openapi description as yaml.
      *
+     * @param exchange the exchange
      * @return the openapi description as yaml
      */
     @Operation(hidden = true)
     @Produces("application/x-yaml")
     @GET
     @Path("openapi")
-    public Result serveOpenAPI() {
-        return this.serveOpenAPIYaml();
+    public Result serveOpenAPI(@Context final HttpServerExchange exchange) {
+        return this.serveOpenAPIYaml(exchange);
     }
 
     /**
      * Serve the server openapi description as yaml.
      *
+     * @param exchange the exchange
      * @return the openapi description as yaml
      */
     @Operation(hidden = true)
     @Produces("application/x-yaml")
     @GET
     @Path("openapi.yaml")
-    public Result serveOpenAPIYaml() {
+    public Result serveOpenAPIYaml(@Context final HttpServerExchange exchange) {
         try {
-            return this.ok(OpenApiSerializer.serialize(this.openAPISupplier.get(), Format.YAML));
+            return this.ok(OpenApiSerializer.serialize(this.getOpenAPI(exchange), Format.YAML));
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -233,17 +258,50 @@ public class OpenApiHandler extends FlowHandler {
     /**
      * Serve the server openapi description as json.
      *
+     * @param exchange the exchange
      * @return the openapi description as json
      */
     @Operation(hidden = true)
     @Produces(MediaType.APPLICATION_JSON)
     @GET
     @Path("openapi.json")
-    public Result serveOpenAPIJson() {
+    public Result serveOpenAPIJson(@Context final HttpServerExchange exchange) {
         try {
-            return this.ok(OpenApiSerializer.serialize(this.openAPISupplier.get(), Format.JSON));
+            return this.ok(OpenApiSerializer.serialize(this.getOpenAPI(exchange), Format.JSON));
         } catch (final IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Gets open api.
+     *
+     * @param exchange the exchange
+     * @return the open api
+     */
+    private OpenAPI getOpenAPI(final HttpServerExchange exchange) {
+        final OpenAPI original = this.openAPISupplier.get();
+
+        if (this.addCurrentServer) {
+            final List<Server> servers = original.getServers() != null ? new ArrayList<>(original.getServers()) : new ArrayList<>();
+            final OpenAPI openAPI = new OpenAPIImpl()
+                    .openapi(original.getOpenapi())
+                    .info(original.getInfo())
+                    .externalDocs(original.getExternalDocs())
+                    .security(original.getSecurity())
+                    .tags(original.getTags())
+                    .paths(original.getPaths())
+                    .components(original.getComponents())
+                    .extensions(original.getExtensions());
+
+            servers.add(new ServerImpl()
+                    .description("Server")
+                    .url(exchange.getRequestScheme() + "://" + exchange.getHostAndPort()));
+            openAPI.servers(servers);
+
+            return openAPI;
+        } else {
+            return original;
         }
     }
 }
