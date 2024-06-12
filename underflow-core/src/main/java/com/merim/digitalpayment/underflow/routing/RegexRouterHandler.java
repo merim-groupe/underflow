@@ -38,11 +38,10 @@ public class RegexRouterHandler implements HttpHandler {
 
         for (final Pattern pattern : this.handlers.keySet()) {
             final Matcher matcher = pattern.matcher(relativePath);
-            if (matcher.find()) {
+            if (matcher.find() && (matchedPart == null || matchedPart.length() < matcher.group().length())) {
                 matchedPart = matcher.group();
                 nonMatchedPart = relativePath.replace(matchedPart, "");
                 matchedHandler = this.handlers.get(pattern);
-                break;
             }
         }
 
