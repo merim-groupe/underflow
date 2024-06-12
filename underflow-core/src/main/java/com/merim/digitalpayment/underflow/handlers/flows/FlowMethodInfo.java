@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.handlers.flows;
 
+import com.merim.digitalpayment.underflow.annotation.AnnotationResolver;
 import com.merim.digitalpayment.underflow.enums.MethodType;
 import com.merim.digitalpayment.underflow.handlers.flows.exceptions.InvalidMethodException;
 import com.merim.digitalpayment.underflow.routing.RouteResolver;
@@ -11,7 +12,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -75,22 +75,7 @@ public class FlowMethodInfo {
      * @throws InvalidMethodException the invalid method exception
      */
     private static String extractHttpMethod(final Method method) throws InvalidMethodException {
-        HttpMethod httpMethod = method.getAnnotation(HttpMethod.class);
-
-        if (httpMethod == null) {
-            for (final Annotation annotation : method.getAnnotations()) {
-                httpMethod = annotation.annotationType().getAnnotation(HttpMethod.class);
-                if (httpMethod != null) {
-                    break;
-                }
-            }
-        }
-
-        if (httpMethod == null) {
-            throw new InvalidMethodException();
-        }
-
-        return httpMethod.value();
+        return AnnotationResolver.nestedAnnotation(method, HttpMethod.class).orElseThrow(InvalidMethodException::new).value();
     }
 
     /**

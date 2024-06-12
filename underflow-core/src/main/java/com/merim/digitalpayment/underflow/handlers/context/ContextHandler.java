@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.handlers.context;
 
+import com.merim.digitalpayment.underflow.annotation.AnnotationResolver;
 import com.merim.digitalpayment.underflow.annotation.routing.Converter;
 import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.app.Application;
@@ -143,7 +144,7 @@ public class ContextHandler implements MDCContext {
      * @return the boolean
      */
     public Optional<Secured> requireSecurity() {
-        return Optional.ofNullable(this.method.getAnnotation(Secured.class));
+        return AnnotationResolver.annotation(this.method, Secured.class);
     }
 
     /**
@@ -199,39 +200,39 @@ public class ContextHandler implements MDCContext {
 
         for (final Parameter parameter : this.method.getParameters()) {
             final Class<?> pClass = parameter.getType();
-            final Context pContext = parameter.getAnnotation(Context.class);
-            final Converter pConverter = parameter.getAnnotation(Converter.class);
-            final PathParam pPathParam = parameter.getAnnotation(PathParam.class);
-            final QueryParam pQueryParam = parameter.getAnnotation(QueryParam.class);
-//            final DefaultValue pDefaultValue = parameter.getAnnotation(DefaultValue.class);
+            final Optional<Context> oContext = AnnotationResolver.nestedAnnotation(parameter, Context.class);
+            final Optional<Converter> oConverter = AnnotationResolver.nestedAnnotation(parameter, Converter.class);
+            final Optional<PathParam> oPathParam = AnnotationResolver.nestedAnnotation(parameter, PathParam.class);
+            final Optional<QueryParam> oQueryParam = AnnotationResolver.nestedAnnotation(parameter, QueryParam.class);
             final Optional<?> appInject = Application.getInstanceOptional(pClass);
 
-            if (pPathParam != null) {
-                if (this.pathMatcherHasGroup(pPathParam.value())) {
-                    final String value = this.pathMatcherGetGroup(pPathParam.value());
-                    methodArgs.add(this.queryConvert(pConverter, pClass, value));
+            if (oPathParam.isPresent()) {
+                final String pathParamValue = oPathParam.get().value();
+                if (this.pathMatcherHasGroup(pathParamValue)) {
+                    final String value = this.pathMatcherGetGroup(pathParamValue);
+                    methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, value));
                 } else {
                     this.handlerLogger.warn("A @Named(\"{}\") argument was requested for the method {}.{}. " +
                                     "This argument was not found on the path. Please check your @Path syntaxes.",
-                            pPathParam.value(), this.handler.getClass().getSimpleName(), this.method.getName());
+                            pathParamValue, this.handler.getClass().getSimpleName(), this.method.getName());
                     methodArgs.add(null);
                 }
-            } else if (pQueryParam != null) {
-                final QueryParamList pQueryParamList = parameter.getAnnotation(QueryParamList.class);
-                final Deque<String> values = this.queryString.getValuesFor(pQueryParam.value());
+            } else if (oQueryParam.isPresent()) {
+                final Optional<QueryParamList> oQueryParamList = AnnotationResolver.nestedAnnotation(parameter, QueryParamList.class);
+                final Deque<String> values = this.queryString.getValuesFor(oQueryParam.get().value());
 
-                if (pQueryParamList != null) {
+                if (oQueryParamList.isPresent()) {
                     methodArgs.add(values.stream()
-                            .map(v -> this.queryConvert(pConverter, pQueryParamList.value(), v))
+                            .map(v -> this.queryConvert(oConverter.orElse(null), oQueryParamList.get().value(), v))
                             .collect(Collectors.toList()));
                 } else {
                     if (values.isEmpty()) {
                         methodArgs.add(null);
                     } else {
-                        methodArgs.add(this.queryConvert(pConverter, pClass, values.getFirst()));
+                        methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, values.getFirst()));
                     }
                 }
-            } else if (pContext != null) {
+            } else if (oContext.isPresent()) {
                 if (this.controllerInjectable.containsKey(pClass)) {
                     methodArgs.add(this.controllerInjectable.get(pClass).get());
                 } else if (appInject.isPresent()) {

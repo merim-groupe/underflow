@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.handlers.context.path;
 
+import com.merim.digitalpayment.underflow.annotation.AnnotationResolver;
 import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.annotation.routing.QueryParamRequired;
 import jakarta.ws.rs.DefaultValue;
@@ -7,10 +8,7 @@ import jakarta.ws.rs.QueryParam;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -37,21 +35,22 @@ public class QueryString {
         this.queryEntries = new HashMap<>();
 
         for (final Parameter parameter : method.getParameters()) {
-            if (parameter.isAnnotationPresent(QueryParam.class)) {
-                final QueryParam qQueryParam = parameter.getAnnotation(QueryParam.class);
-                final QueryParamList qQueryParamList = parameter.getAnnotation(QueryParamList.class);
-                final QueryParamRequired qQueryParamRequired = parameter.getAnnotation(QueryParamRequired.class);
-                final DefaultValue qDefaultValue = parameter.getAnnotation(DefaultValue.class);
+            final Optional<QueryParam> oQueryParam = AnnotationResolver.nestedAnnotation(parameter, QueryParam.class);
 
-                final QueryStringEntry entry = new QueryStringEntry(qQueryParamRequired != null, qDefaultValue);
-                final String queryParamName = qQueryParam.value();
+            if (oQueryParam.isPresent()) {
+                final Optional<QueryParamList> oQueryParamList = AnnotationResolver.nestedAnnotation(parameter, QueryParamList.class);
+                final Optional<QueryParamRequired> oQueryParamRequired = AnnotationResolver.nestedAnnotation(parameter, QueryParamRequired.class);
+                final Optional<DefaultValue> oDefaultValue = AnnotationResolver.nestedAnnotation(parameter, DefaultValue.class);
+
+                final QueryStringEntry entry = new QueryStringEntry(oQueryParamRequired.isPresent(), oDefaultValue.orElse(null));
+                final String queryParamName = oQueryParam.get().value();
                 this.queryEntries.put(queryParamName, entry);
 
                 if (pathParameters.containsKey(queryParamName)) {
                     entry.getData().addAll(pathParameters.get(queryParamName));
                 }
 
-                if (qQueryParamList != null) {
+                if (oQueryParamList.isPresent()) {
                     final String format = String.format("%s\\[\\d*\\]", queryParamName);
                     final Pattern pattern = Pattern.compile(format);
 
