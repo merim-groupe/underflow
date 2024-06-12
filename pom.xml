@@ -46,7 +46,7 @@
         <undertow.version>2.3.13.Final</undertow.version>
 
         <!-- https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api -->
-        <jakarta.rs-api.version>3.1.0</jakarta.rs-api.version>
+        <jakarta.rs-api.version>3.0.0</jakarta.rs-api.version>
 
         <!-- https://mvnrepository.com/artifact/io.smallrye/jandex -->
         <jandex.version>3.2.0</jandex.version>
@@ -292,6 +292,20 @@
                             <release>9</release>
                             <compileSourceRoots>
                                 <compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
+                            </compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>compile-java-11</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <release>11</release>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java11</compileSourceRoot>
                             </compileSourceRoots>
                             <multiReleaseOutput>true</multiReleaseOutput>
                         </configuration>
