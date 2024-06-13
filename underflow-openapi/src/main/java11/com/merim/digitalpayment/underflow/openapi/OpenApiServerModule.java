@@ -3,6 +3,7 @@ package com.merim.digitalpayment.underflow.openapi;
 import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.app.Mode;
 import com.merim.digitalpayment.underflow.openapi.annotations.OpenAPIHiddenClass;
+import com.merim.digitalpayment.underflow.openapi.filters.JandexAwareOASFilter;
 import com.merim.digitalpayment.underflow.openapi.filters.ServerAwareOASFilter;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
@@ -222,7 +223,7 @@ public class OpenApiServerModule implements UnderflowServerModule {
         final OpenApiAnnotationScanner scanner = new OpenApiAnnotationScanner(config, filteredIndexView, new ArrayList<>());
         final OpenAPI openAPI = scanner.scan();
 
-        this.runFilters(openAPI, server);
+        this.runFilters(openAPI, server, indexView);
 
         return openAPI;
     }
@@ -230,13 +231,17 @@ public class OpenApiServerModule implements UnderflowServerModule {
     /**
      * Run filters.
      *
-     * @param openAPI the open api
-     * @param server  the server
+     * @param openAPI   the open api
+     * @param server    the server
+     * @param indexView the index view
      */
-    private void runFilters(final OpenAPI openAPI, final UnderflowServerImpl server) {
+    private void runFilters(final OpenAPI openAPI, final UnderflowServerImpl server, final IndexView indexView) {
         for (final OASFilter filter : this.oasFilters) {
             if (filter instanceof ServerAwareOASFilter) {
-                ((ServerAwareOASFilter) filter).registerServer(server);
+                ((ServerAwareOASFilter) filter).register(server);
+            }
+            if (filter instanceof JandexAwareOASFilter) {
+                ((JandexAwareOASFilter) filter).register(indexView);
             }
             FilterUtil.applyFilter(filter, openAPI);
         }

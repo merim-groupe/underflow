@@ -1,7 +1,6 @@
 package com.merim.digitalpayment.underflow.openapi.filters;
 
 import com.merim.digitalpayment.underflow.server.UnderflowServerImpl;
-import org.eclipse.microprofile.openapi.OASFilter;
 
 /**
  * ServerAwareOASFilter.
@@ -9,14 +8,5 @@ import org.eclipse.microprofile.openapi.OASFilter;
  * @author Pierre Adam
  * @since 24.06.11
  */
-public interface ServerAwareOASFilter extends OASFilter {
-
-    /**
-     * Dynamically register the underflow server called for this filter.
-     * This will be called right before call any of the OASFilter methods.
-     *
-     * @param underflowServer the underflow server
-     */
-    default void registerServer(final UnderflowServerImpl underflowServer) {
-    }
+public interface ServerAwareOASFilter extends RegistrableOASFilter<UnderflowServerImpl> {
 }

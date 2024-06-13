@@ -20,7 +20,7 @@ public class OpenApiAutoResolveVersionFilter extends OpenApiVersionFilter implem
     }
 
     @Override
-    public void registerServer(final UnderflowServerImpl underflowServer) {
+    public void register(final UnderflowServerImpl underflowServer) {
         if (Application.getMode() != Mode.DEV) {
             final Package appPackage = underflowServer.getApplication().getClass().getPackage();
 
