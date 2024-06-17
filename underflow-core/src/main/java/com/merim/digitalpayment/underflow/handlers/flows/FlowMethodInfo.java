@@ -63,7 +63,7 @@ public class FlowMethodInfo {
         this.method = method;
         this.methodType = MethodType.resolve(method);
         this.httpMethod = FlowMethodInfo.extractHttpMethod(this.method);
-        this.route = new RouteResolver(handlerInfo.getHandlerClass(), method, false);
+        this.route = new RouteResolver(handlerInfo.getHandlerClass(), method);
         this.checkMethod();
     }
 

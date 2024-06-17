@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
+import com.merim.digitalpayment.underflow.annotation.routing.PathIgnoreCase;
 import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
@@ -74,6 +75,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      */
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_PLAIN)
+    @PathIgnoreCase
     @GET
     @Path("/test-text")
     public Result stringAnswer() {

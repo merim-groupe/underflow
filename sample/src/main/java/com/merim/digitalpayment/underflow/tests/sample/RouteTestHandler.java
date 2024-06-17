@@ -7,6 +7,7 @@ import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
 import io.undertow.server.HttpServerExchange;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -42,7 +43,7 @@ public class RouteTestHandler extends FlowTemplateHandler {
     @Produces(MediaType.TEXT_HTML)
     @GET
     @Path("/")
-    public Result pathWithQuery(final HttpServerExchange exchange,
+    public Result pathWithQuery(@Context final HttpServerExchange exchange,
                                 @QueryParam("bar") @DefaultValue(value = "default value") final String bar) {
         return this.ok(this.getTemplate("routes/home.ftl"), null);
     }

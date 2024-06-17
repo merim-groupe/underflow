@@ -1,6 +1,8 @@
 package com.merim.digitalpayment.underflow.routing;
 
+import com.merim.digitalpayment.underflow.annotation.AnnotationResolver;
 import com.merim.digitalpayment.underflow.annotation.routing.Converter;
+import com.merim.digitalpayment.underflow.annotation.routing.PathIgnoreCase;
 import com.merim.digitalpayment.underflow.converters.Converters;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import jakarta.ws.rs.Path;
@@ -40,7 +42,7 @@ public class RouteResolver {
     private final Pattern pattern;
 
     /**
-     * Resolve route.
+     * Instantiates a new Route resolver.
      *
      * @param route      the route
      * @param method     the method
@@ -52,6 +54,16 @@ public class RouteResolver {
     }
 
     /**
+     * Resolve route.
+     *
+     * @param route  the route
+     * @param method the method
+     */
+    public RouteResolver(final String route, final Method method) {
+        this(route, method, AnnotationResolver.nestedAnnotation(method, PathIgnoreCase.class).isPresent());
+    }
+
+    /**
      * Route to regex pattern.
      *
      * @param hClass     the h class
@@ -60,6 +72,16 @@ public class RouteResolver {
      */
     public RouteResolver(final Class<? extends FlowHandler> hClass, final Method method, final boolean ignoreCase) {
         this(RouteResolver.extractPath(hClass, method), method, ignoreCase);
+    }
+
+    /**
+     * Route to regex pattern.
+     *
+     * @param hClass the h class
+     * @param method the method
+     */
+    public RouteResolver(final Class<? extends FlowHandler> hClass, final Method method) {
+        this(RouteResolver.extractPath(hClass, method), method);
     }
 
     /**
