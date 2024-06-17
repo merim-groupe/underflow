@@ -91,11 +91,14 @@ public class OpenApiHandler extends FlowHandler {
     @GET
     @Path("/stoplight")
     public String stoplightDocumentation() {
+        final OpenAPI openAPI = this.openAPISupplier.get();
+        final String name = openAPI.getInfo().getTitle() != null ? openAPI.getInfo().getTitle() + " " : "";
+
         return "<html lang=\"en\">\n" +
                 "<head>\n" +
                 "    <meta charset=\"utf-8\">\n" +
                 "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">\n" +
-                "    <title>PlutusApi Documentation</title>\n" +
+                "    <title>" + name + "Documentation</title>\n" +
                 "    <!-- Embed elements Elements via Web Component -->\n" +
                 "    <script src=\"https://unpkg.com/@stoplight/elements/web-components.min.js\"></script>\n" +
                 "    <link rel=\"stylesheet\" href=\"https://unpkg.com/@stoplight/elements/styles.min.css\">\n" +
@@ -122,10 +125,13 @@ public class OpenApiHandler extends FlowHandler {
     @GET
     @Path("/redoc")
     public String redocDocumentation() {
+        final OpenAPI openAPI = this.openAPISupplier.get();
+        final String name = openAPI.getInfo().getTitle() != null ? openAPI.getInfo().getTitle() + " " : "";
+
         return "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "  <head>\n" +
-                "    <title>Redoc</title>\n" +
+                "    <title>" + name + "Documentation</title>\n" +
                 "    <!-- needed for adaptive design -->\n" +
                 "    <meta charset=\"utf-8\"/>\n" +
                 "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n" +
@@ -158,11 +164,14 @@ public class OpenApiHandler extends FlowHandler {
     @GET
     @Path("/swagger-ui")
     public String swaggerUiDocumentation() {
+        final OpenAPI openAPI = this.openAPISupplier.get();
+        final String name = openAPI.getInfo().getTitle() != null ? openAPI.getInfo().getTitle() + " " : "";
+
         return "<!DOCTYPE html>\n" +
                 "<html lang=\"en\">\n" +
                 "    <head>\n" +
                 "        <meta charset=\"UTF-8\">\n" +
-                "        <title>OpenAPI UI (Powered by Underflow)</title>\n" +
+                "        <title>" + name + "Documentation</title>\n" +
                 "        <link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.css\" >\n" +
                 "\n" +
                 "        <link rel=\"shortcut icon\" href=\"favicon.ico\" type=\"image/x-icon\">\n" +
@@ -200,9 +209,13 @@ public class OpenApiHandler extends FlowHandler {
     @GET
     @Path("/rapidoc")
     public String rapidocDocumentation() {
+        final OpenAPI openAPI = this.openAPISupplier.get();
+        final String name = openAPI.getInfo().getTitle() != null ? openAPI.getInfo().getTitle() + " " : "";
+
         return "<!doctype html>\n" +
                 "<html>\n" +
                 "<head>\n" +
+                "  <title>" + name + "Documentation</title>\n" +
                 "  <meta charset=\"utf-8\">\n" +
                 "  <script type=\"module\" src=\"https://unpkg.com/rapidoc/dist/rapidoc-min.js\"></script>\n" +
                 "</head>\n" +
