@@ -4,7 +4,6 @@ import com.merim.digitalpayment.underflow.annotation.routing.PathIgnoreCase;
 import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.results.Result;
-import com.merim.digitalpayment.underflow.security.annotations.Secured;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.tests.sample.form.LoginForm;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyCookieSecurity;
@@ -166,7 +165,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     @GET
-    @Secured
     @MySecurityScope("web")
     @Path("/secured")
     public Result securedPage(@Context final MyUserRepresentation user) {
