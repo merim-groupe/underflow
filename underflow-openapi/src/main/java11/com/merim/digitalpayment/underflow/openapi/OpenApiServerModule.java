@@ -58,14 +58,17 @@ public class OpenApiServerModule implements UnderflowServerModule {
      * The Oas filters.
      */
     private final OASFilter[] oasFilters;
+
     /**
      * The Ui flavor.
      */
     private final OpenApiUiFlavor uiFlavor;
+
     /**
      * The Open api.
      */
     private OpenAPI openAPI;
+
     /**
      * The server.
      */
@@ -171,6 +174,15 @@ public class OpenApiServerModule implements UnderflowServerModule {
         }
 
         return indices.size() == 1 ? indices.get(0) : CompositeIndex.create(indices);
+    }
+
+    /**
+     * Gets open api.
+     *
+     * @return the open api
+     */
+    public Optional<OpenAPI> getOpenAPI() {
+        return Optional.ofNullable(this.openAPI);
     }
 
     @Override
