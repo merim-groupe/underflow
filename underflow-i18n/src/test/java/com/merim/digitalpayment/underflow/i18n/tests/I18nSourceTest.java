@@ -45,9 +45,10 @@ public class I18nSourceTest {
         propertiesFrench.put("greeting", "Bonjour");
         propertiesFrench.put("farewell", "Au revoir");
 
-        this.propertiesSource = new PropertiesSource()
-                .addProperties(Locale.ENGLISH, propertiesEnglish)
-                .addProperties(Locale.FRENCH, propertiesFrench);
+        this.propertiesSource = PropertiesSource.builder()
+                .addLocale(Locale.ENGLISH, propertiesEnglish)
+                .addLocale(Locale.FRENCH, propertiesFrench)
+                .build();
 
         // Initialize MapSource
         final Map<String, String> englishMap = new HashMap<>();
@@ -58,9 +59,10 @@ public class I18nSourceTest {
         frenchMap.put("greeting", "Bonjour");
         frenchMap.put("farewell", "Au revoir");
 
-        this.mapSource = new MapSource()
-                .addMap(Locale.ENGLISH, englishMap)
-                .addMap(Locale.FRENCH, frenchMap);
+        this.mapSource = MapSource.builder()
+                .addLocale(Locale.ENGLISH, englishMap)
+                .addLocale(Locale.FRENCH, frenchMap)
+                .build();
     }
 
     /**

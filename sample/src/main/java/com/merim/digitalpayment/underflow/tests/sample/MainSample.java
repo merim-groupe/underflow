@@ -50,10 +50,10 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
     public void initialize(final String[] args) {
         Application.register(I18n.class, new I18n()
                 .addI18nSource(ReloadableSource.wrap(() -> PropertiesSource.builder()
-                        .addProperties(AppLanguage.FRENCH.getLocale(),
-                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.fr.properties").orElseThrow())
-                        .addProperties(AppLanguage.ENGLISH.getLocale(),
-                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.en.properties").orElseThrow())
+                        .addLocale(AppLanguage.FRENCH.getLocale(),
+                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.fr.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.fr.properties")))
+                        .addLocale(AppLanguage.ENGLISH.getLocale(),
+                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.en.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.en.properties")))
                         .build()
                 ))
         );

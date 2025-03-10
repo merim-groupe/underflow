@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import java.util.Locale;
 import java.util.Properties;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * PropertiesSourceTest
@@ -29,38 +30,9 @@ public class PropertiesSourceTest {
     public void setUp() {
         final Properties properties = new Properties();
         properties.put("key1", "value1");
-        this.propertiesSource = new PropertiesSource();
-        this.propertiesSource.addProperties(Locale.ENGLISH, properties);
-    }
-
-
-    /**
-     * Test add properties overwriting existing key.
-     */
-    @Test
-    public void testAddPropertiesOverwritingExistingKey() {
-        final Properties updatedProperties = new Properties();
-        updatedProperties.put("key1", "newValue");
-        this.propertiesSource.addProperties(Locale.ENGLISH, updatedProperties);
-
-        final String value = this.propertiesSource.getMessage(Locale.ENGLISH, "key1").orElse(null);
-        assertEquals("newValue", value);
-    }
-
-    /**
-     * Test add properties for different locales.
-     */
-    @Test
-    public void testAddPropertiesForDifferentLocales() {
-        final Properties frenchProperties = new Properties();
-        frenchProperties.put("key1", "valeur1");
-        this.propertiesSource.addProperties(Locale.FRENCH, frenchProperties);
-
-        final String valueEnglish = this.propertiesSource.getMessage(Locale.ENGLISH, "key1").orElse(null);
-        final String valueFrench = this.propertiesSource.getMessage(Locale.FRENCH, "key1").orElse(null);
-
-        assertEquals("value1", valueEnglish);
-        assertEquals("valeur1", valueFrench);
+        this.propertiesSource = PropertiesSource.builder()
+                .addLocale(Locale.ENGLISH, properties)
+                .build();
     }
 
     /**

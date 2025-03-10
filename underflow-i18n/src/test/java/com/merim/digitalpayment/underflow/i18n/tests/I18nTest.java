@@ -19,6 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  */
 public class I18nTest {
 
+    /**
+     * The 18 n.
+     */
     private I18n i18n;
 
     /**
@@ -33,9 +36,10 @@ public class I18nTest {
         frenchProperties.setProperty("greeting", "Bonjour");
 
         this.i18n = new I18n()
-                .addI18nSource(new PropertiesSource()
-                        .addProperties(Locale.ENGLISH, englishProperties)
-                        .addProperties(Locale.FRENCH, frenchProperties));
+                .addI18nSource(PropertiesSource.builder()
+                        .addLocale(Locale.ENGLISH, englishProperties)
+                        .addLocale(Locale.FRENCH, frenchProperties)
+                        .build());
     }
 
 
@@ -73,8 +77,9 @@ public class I18nTest {
     public void testMessageFormatting() {
         final Properties englishProperties = new Properties();
         englishProperties.setProperty("greetingWithName", "Hello, {0}!");
-        this.i18n.addI18nSource(new PropertiesSource()
-                .addProperties(Locale.ENGLISH, englishProperties));
+        this.i18n.addI18nSource(PropertiesSource.builder()
+                .addLocale(Locale.ENGLISH, englishProperties)
+                .build());
 
         assertEquals("Hello, John!", this.i18n.get(Locale.ENGLISH, "greetingWithName", "John"));
     }
@@ -87,8 +92,9 @@ public class I18nTest {
         final Map<String, String> overrideMessages = new HashMap<>();
         overrideMessages.put("greeting", "Hi");
 
-        this.i18n.addI18nSource(new MapSource()
-                .addMap(Locale.ENGLISH, overrideMessages));
+        this.i18n.addI18nSource(MapSource.builder()
+                .addLocale(Locale.ENGLISH, overrideMessages)
+                .build());
 
         // The first set value is used.
         assertEquals("Hello", this.i18n.get(Locale.ENGLISH, "greeting"));

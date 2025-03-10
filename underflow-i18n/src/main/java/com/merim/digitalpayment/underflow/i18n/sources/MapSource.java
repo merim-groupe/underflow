@@ -1,7 +1,5 @@
 package com.merim.digitalpayment.underflow.i18n.sources;
 
-import lombok.NonNull;
-
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -16,22 +14,21 @@ import java.util.Optional;
 public class MapSource extends AbstractI18nSource<Map<String, String>> {
 
     /**
-     * Instantiates a new In memory source.
+     * Instantiates a new Map source.
+     *
+     * @param localeMessages the locale messages
      */
-    public MapSource() {
-        super();
+    MapSource(final Map<Locale, Map<String, String>> localeMessages) {
+        super(localeMessages);
     }
 
     /**
-     * Add locale.
+     * Builder map source builder.
      *
-     * @param locale   the locale
-     * @param messages the messages
-     * @return the map source
+     * @return the map source builder
      */
-    public MapSource addMap(final Locale locale, @NonNull final Map<String, String> messages) {
-        this.localeMessages.put(locale, messages);
-        return this;
+    public static MapSourceBuilder builder() {
+        return new MapSourceBuilder();
     }
 
     @Override
