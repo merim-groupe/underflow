@@ -14,6 +14,10 @@ public class UUIDConverter implements IConverter<UUID> {
 
     @Override
     public UUID bind(final String representation) {
+        if (representation == null) {
+            return null;
+        }
+
         return UUID.fromString(representation);
     }
 

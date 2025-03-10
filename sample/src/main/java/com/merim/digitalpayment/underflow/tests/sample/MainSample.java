@@ -1,12 +1,16 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
 import com.merim.digitalpayment.underflow.app.Application;
+import com.merim.digitalpayment.underflow.i18n.I18n;
+import com.merim.digitalpayment.underflow.i18n.sources.PropertiesSource;
+import com.merim.digitalpayment.underflow.i18n.sources.ReloadableSource;
 import com.merim.digitalpayment.underflow.openapi.OpenApiServerModule;
 import com.merim.digitalpayment.underflow.server.UnderflowApplication;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
 import com.merim.digitalpayment.underflow.server.options.UnderflowCORSOption;
 import com.merim.digitalpayment.underflow.server.options.UnderflowLoggerOption;
+import com.merim.digitalpayment.underflow.tests.sample.lang.AppLanguage;
 import jakarta.ws.rs.ApplicationPath;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
@@ -14,10 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 
 /**
- * MainTest.
- *
- * @author Pierre Adam
- * @since 21.04.27
+ * The type Main sample.
  */
 @Slf4j
 // TODO : Check how to handle ApplicationPath in the routing.
@@ -47,6 +48,15 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
 
     @Override
     public void initialize(final String[] args) {
+        Application.register(I18n.class, new I18n()
+                .addI18nSource(ReloadableSource.wrap(() -> PropertiesSource.builder()
+                        .addProperties(AppLanguage.FRENCH.getLocale(),
+                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.fr.properties").orElseThrow())
+                        .addProperties(AppLanguage.ENGLISH.getLocale(),
+                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.en.properties").orElseThrow())
+                        .build()
+                ))
+        );
     }
 
     @Override

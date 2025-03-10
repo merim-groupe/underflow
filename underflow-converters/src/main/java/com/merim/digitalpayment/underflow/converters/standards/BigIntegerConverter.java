@@ -14,6 +14,10 @@ public class BigIntegerConverter implements IConverter<BigInteger> {
 
     @Override
     public BigInteger bind(final String representation) {
+        if (representation == null) {
+            return null;
+        }
+
         return new BigInteger(representation);
     }
 

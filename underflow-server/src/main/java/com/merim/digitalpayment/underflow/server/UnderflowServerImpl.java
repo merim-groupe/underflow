@@ -279,12 +279,12 @@ public class UnderflowServerImpl implements UnderflowServer {
                     UnderflowServerImpl.logger.error("Failed to shutdown web server !");
                 }
             });
-        }
 
-        this.shutdownHandler.shutdown();
-        this.shutdownHandler.addShutdownListener(success -> {
-            shutdownSuccessful.set(success);
-            this.shutdownThread.start();
-        });
+            this.shutdownHandler.shutdown();
+            this.shutdownHandler.addShutdownListener(success -> {
+                shutdownSuccessful.set(success);
+                this.shutdownThread.start();
+            });
+        }
     }
 }

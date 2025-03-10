@@ -41,6 +41,14 @@ public interface HttpResult extends Result {
     HttpResult withCookie(Cookie cookie);
 
     /**
+     * Delete cookie http result.
+     *
+     * @param name the name
+     * @return the http result
+     */
+    HttpResult deleteCookie(String name);
+
+    /**
      * Drop cookies http result.
      *
      * @return the http result

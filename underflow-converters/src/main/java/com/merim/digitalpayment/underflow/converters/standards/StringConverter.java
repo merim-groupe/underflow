@@ -11,6 +11,7 @@ import com.merim.digitalpayment.underflow.converters.IConverter;
 public class StringConverter implements IConverter<String> {
     @Override
     public String bind(final String representation) {
+
         return representation;
     }
 

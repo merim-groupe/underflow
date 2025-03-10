@@ -12,6 +12,10 @@ public class FloatConverter implements IConverter<Float> {
 
     @Override
     public Float bind(final String representation) {
+        if (representation == null) {
+            return null;
+        }
+
         return Float.valueOf(representation);
     }
 

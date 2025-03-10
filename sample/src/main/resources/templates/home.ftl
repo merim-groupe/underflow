@@ -1,48 +1,61 @@
 <#import "/common/base-page.ftl" as base/>
 
 <@base.page title="Underflow" lang="en">
-    <h1>Underflow !</h1>
+    <h1>${messages.get("home.title")}</h1>
     <div>
         <p>
-            <b>Date</b> ${currentDate}
+            <b>${messages.get("home.date")}</b> ${currentDate}
         </p>
         <p>
-            <b>Secured page</b> <a href="/secured">Here !</a>
+            <b>${messages.get("home.securedPage")}</b> <a href="/secured">${messages.get("home.action.here")}</a>
         </p>
         <p>
-            <b>OpenAPI Docs</b> <a href="/docs">Here !</a>
+            <b>${messages.get("home.openAPIDocs")}</b> <a href="/docs">${messages.get("home.action.here")}</a>
         </p>
         <p>
-            <b>Routing test page</b> <a href="/routes">Here !</a>
+            <b>${messages.get("home.routingTestPage")}</b> <a href="/routes">${messages.get("home.action.here")}</a>
         </p>
         <p>
-            <b>Long page with multiple chunk (HTTP)</b> <a href="/long-content">Here !</a>
+            <b>${messages.get("home.chunkTestPage")}</b> <a href="/long-content">${messages.get("home.action.here")}</a>
         </p>
         <p>
-            <b>Assets loading from Java Resources</b> <a href="/image-asset-resources">Here !</a>
+            <b>${messages.get("home.assetsTestPage")}</b> <a href="/image-asset-resources">${messages.get("home.action.here")}</a>
         </p>
         <p>
-            <b>DEV exceptions:</b>
+            <b>${messages.get("home.exceptionTestPages")}:</b>
         </p>
         <ul>
-            <li><a href="/exception">Java exception !</a></li>
-            <li><a href="/exception">FTL exception !</a></li>
-            <li><a href="/exception">Java exception in FTL !</a></li>
+            <li><a href="/exception">${messages.get("home.exceptionTestPages.java")}</a></li>
+            <li><a href="/exception">${messages.get("home.exceptionTestPages.ftl")}</a></li>
+            <li><a href="/exception">${messages.get("home.exceptionTestPages.javaInFtl")}</a></li>
         </ul>
         <p>
-            <b>Stop the web server</b> <a href="/stop">Here !</a>
+            <b>${messages.get("home.languageSelection")}</b>
+        </p>
+        <ul>
+            <li><a href="/lang?lang=FRENCH">${messages.get("home.languageSelection.french")}</a></li>
+            <li><a href="/lang?lang=ENGLISH">${messages.get("home.languageSelection.english")}</a></li>
+            <li><a href="/lang">${messages.get("home.languageSelection.deleteCookie")}</a></li>
+        </ul>
+        <p>
+            <b>${messages.get("home.stopServer")}</b> <a href="/stop">${messages.get("home.action.here")}</a>
         </p>
     </div>
     <br/>
     <div>
-        <h3>User data</h3>
+        <h3>${messages.get("home.userData")}</h3>
+        <p>
+            <b>${messages.get("home.userData.langCookie")}: </b> ${langCookie!"null"}
+            </br>
+            <b>${messages.get("home.userData.langUsed")}: </b> ${messages.getLocale()}
+        </p>
         <#if user??>
-            <a href="/logout">Logout</a>
+            <a href="/logout">${messages.get("home.userData.logout")}</a>
             <p>
-                Username : <span>${user.name}</span>
+                <b>${messages.get("home.userData.username")}</b> : <span>${user.name}</span>
             </p>
             <p>
-                Scopes :
+                <b>${messages.get("home.userData.scopes")}</b> :
             </p>
             <ul>
                 <#list user.scopes as scope>
@@ -50,24 +63,24 @@
                 </#list>
             </ul>
         <#else>
-            Not connected.
+            ${messages.get("home.userData.notConnected")}.
 
-            <p>GET Login form</p>
+            <p>${messages.get("home.userData.getForm")}</p>
             <form method="GET" action="/login">
-                <label for="login-name">Name:</label><br>
+                <label for="login-name">${messages.get("home.userData.form.name")}:</label><br>
                 <input id="login-name" type="text" name="name"/><br><br>
-                <label for="login-scope">Scope (web required to access secured page):</label><br>
+                <label for="login-scope">${messages.get("home.userData.form.scopes")}:</label><br>
                 <input id="login-scope" type="text" name="scope[]" value="web"/><br><br>
                 <input type="submit" value="Login">
             </form>
 
             <br/>
 
-            <p>POST Login form</p>
+            <p>${messages.get("home.userData.postForm")}</p>
             <form method="POST" action="/login">
-                <label for="login-name">Name:</label><br>
+                <label for="login-name">${messages.get("home.userData.form.name")}:</label><br>
                 <input id="login-name" type="text" name="name"/><br><br>
-                <label for="login-scope">Scope (web required to access secured page):</label><br>
+                <label for="login-scope">${messages.get("home.userData.form.scopes")}:</label><br>
                 <input id="login-scope" type="text" name="scope[]" value="web"/><br><br>
                 <input id="login-scope" type="text" name="scope[]" value=""/><br><br>
                 <input id="login-scope" type="text" name="scope[]" value=""/><br><br>

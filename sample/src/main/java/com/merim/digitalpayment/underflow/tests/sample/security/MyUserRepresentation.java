@@ -2,6 +2,7 @@ package com.merim.digitalpayment.underflow.tests.sample.security;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
  * @author Pierre Adam
  * @since 22.07.19
  */
+@Getter
 public class MyUserRepresentation {
 
     /**
@@ -45,23 +47,5 @@ public class MyUserRepresentation {
      */
     public MyUserRepresentation(final String name) {
         this(name, new ArrayList<>());
-    }
-
-    /**
-     * Gets name.
-     *
-     * @return the name
-     */
-    public String getName() {
-        return this.name;
-    }
-
-    /**
-     * Gets scopes.
-     *
-     * @return the scopes
-     */
-    public List<String> getScopes() {
-        return this.scopes;
     }
 }

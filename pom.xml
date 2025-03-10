@@ -98,17 +98,17 @@
     <modules>
         <module>sample</module>
         <module>underflow-api-form</module>
-        <!--        <module>underflow-config</module>-->
         <module>underflow-context</module>
         <module>underflow-converters</module>
         <module>underflow-core</module>
+        <module>underflow-i18n</module>
+        <module>underflow-openapi</module>
+        <module>underflow-openapi-api</module>
         <module>underflow-security</module>
         <module>underflow-server</module>
         <module>underflow-template</module>
         <module>underflow-test</module>
         <module>underflow-utils</module>
-        <module>underflow-openapi</module>
-        <module>underflow-openapi-api</module>
     </modules>
 
     <dependencies>
@@ -157,11 +157,6 @@
                 <artifactId>underflow-api-form</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!--            <dependency>-->
-            <!--                <groupId>com.merim.digitalpayment.underflow</groupId>-->
-            <!--                <artifactId>underflow-config</artifactId>-->
-            <!--                <version>${project.version}</version>-->
-            <!--            </dependency>-->
             <dependency>
                 <groupId>com.merim.digitalpayment.underflow</groupId>
                 <artifactId>underflow-context</artifactId>
@@ -175,6 +170,21 @@
             <dependency>
                 <groupId>com.merim.digitalpayment.underflow</groupId>
                 <artifactId>underflow-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-i18n</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-openapi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-openapi-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -202,16 +212,7 @@
                 <artifactId>underflow-utils</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.merim.digitalpayment.underflow</groupId>
-                <artifactId>underflow-openapi</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.merim.digitalpayment.underflow</groupId>
-                <artifactId>underflow-openapi-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+            <!-- External declaration -->
             <dependency>
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-core</artifactId>

@@ -14,6 +14,10 @@ public class BigDecimalConverter implements IConverter<BigDecimal> {
 
     @Override
     public BigDecimal bind(final String representation) {
+        if (representation == null) {
+            return null;
+        }
+
         return new BigDecimal(representation);
     }
 

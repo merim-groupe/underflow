@@ -16,6 +16,7 @@ import com.merim.digitalpayment.underflow.results.SimpleStringResult;
 import com.merim.digitalpayment.underflow.security.annotations.Secured;
 import io.undertow.server.BlockingHttpExchange;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.server.handlers.form.FormParserFactory;
@@ -204,6 +205,7 @@ public class ContextHandler implements MDCContext {
             final Optional<Converter> oConverter = AnnotationResolver.nestedAnnotation(parameter, Converter.class);
             final Optional<PathParam> oPathParam = AnnotationResolver.nestedAnnotation(parameter, PathParam.class);
             final Optional<QueryParam> oQueryParam = AnnotationResolver.nestedAnnotation(parameter, QueryParam.class);
+            final Optional<CookieParam> oCookieParam = AnnotationResolver.nestedAnnotation(parameter, CookieParam.class);
             final Optional<?> appInject = Application.getInstanceOptional(pClass);
 
             if (oPathParam.isPresent()) {
@@ -231,6 +233,16 @@ public class ContextHandler implements MDCContext {
                     } else {
                         methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, values.getFirst()));
                     }
+                }
+            } else if (oCookieParam.isPresent()) {
+                final Cookie requestCookie = this.exchange.getRequestCookie(oCookieParam.get().value());
+
+                if (requestCookie == null) {
+                    methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, null));
+                } else if (pClass.isAssignableFrom(Cookie.class)) {
+                    methodArgs.add(requestCookie);
+                } else {
+                    methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, requestCookie.getValue()));
                 }
             } else if (oContext.isPresent()) {
                 if (this.controllerInjectable.containsKey(pClass)) {

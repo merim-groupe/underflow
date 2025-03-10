@@ -12,6 +12,10 @@ public class LongConverter implements IConverter<Long> {
 
     @Override
     public Long bind(final String representation) {
+        if (representation == null) {
+            return null;
+        }
+
         return Long.valueOf(representation);
     }
 

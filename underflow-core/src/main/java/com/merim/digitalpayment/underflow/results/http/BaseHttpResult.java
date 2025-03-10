@@ -2,6 +2,7 @@ package com.merim.digitalpayment.underflow.results.http;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
+import io.undertow.server.handlers.CookieImpl;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
@@ -105,6 +106,12 @@ public abstract class BaseHttpResult implements HttpResult {
     @Override
     public HttpResult withCookie(final Cookie cookie) {
         this.cookies.add(cookie);
+        return this;
+    }
+
+    @Override
+    public HttpResult deleteCookie(final String name) {
+        this.cookies.add(new CookieImpl(name).setMaxAge(0));
         return this;
     }
 

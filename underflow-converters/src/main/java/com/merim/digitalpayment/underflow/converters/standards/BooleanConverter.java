@@ -12,6 +12,10 @@ public class BooleanConverter implements IConverter<Boolean> {
 
     @Override
     public Boolean bind(final String representation) {
+        if (representation == null) {
+            return null;
+        }
+
         if (representation.equalsIgnoreCase("true") || representation.equalsIgnoreCase("false")) {
             return Boolean.valueOf(representation);
         }

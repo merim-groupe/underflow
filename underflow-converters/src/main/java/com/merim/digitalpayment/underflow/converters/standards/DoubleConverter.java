@@ -12,6 +12,10 @@ public class DoubleConverter implements IConverter<Double> {
 
     @Override
     public Double bind(final String representation) {
+        if (representation == null) {
+            return null;
+        }
+
         return Double.valueOf(representation);
     }
 

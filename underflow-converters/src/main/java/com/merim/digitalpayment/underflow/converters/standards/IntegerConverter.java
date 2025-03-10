@@ -12,6 +12,10 @@ public class IntegerConverter implements IConverter<Integer> {
 
     @Override
     public Integer bind(final String representation) {
+        if (representation == null) {
+            return null;
+        }
+
         return Integer.parseInt(representation);
     }
 

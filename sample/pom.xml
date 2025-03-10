@@ -37,6 +37,10 @@
         </dependency>
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
+            <artifactId>underflow-i18n</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-test</artifactId>
             <scope>test</scope>
         </dependency>
