@@ -1,14 +1,13 @@
 package com.merim.digitalpayment.underflow.tests.sample;
 
-import com.merim.digitalpayment.underflow.annotation.routing.Converter;
 import com.merim.digitalpayment.underflow.annotation.routing.PathIgnoreCase;
 import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
 import com.merim.digitalpayment.underflow.i18n.I18n;
+import com.merim.digitalpayment.underflow.i18n.cookie.I18nCookie;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.tests.sample.form.LoginForm;
-import com.merim.digitalpayment.underflow.tests.sample.lang.AppLanguage;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyCookieSecurity;
 import com.merim.digitalpayment.underflow.tests.sample.security.MySecurityScope;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyUserRepresentation;
@@ -17,8 +16,6 @@ import freemarker.template.Template;
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.Cookie;
-import io.undertow.server.handlers.CookieImpl;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -29,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -51,10 +49,11 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     /**
      * Simple GET example.
      *
-     * @param language the language
-     * @param user     the optional user
-     * @param security the security
-     * @param i18n     the 18 n
+     * @param exchange   the exchange
+     * @param langCookie the lang cookie
+     * @param user       the optional user
+     * @param security   the security
+     * @param i18n       the 18 n
      * @return the result
      */
     @Operation(hidden = true)
@@ -62,7 +61,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     @GET
     @Path("")
     // AppLanguage.Converter.class can be set at the application level using: Converters.addConverter(new AppLanguage.Converter());
-    public Result home(@CookieParam("UnderflowLang") @Converter(AppLanguage.Converter.class) final AppLanguage language,
+    public Result home(@Context final HttpServerExchange exchange,
                        @CookieParam("UnderflowLang") final String langCookie, // Only for display purpose
                        @Context final MyUserRepresentation user,
                        @Context final MyCookieSecurity security,
@@ -73,7 +72,7 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         final LocalDateTime now = LocalDateTime.now();
 
-        dataModel.put("messages", i18n.getLocalizedMessage(language.getLocale()));
+        dataModel.put("messages", i18n.getLocalizedMessage(I18nCookie.resolveLocale(exchange)));
         dataModel.put("langCookie", langCookie);
         dataModel.put("currentDate", dtf.format(now));
         dataModel.put("user", user);
@@ -85,7 +84,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     /**
      * Sets language.
      *
-     * @param cookie   the cookie
      * @param language the language
      * @return the language
      */
@@ -94,19 +92,15 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     @PathIgnoreCase
     @GET
     @Path("/lang")
-    public Result setLanguage(@CookieParam("UnderflowLang") Cookie cookie,
-                              @QueryParam("lang") @Converter(AppLanguage.Converter.class) final AppLanguage language) {
-        if (language != null) {
-            if (cookie == null) {
-                cookie = new CookieImpl("UnderflowLang");
-            }
-            cookie.setValue(language.name());
+    public Result setLanguage(@QueryParam("lang") final String language) {
+        if (language == null) {
+            return this.redirect("/")
+                    .deleteCookie(I18nCookie.getCookieName());
+        } else {
+            final Locale locale = I18nCookie.resolveFromAllowedLocalesOrDefault(Locale.forLanguageTag(language));
 
             return this.redirect("/")
-                    .withCookie(cookie);
-        } else {
-            return this.redirect("/")
-                    .deleteCookie("UnderflowLang");
+                    .withCookie(I18nCookie.createCookie(locale));
         }
     }
 

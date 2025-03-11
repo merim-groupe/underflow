@@ -101,9 +101,11 @@ public class Application {
      * @param <T>      the type parameter
      * @param tClass   the t class
      * @param instance the instance
+     * @return the t
      */
-    public static <T> void register(final Class<T> tClass, final T instance) {
+    public static <T> T register(final Class<T> tClass, final T instance) {
         Application.instances.put(tClass, instance);
+        return instance;
     }
 
     /**

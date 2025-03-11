@@ -2,6 +2,7 @@ package com.merim.digitalpayment.underflow.tests.sample;
 
 import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.i18n.I18n;
+import com.merim.digitalpayment.underflow.i18n.cookie.I18nCookie;
 import com.merim.digitalpayment.underflow.i18n.sources.PropertiesSource;
 import com.merim.digitalpayment.underflow.i18n.sources.ReloadableSource;
 import com.merim.digitalpayment.underflow.openapi.OpenApiServerModule;
@@ -10,12 +11,13 @@ import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
 import com.merim.digitalpayment.underflow.server.options.UnderflowCORSOption;
 import com.merim.digitalpayment.underflow.server.options.UnderflowLoggerOption;
-import com.merim.digitalpayment.underflow.tests.sample.lang.AppLanguage;
 import jakarta.ws.rs.ApplicationPath;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
+
+import java.util.Locale;
 
 /**
  * The type Main sample.
@@ -48,11 +50,14 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
 
     @Override
     public void initialize(final String[] args) {
+        I18nCookie.setDefaultLocale(Locale.ENGLISH);
+        I18nCookie.setCookieName("UnderflowLang");
+
         Application.register(I18n.class, new I18n()
                 .addI18nSource(ReloadableSource.wrap(() -> PropertiesSource.builder()
-                        .addLocale(AppLanguage.FRENCH.getLocale(),
+                        .addLocale(Locale.FRENCH,
                                 PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.fr.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.fr.properties")))
-                        .addLocale(AppLanguage.ENGLISH.getLocale(),
+                        .addLocale(Locale.ENGLISH,
                                 PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.en.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.en.properties")))
                         .build()
                 ))

@@ -45,8 +45,16 @@ public class PropertiesSource extends AbstractI18nSource<Properties> {
      * @return the properties source
      */
     public static Optional<Properties> fromFile(final String filesystemPath) {
-        final File file = new File(filesystemPath);
+        return PropertiesSource.fromFile(new File(filesystemPath));
+    }
 
+    /**
+     * From file optional.
+     *
+     * @param file the file
+     * @return the optional
+     */
+    public static Optional<Properties> fromFile(final File file) {
         if (!file.exists()) {
             return Optional.empty();
         }
@@ -56,7 +64,7 @@ public class PropertiesSource extends AbstractI18nSource<Properties> {
             properties.load(fis);
             return Optional.of(properties);
         } catch (final IOException e) {
-            PropertiesSource.logger.error("An error occurred while loading {} from filesystem", filesystemPath);
+            PropertiesSource.logger.error("An error occurred while loading {} from filesystem", file.getPath());
             return Optional.empty();
         }
     }

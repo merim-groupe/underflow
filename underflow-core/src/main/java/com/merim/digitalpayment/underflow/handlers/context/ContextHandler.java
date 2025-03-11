@@ -33,7 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -64,7 +64,7 @@ public class ContextHandler implements MDCContext {
     /**
      * The Controller injectable.
      */
-    private final Map<Class<?>, Supplier<Object>> controllerInjectable;
+    private final Map<Class<?>, Function<HttpServerExchange, ?>> controllerInjectable;
 
     /**
      * The Method type.
@@ -103,8 +103,8 @@ public class ContextHandler implements MDCContext {
         this.pathMatcher = null;
         this.queryString = null;
         this.controllerInjectable = new HashMap<>();
-        this.controllerInjectable.put(FormData.class, () -> this.getFormData(this.exchange));
-        this.controllerInjectable.put(HttpServerExchange.class, () -> this.exchange);
+        this.controllerInjectable.put(FormData.class, this::getFormData);
+        this.controllerInjectable.put(HttpServerExchange.class, (e) -> e);
     }
 
     /**
@@ -176,7 +176,7 @@ public class ContextHandler implements MDCContext {
     private void run() {
         try {
             if (this.methodHasBody()) {
-                this.controllerInjectable.put(InputStream.class, this.exchange::getInputStream);
+                this.controllerInjectable.put(InputStream.class, HttpServerExchange::getInputStream);
             }
 
             final List<Object> methodArgs = this.resolveMethodArgs();
@@ -246,7 +246,7 @@ public class ContextHandler implements MDCContext {
                 }
             } else if (oContext.isPresent()) {
                 if (this.controllerInjectable.containsKey(pClass)) {
-                    methodArgs.add(this.controllerInjectable.get(pClass).get());
+                    methodArgs.add(this.controllerInjectable.get(pClass).apply(this.exchange));
                 } else if (appInject.isPresent()) {
                     methodArgs.add(appInject.get());
                 } else {
@@ -402,12 +402,25 @@ public class ContextHandler implements MDCContext {
     /**
      * Add injectable.
      *
+     * @param <T>      the type parameter
+     * @param tClass   the t class
+     * @param supplier the supplier
+     */
+    public <T> void addInjectable(final Class<T> tClass, final Function<HttpServerExchange, T> supplier) {
+        if (supplier != null) {
+            this.controllerInjectable.put(tClass, supplier);
+        }
+    }
+
+    /**
+     * Add injectable.
+     *
      * @param <T>   the type parameter
      * @param value the value
      */
     public <T> void addInjectable(final T value) {
         if (value != null) {
-            this.controllerInjectable.put(value.getClass(), () -> value);
+            this.controllerInjectable.put(value.getClass(), (e) -> value);
         }
     }
 
@@ -419,7 +432,7 @@ public class ContextHandler implements MDCContext {
      * @param value  the value
      */
     public <T> void addInjectable(final Class<T> tClass, final T value) {
-        this.controllerInjectable.put(tClass, () -> value);
+        this.controllerInjectable.put(tClass, (e) -> value);
     }
 
     /**
@@ -429,6 +442,6 @@ public class ContextHandler implements MDCContext {
      * @param value  the value
      */
     public void addInjectableUnsafe(final Class<?> tClass, final Object value) {
-        this.controllerInjectable.put(tClass, () -> value);
+        this.controllerInjectable.put(tClass, (e) -> value);
     }
 }

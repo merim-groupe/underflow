@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.i18n.sources;
 
+import com.merim.digitalpayment.underflow.i18n.cookie.I18nCookie;
 import lombok.NonNull;
 
 import java.util.HashMap;
@@ -47,6 +48,7 @@ public class AbstractI18nSourceBuilder<T, U extends AbstractI18nSource<T>, V ext
      */
     @SuppressWarnings("unchecked")
     public V addLocale(final Locale locale, @NonNull final T messages) {
+        I18nCookie.addAllowedLocale(locale);
         this.localeMessages.put(locale, messages);
         return (V) this;
     }

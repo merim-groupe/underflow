@@ -33,8 +33,8 @@
             <b>${messages.get("home.languageSelection")}</b>
         </p>
         <ul>
-            <li><a href="/lang?lang=FRENCH">${messages.get("home.languageSelection.french")}</a></li>
-            <li><a href="/lang?lang=ENGLISH">${messages.get("home.languageSelection.english")}</a></li>
+            <li><a href="/lang?lang=fr">${messages.get("home.languageSelection.french")}</a></li>
+            <li><a href="/lang?lang=en">${messages.get("home.languageSelection.english")}</a></li>
             <li><a href="/lang">${messages.get("home.languageSelection.deleteCookie")}</a></li>
         </ul>
         <p>
