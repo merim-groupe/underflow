@@ -79,7 +79,7 @@ public class I18n {
      * @return the string
      */
     public String get(final Locale locale, final String key) {
-        return this.getOptional(locale, key).orElse(null);
+        return this.getOptional(locale, key).orElse(key);
     }
 
     /**
@@ -91,7 +91,7 @@ public class I18n {
      * @return the string
      */
     public String get(final Locale locale, final String key, final Object... args) {
-        return this.getOptional(locale, key, args).orElse(null);
+        return this.getOptional(locale, key, args).orElse(key);
     }
 
     /**

@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * The type 18 n test.
@@ -57,8 +56,8 @@ public class I18nTest {
      */
     @Test
     public void testUnsupportedLocaleAndKey() {
-        assertNull(this.i18n.get(Locale.GERMAN, "greeting"));
-        assertNull(this.i18n.get(Locale.ENGLISH, "farewell"));
+        assertEquals("key.greeting", this.i18n.get(Locale.GERMAN, "key.greeting"));
+        assertEquals("key.farewell", this.i18n.get(Locale.ENGLISH, "key.farewell"));
     }
 
     /**
@@ -99,6 +98,6 @@ public class I18nTest {
         // The first set value is used.
         assertEquals("Hello", this.i18n.get(Locale.ENGLISH, "greeting"));
         assertEquals("Bonjour", this.i18n.get(Locale.FRENCH, "greeting"));
-        assertNull(this.i18n.get(Locale.ENGLISH, "farewell"));
+        assertEquals("farewell", this.i18n.get(Locale.ENGLISH, "farewell"));
     }
 }
