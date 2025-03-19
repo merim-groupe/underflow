@@ -1,7 +1,5 @@
 package com.merim.digitalpayment.underflow.i18n.sources;
 
-import com.merim.digitalpayment.underflow.app.Application;
-import com.merim.digitalpayment.underflow.app.Mode;
 import com.merim.digitalpayment.underflow.i18n.I18nSource;
 import lombok.NonNull;
 
@@ -70,11 +68,7 @@ public class ReloadableSource implements I18nSource {
      * @return the 18 n source
      */
     public static I18nSource wrap(@NonNull final Supplier<I18nSource> sourceSupplier, final Long reloadMinimalInterval) {
-        if (Application.getMode() == Mode.DEV) {
-            return new ReloadableSource(sourceSupplier, reloadMinimalInterval);
-        } else {
-            return sourceSupplier.get();
-        }
+        return new ReloadableSource(sourceSupplier, reloadMinimalInterval);
     }
 
     /**

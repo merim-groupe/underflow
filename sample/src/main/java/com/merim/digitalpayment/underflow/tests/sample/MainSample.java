@@ -4,7 +4,6 @@ import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.i18n.I18n;
 import com.merim.digitalpayment.underflow.i18n.cookie.I18nCookie;
 import com.merim.digitalpayment.underflow.i18n.sources.PropertiesSource;
-import com.merim.digitalpayment.underflow.i18n.sources.ReloadableSource;
 import com.merim.digitalpayment.underflow.openapi.OpenApiServerModule;
 import com.merim.digitalpayment.underflow.server.UnderflowApplication;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
@@ -54,13 +53,13 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
         I18nCookie.setCookieName("UnderflowLang");
 
         Application.register(I18n.class, new I18n()
-                .addI18nSource(ReloadableSource.wrap(() -> PropertiesSource.builder()
+                .addI18nSource(PropertiesSource.builder()
                         .addLocale(Locale.FRENCH,
                                 PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.fr.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.fr.properties")))
                         .addLocale(Locale.ENGLISH,
                                 PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.en.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.en.properties")))
                         .build()
-                ))
+                )
         );
     }
 
