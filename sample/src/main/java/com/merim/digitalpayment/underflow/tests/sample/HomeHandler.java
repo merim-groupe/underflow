@@ -2,11 +2,11 @@ package com.merim.digitalpayment.underflow.tests.sample;
 
 import com.merim.digitalpayment.underflow.annotation.routing.PathIgnoreCase;
 import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
-import com.merim.digitalpayment.underflow.handlers.flows.FlowTemplateHandler;
-import com.merim.digitalpayment.underflow.i18n.I18n;
+import com.merim.digitalpayment.underflow.handlers.flows.FlowDTOWrapperTemplateHandler;
 import com.merim.digitalpayment.underflow.i18n.cookie.I18nCookie;
 import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
+import com.merim.digitalpayment.underflow.tests.sample.dto.SampleDTOWrapperBuilder;
 import com.merim.digitalpayment.underflow.tests.sample.form.LoginForm;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyCookieSecurity;
 import com.merim.digitalpayment.underflow.tests.sample.security.MySecurityScope;
@@ -37,13 +37,13 @@ import java.util.function.Function;
  * @since 21.04.27
  */
 @Path("/")
-public class HomeHandler extends FlowTemplateHandler implements WebForm {
+public class HomeHandler extends FlowDTOWrapperTemplateHandler implements WebForm {
 
     /**
      * Instantiates a new Test handler.
      */
     public HomeHandler() {
-        super("/templates", new MyCookieSecurity());
+        super("/templates", new MyCookieSecurity(), new SampleDTOWrapperBuilder());
     }
 
     /**
@@ -53,7 +53,6 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
      * @param langCookie the lang cookie
      * @param user       the optional user
      * @param security   the security
-     * @param i18n       the 18 n
      * @return the result
      */
     @Operation(hidden = true)
@@ -64,19 +63,16 @@ public class HomeHandler extends FlowTemplateHandler implements WebForm {
     public Result home(@Context final HttpServerExchange exchange,
                        @CookieParam("UnderflowLang") final String langCookie, // Only for display purpose
                        @Context final MyUserRepresentation user,
-                       @Context final MyCookieSecurity security,
-                       @Context final I18n i18n) {
+                       @Context final MyCookieSecurity security) {
         final Map<String, Object> dataModel = new HashMap<>();
         final Template template = this.getTemplate("home.ftl");
 
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         final LocalDateTime now = LocalDateTime.now();
 
-        dataModel.put("messages", i18n.getLocalizedMessage(I18nCookie.resolveLocale(exchange)));
         dataModel.put("langCookie", langCookie);
         dataModel.put("currentDate", dtf.format(now));
         dataModel.put("user", user);
-        dataModel.put("foo", "foo");
 
         return this.ok(template, dataModel);
     }

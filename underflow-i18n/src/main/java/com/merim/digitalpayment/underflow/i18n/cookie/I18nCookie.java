@@ -7,6 +7,7 @@ import io.undertow.util.HeaderValues;
 import lombok.NonNull;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -106,12 +107,13 @@ public class I18nCookie {
     }
 
     /**
-     * Locale from cookie locale.
+     * Resolve and set cookie locale.
      *
-     * @param exchange the exchange
+     * @param exchange  the exchange
+     * @param setCookie the set cookie
      * @return the locale
      */
-    public static Locale resolveLocale(final HttpServerExchange exchange) {
+    public static Locale resolveAndSetCookie(final HttpServerExchange exchange, final Consumer<Cookie> setCookie) {
         final Cookie requestCookie = exchange.getRequestCookie(I18nCookie.cookieName);
         Locale language;
 
@@ -130,20 +132,40 @@ public class I18nCookie {
 
         if (language == null) {
             language = I18nCookie.localeFromHeader(exchange);
-            if (language != null) {
-                exchange.setResponseCookie(I18nCookie.createCookie(language));
+            if (language != null && setCookie != null) {
+                setCookie.accept(I18nCookie.createCookie(language));
             }
         }
 
         if (language == null) {
             language = I18nCookie.defaultLocale;
 
-            if (language != null) {
-                exchange.setResponseCookie(I18nCookie.createCookie(language));
+            if (language != null && setCookie != null) {
+                setCookie.accept(I18nCookie.createCookie(language));
             }
         }
 
         return language;
+    }
+
+    /**
+     * Resolve and set cookie locale.
+     *
+     * @param exchange the exchange
+     * @return the locale
+     */
+    public static Locale resolveAndSetCookie(final HttpServerExchange exchange) {
+        return I18nCookie.resolveAndSetCookie(exchange, exchange::setResponseCookie);
+    }
+
+    /**
+     * Locale from cookie locale.
+     *
+     * @param exchange the exchange
+     * @return the locale
+     */
+    public static Locale resolveLocale(final HttpServerExchange exchange) {
+        return I18nCookie.resolveAndSetCookie(exchange, null);
     }
 
     /**

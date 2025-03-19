@@ -120,9 +120,4 @@ public abstract class BaseHttpResult implements HttpResult {
         this.clearCookies = true;
         return this;
     }
-
-    @Override
-    public HttpResult withContentType(final String contentType) {
-        return this.withHeader(Headers.CONTENT_TYPE, contentType);
-    }
 }

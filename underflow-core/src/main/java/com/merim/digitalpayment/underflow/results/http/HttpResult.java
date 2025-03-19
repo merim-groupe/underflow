@@ -2,7 +2,11 @@ package com.merim.digitalpayment.underflow.results.http;
 
 import com.merim.digitalpayment.underflow.results.Result;
 import io.undertow.server.handlers.Cookie;
+import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * HttpResult.
@@ -33,12 +37,44 @@ public interface HttpResult extends Result {
     }
 
     /**
+     * With header http result.
+     *
+     * @param headers the headers
+     * @return the http result
+     */
+    default HttpResult withHeaders(final Map<HttpString, String> headers) {
+        headers.forEach(this::withHeader);
+        return this;
+    }
+
+    /**
+     * With content type result.
+     *
+     * @param contentType the content type
+     * @return the result
+     */
+    default HttpResult withContentType(final String contentType) {
+        return this.withHeader(Headers.CONTENT_TYPE, contentType);
+    }
+
+    /**
      * With cookie result.
      *
      * @param cookie the cookie
      * @return the result
      */
     HttpResult withCookie(Cookie cookie);
+
+    /**
+     * With cookies http result.
+     *
+     * @param cookies the cookies
+     * @return the http result
+     */
+    default HttpResult withCookies(final Collection<Cookie> cookies) {
+        cookies.forEach(this::withCookie);
+        return this;
+    }
 
     /**
      * Delete cookie http result.
@@ -49,17 +85,20 @@ public interface HttpResult extends Result {
     HttpResult deleteCookie(String name);
 
     /**
+     * Delete cookies http result.
+     *
+     * @param cookieNames the cookie names
+     * @return the http result
+     */
+    default HttpResult deleteCookies(final Collection<String> cookieNames) {
+        cookieNames.forEach(this::deleteCookie);
+        return this;
+    }
+
+    /**
      * Drop cookies http result.
      *
      * @return the http result
      */
     HttpResult dropCookies();
-
-    /**
-     * With content type result.
-     *
-     * @param contentType the content type
-     * @return the result
-     */
-    HttpResult withContentType(final String contentType);
 }

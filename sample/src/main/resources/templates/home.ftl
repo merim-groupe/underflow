@@ -4,7 +4,7 @@
     <h1>${messages.get("home.title")}</h1>
     <div>
         <p>
-            <b>${messages.get("home.date")}</b> ${currentDate}
+            <b>${messages.get("home.date")}</b> ${data.currentDate}
         </p>
         <p>
             <b>${messages.get("home.securedPage")}</b> <a href="/secured">${messages.get("home.action.here")}</a>
@@ -45,20 +45,20 @@
     <div>
         <h3>${messages.get("home.userData")}</h3>
         <p>
-            <b>${messages.get("home.userData.langCookie")}: </b> ${langCookie!"null"}
+            <b>${messages.get("home.userData.langCookie")}: </b> ${data.langCookie!"null"}
             </br>
             <b>${messages.get("home.userData.langUsed")}: </b> ${messages.getLocale()}
         </p>
-        <#if user??>
+        <#if data.user??>
             <a href="/logout">${messages.get("home.userData.logout")}</a>
             <p>
-                <b>${messages.get("home.userData.username")}</b> : <span>${user.name}</span>
+                <b>${messages.get("home.userData.username")}</b> : <span>${data.user.name}</span>
             </p>
             <p>
                 <b>${messages.get("home.userData.scopes")}</b> :
             </p>
             <ul>
-                <#list user.scopes as scope>
+                <#list data.user.scopes as scope>
                     <li>${scope}</li>
                 </#list>
             </ul>
