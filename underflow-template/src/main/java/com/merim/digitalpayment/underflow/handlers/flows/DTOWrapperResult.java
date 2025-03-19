@@ -18,11 +18,10 @@ import java.util.Map;
 /**
  * FlowDTOWrapperResult.
  *
- * @param <T> the type parameter
  * @author Pierre Adam
  * @since 25.03.19
  */
-public class DTOWrapperResult<T> implements HttpResult, HtmlResults {
+public class DTOWrapperResult implements HttpResult, HtmlResults {
 
     /**
      * The Template.
@@ -31,10 +30,10 @@ public class DTOWrapperResult<T> implements HttpResult, HtmlResults {
     private final Template template;
 
     /**
-     * The Data.
+     * The Data model.
      */
     @Getter
-    private final T data;
+    private final Object dataModel;
 
     /**
      * The Io callback.
@@ -75,18 +74,18 @@ public class DTOWrapperResult<T> implements HttpResult, HtmlResults {
      * Instantiates a new Dto wrapper result.
      *
      * @param template          the template
-     * @param data              the data
+     * @param dataModel         the data model
      * @param ioCallback        the io callback
      * @param dtoWrapperBuilder the dto wrapper builder
      * @param resultMethod      the result method
      */
     public DTOWrapperResult(final Template template,
-                            final T data,
+                            final Object dataModel,
                             final IoCallback ioCallback,
                             final DTOWrapperBuilder dtoWrapperBuilder,
                             final TemplateResultCallback resultMethod) {
         this.template = template;
-        this.data = data;
+        this.dataModel = dataModel;
         this.ioCallback = ioCallback;
         this.dtoWrapperBuilder = dtoWrapperBuilder;
         this.resultMethod = resultMethod;
@@ -105,7 +104,7 @@ public class DTOWrapperResult<T> implements HttpResult, HtmlResults {
      * @param resultMethod      the result method
      */
     public DTOWrapperResult(final Template template,
-                            final T data,
+                            final Object data,
                             final DTOWrapperBuilder dtoWrapperBuilder,
                             final TemplateResultCallback resultMethod) {
         this(template, data, IoCallback.END_EXCHANGE, dtoWrapperBuilder, resultMethod);
@@ -115,7 +114,7 @@ public class DTOWrapperResult<T> implements HttpResult, HtmlResults {
     public void process(final HttpServerExchange exchange, final Method method) {
         final HttpResult result = this.resultMethod
                 .forge(this.template,
-                        this.dtoWrapperBuilder.build(exchange, this, this.data),
+                        this.dtoWrapperBuilder.build(exchange, this, this.dataModel),
                         this.ioCallback)
                 .withCookies(this.cookies)
                 .withHeaders(this.headers)

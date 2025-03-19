@@ -180,8 +180,7 @@ public class FlowDTOWrapperTemplateHandler extends FlowTemplateHandler {
      * @return the http result
      */
     public HttpResult wrappedResult(final int code, final Template template, final Object dataModel) {
-        return new DTOWrapperResult<>(template, dataModel, this.dtoWrapperBuilder, (t, d, ioc) -> this.result(code, t, d, ioc)) {
-        };
+        return new DTOWrapperResult(template, dataModel, this.dtoWrapperBuilder, (t, d, ioc) -> this.result(code, t, d, ioc));
     }
 
     /**
@@ -194,6 +193,6 @@ public class FlowDTOWrapperTemplateHandler extends FlowTemplateHandler {
      * @return the http result
      */
     public HttpResult wrappedResult(final int code, final Template template, final Object dataModel, final IoCallback ioCallback) {
-        return new DTOWrapperResult<>(template, dataModel, ioCallback, this.dtoWrapperBuilder, (t, d, ioc) -> this.result(code, t, d, ioc));
+        return new DTOWrapperResult(template, dataModel, ioCallback, this.dtoWrapperBuilder, (t, d, ioc) -> this.result(code, t, d, ioc));
     }
 }

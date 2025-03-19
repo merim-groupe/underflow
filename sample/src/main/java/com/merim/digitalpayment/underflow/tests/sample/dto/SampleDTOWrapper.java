@@ -18,7 +18,7 @@ public class SampleDTOWrapper<T> {
     /**
      * The Data.
      */
-    private final T data;
+    private final Object data;
 
     /**
      * The Current url.

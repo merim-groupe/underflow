@@ -30,9 +30,9 @@ public class SampleDTOWrapperBuilder implements DTOWrapperBuilder {
     }
 
     @Override
-    public <T> Object build(final HttpServerExchange exchange, final HttpResult result, final T data) {
+    public Object build(final HttpServerExchange exchange, final HttpResult result, final Object dataModel) {
         final Locale locale = I18nCookie.resolveAndSetCookie(exchange, result::withCookie);
 
-        return new SampleDTOWrapper<>(data, exchange.getRequestURL(), this.i18n.getLocalizedMessage(locale));
+        return new SampleDTOWrapper<>(dataModel, exchange.getRequestURL(), this.i18n.getLocalizedMessage(locale));
     }
 }

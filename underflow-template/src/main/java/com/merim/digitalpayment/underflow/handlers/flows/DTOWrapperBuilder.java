@@ -14,11 +14,10 @@ public interface DTOWrapperBuilder {
     /**
      * Build dto wrapper.
      *
-     * @param <T>      the type parameter
-     * @param exchange the exchange
-     * @param result   the result
-     * @param data     the data
+     * @param exchange  the exchange
+     * @param result    the result
+     * @param dataModel the data model
      * @return the dto wrapper
      */
-    <T> Object build(final HttpServerExchange exchange, final HttpResult result, final T data);
+    Object build(final HttpServerExchange exchange, final HttpResult result, final Object dataModel);
 }
