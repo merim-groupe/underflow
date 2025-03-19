@@ -26,7 +26,7 @@ public class I18nCookie {
     /**
      * The constant defaultLocale.
      */
-    private static Locale defaultLocale = Locale.ENGLISH;
+    private static Locale defaultLocale = null;
 
     /**
      * The Allowed locale.
@@ -35,7 +35,6 @@ public class I18nCookie {
 
     static {
         I18nCookie.allowedLocale = new HashSet<>();
-        I18nCookie.allowedLocale.add(Locale.ENGLISH);
     }
 
     /**
