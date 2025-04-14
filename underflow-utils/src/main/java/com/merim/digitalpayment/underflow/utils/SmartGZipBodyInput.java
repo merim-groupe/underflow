@@ -79,19 +79,24 @@ public class SmartGZipBodyInput implements MDCContext {
      * @throws IOException the io exception
      */
     private InputStream resolveStream(@NonNull final InputStream originalStream) throws IOException {
+        final int standardGZipHeaderSize = 10;
         final PushbackInputStream inputStream = new PushbackInputStream(originalStream, 2);
+        final byte[] headerBuffer = new byte[10];
+        int bytesRead = 0, totalRead = 0;
+
+        while (totalRead < standardGZipHeaderSize &&
+                (bytesRead = inputStream.read(headerBuffer, totalRead, standardGZipHeaderSize - totalRead)) != -1) {
+            totalRead += bytesRead;
+        }
+
+        inputStream.unread(headerBuffer, 0, totalRead);
 
         // If the size of the available bytes is bellow 10 (size of the GZip Header), return the stream as is.
-        if (inputStream.available() < 10) {
+        if (totalRead < standardGZipHeaderSize) {
             return inputStream;
         }
 
-        final byte[] buff = new byte[2];
-        final int read = inputStream.read(buff);
-        assert read == 2;
-        inputStream.unread(buff);
-
-        if (buff[0] == (byte) 0x1f && buff[1] == (byte) 0x8b) {
+        if (headerBuffer[0] == (byte) 0x1f && headerBuffer[1] == (byte) 0x8b) {
             // GZip format detected !
             return new GZIPInputStream(inputStream);
         } else {
