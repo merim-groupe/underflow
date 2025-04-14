@@ -80,7 +80,7 @@ public class SmartGZipBodyInput implements MDCContext {
      */
     private InputStream resolveStream(@NonNull final InputStream originalStream) throws IOException {
         final int standardGZipHeaderSize = 10;
-        final PushbackInputStream inputStream = new PushbackInputStream(originalStream, 2);
+        final PushbackInputStream inputStream = new PushbackInputStream(originalStream, 10);
         final byte[] headerBuffer = new byte[10];
         int bytesRead = 0, totalRead = 0;
 
