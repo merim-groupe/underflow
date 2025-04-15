@@ -29,6 +29,8 @@ public class Application {
      */
     private static Mode mode;
 
+    private static boolean modeInitialized = false;
+
     static {
         mapper = new ObjectMapper();
         instances = new HashMap<>();
@@ -52,7 +54,10 @@ public class Application {
      * @param mode the mode
      */
     public static void initMode(final Mode mode) {
-        Application.mode = mode;
+        if (!Application.modeInitialized) {
+            Application.modeInitialized = true;
+            Application.setMode(mode);
+        }
     }
 
     /**
