@@ -24,6 +24,11 @@ public class I18nCookie {
     private static String cookieName = "lang";
 
     /**
+     * The constant cookiePath.
+     */
+    private static String cookiePath = "/";
+
+    /**
      * The constant defaultLocale.
      */
     private static Locale defaultLocale = null;
@@ -53,6 +58,24 @@ public class I18nCookie {
      */
     public static void setCookieName(@NonNull final String cookieName) {
         I18nCookie.cookieName = cookieName;
+    }
+
+    /**
+     * Gets cookie path.
+     *
+     * @return the cookie path
+     */
+    public static String getCookiePath() {
+        return I18nCookie.cookiePath;
+    }
+
+    /**
+     * Sets cookie path.
+     *
+     * @param cookiePath the cookie path
+     */
+    public static void setCookiePath(@NonNull final String cookiePath) {
+        I18nCookie.cookiePath = cookiePath;
     }
 
     /**
@@ -102,7 +125,7 @@ public class I18nCookie {
      * @return the cookie
      */
     public static Cookie createCookie(final Locale locale) {
-        return new CookieImpl(I18nCookie.cookieName, locale.toLanguageTag());
+        return new CookieImpl(I18nCookie.cookieName, locale.toLanguageTag()).setPath(I18nCookie.cookiePath);
     }
 
     /**
