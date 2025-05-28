@@ -43,7 +43,7 @@
         <maven.deploy.skip>false</maven.deploy.skip>
 
         <!-- https://mvnrepository.com/artifact/io.undertow/undertow-core -->
-        <undertow.version>2.3.13.Final</undertow.version>
+        <undertow.version>2.2.37.Final</undertow.version> <!-- Latest compatible with Java 8 -->
 
         <!-- https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api -->
         <jakarta.rs-api.version>3.0.0</jakarta.rs-api.version>
