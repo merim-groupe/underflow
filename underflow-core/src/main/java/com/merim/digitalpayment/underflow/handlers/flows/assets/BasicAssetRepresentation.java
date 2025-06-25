@@ -22,12 +22,19 @@ public class BasicAssetRepresentation implements AssetRepresentation {
     private final Supplier<InputStream> streamSupplier;
 
     /**
-     * Instantiates a new Basic asset representation.
-     *
-     * @param etag           the etag
-     * @param streamSupplier the stream supplier
+     * The Path.
      */
-    public BasicAssetRepresentation(final String etag, final Supplier<InputStream> streamSupplier) {
+    private final String path;
+
+    /**
+     * Constructs a new BasicAssetRepresentation instance with the specified path, ETag, and stream supplier.
+     *
+     * @param path           the path of the asset
+     * @param etag           the ETag of the asset, representing its unique identifier or state
+     * @param streamSupplier a supplier that provides an InputStream for accessing the asset's content
+     */
+    public BasicAssetRepresentation(final String path, final String etag, final Supplier<InputStream> streamSupplier) {
+        this.path = path;
         this.etag = etag;
         this.streamSupplier = streamSupplier;
     }
@@ -40,5 +47,10 @@ public class BasicAssetRepresentation implements AssetRepresentation {
     @Override
     public InputStream open() {
         return this.streamSupplier.get();
+    }
+
+    @Override
+    public String getPath() {
+        return this.path;
     }
 }

@@ -77,7 +77,7 @@ public class ResourceAssetLoader implements AssetLoader {
             return Optional.empty();
         }
 
-        return Optional.of(new BasicAssetRepresentation(etag, () -> this.loader.getResourceAsStream(fullPath)));
+        return Optional.of(new BasicAssetRepresentation(path, etag, () -> this.loader.getResourceAsStream(fullPath)));
     }
 
     /**

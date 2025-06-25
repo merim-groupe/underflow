@@ -3,6 +3,7 @@ package com.merim.digitalpayment.underflow.handlers.flows;
 import com.merim.digitalpayment.underflow.handlers.flows.assets.AssetLoader;
 import com.merim.digitalpayment.underflow.handlers.flows.assets.AssetRepresentation;
 import com.merim.digitalpayment.underflow.results.Result;
+import com.merim.digitalpayment.underflow.results.http.HttpResult;
 import com.merim.digitalpayment.underflow.results.http.InputStreamHttpResult;
 import com.merim.digitalpayment.underflow.security.FlowSecurity;
 import com.merim.digitalpayment.underflow.security.annotations.Secured;
@@ -53,6 +54,15 @@ public abstract class FlowAssetsHandler extends FlowHandler {
     }
 
     /**
+     * Gets cache control rule.
+     *
+     * @return the cache control rule
+     */
+    protected String getCacheControlRule() {
+        return "public, max-age=0, must-revalidate";
+    }
+
+    /**
      * Gets asset.
      *
      * @param exchange the exchange
@@ -71,13 +81,12 @@ public abstract class FlowAssetsHandler extends FlowHandler {
 
             if (asset.getEtag() != null) {
                 final HeaderValues ifMatchValues = exchange.getRequestHeaders().get(Headers.IF_MATCH);
+
                 if (ifMatchValues != null) {
                     final String etag = ifMatchValues.get(0);
 
                     if (!etag.equals(asset.getEtag())) {
-                        return this.result(StatusCodes.PRECONDITION_FAILED, "")
-                                .withHeader(Headers.ETAG, asset.getEtag())
-                                .withHeader(Headers.CACHE_CONTROL, "public, max-age=0, must-revalidate");
+                        return this.applyEtagAndContentTypeHeaders(this.result(StatusCodes.PRECONDITION_FAILED, ""), asset);
                     }
                 }
 
@@ -85,31 +94,59 @@ public abstract class FlowAssetsHandler extends FlowHandler {
                 if (ifNoneMatchValues != null) {
                     final String etag = ifNoneMatchValues.get(0);
                     if (etag.equals(asset.getEtag())) {
-                        return this.result(StatusCodes.NOT_MODIFIED, "")
-                                .withHeader(Headers.ETAG, asset.getEtag())
-                                .withHeader(Headers.CACHE_CONTROL, "public, max-age=0, must-revalidate");
+                        return this.applyEtagAndContentTypeHeaders(this.result(StatusCodes.NOT_MODIFIED, ""), asset);
                     }
                 }
 
                 if (exchange.getRequestMethod().toString().equals("HEAD")) {
-                    return this.ok("")
-                            .withHeader(Headers.ETAG, asset.getEtag())
-                            .withHeader(Headers.CACHE_CONTROL, "public, max-age=0, must-revalidate");
+                    return this.applyEtagAndContentTypeHeaders(this.ok(""), asset);
                 } else {
-                    return new InputStreamHttpResult(StatusCodes.OK, asset.open())
-                            .withHeader(Headers.ETAG, asset.getEtag())
-                            .withHeader(Headers.CACHE_CONTROL, "public, max-age=0, must-revalidate");
+                    return this.applyEtagAndContentTypeHeaders(new InputStreamHttpResult(StatusCodes.OK, asset.open()), asset);
                 }
             }
 
             if (exchange.getRequestMethod().toString().equals("HEAD")) {
-                return this.ok("");
+                return this.applyContentTypeHeader(this.ok(""), asset);
             } else {
-                return new InputStreamHttpResult(StatusCodes.OK, asset.open());
+                return this.applyContentTypeHeader(new InputStreamHttpResult(StatusCodes.OK, asset.open()), asset);
             }
         } else {
             return this.onNotFound();
         }
+    }
+
+    /**
+     * Apply etag header http result.
+     *
+     * @param result the result
+     * @param asset  the asset
+     * @return the http result
+     */
+    private HttpResult applyEtagHeader(final HttpResult result, final AssetRepresentation asset) {
+        return result.withHeader(Headers.ETAG, asset.getEtag())
+                .withHeader(Headers.CACHE_CONTROL, this.getCacheControlRule());
+    }
+
+    /**
+     * Apply content type header.
+     *
+     * @param result the result
+     * @param asset  the asset
+     */
+    private HttpResult applyContentTypeHeader(final HttpResult result, final AssetRepresentation asset) {
+        asset.getContentType().ifPresent(contentType -> result.withHeader(Headers.CONTENT_TYPE, contentType));
+
+        return result;
+    }
+
+    /**
+     * Apply etag and content type headers.
+     *
+     * @param result the result
+     * @param asset  the asset
+     */
+    private HttpResult applyEtagAndContentTypeHeaders(final HttpResult result, final AssetRepresentation asset) {
+        return this.applyContentTypeHeader(this.applyEtagHeader(result, asset), asset);
     }
 
     /**

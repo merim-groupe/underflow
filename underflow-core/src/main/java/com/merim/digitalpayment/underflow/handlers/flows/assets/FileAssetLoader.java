@@ -53,7 +53,7 @@ public class FileAssetLoader implements AssetLoader {
             return Optional.empty();
         }
 
-        return Optional.of(new BasicAssetRepresentation(etag, () -> {
+        return Optional.of(new BasicAssetRepresentation(path, etag, () -> {
             try {
                 return new FileInputStream(file);
             } catch (final FileNotFoundException e) {
