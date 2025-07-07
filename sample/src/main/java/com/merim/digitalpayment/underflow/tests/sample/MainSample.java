@@ -58,6 +58,8 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
                                 PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.fr.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.fr.properties")))
                         .addLocale(Locale.ENGLISH,
                                 PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.en.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.en.properties")))
+                        .addLocale(new Locale("cz"),
+                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "./sample.cz.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.cz.properties")))
                         .build()
                 )
         );
@@ -66,7 +68,7 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
     @Override
     public UnderflowServerBuilder createServerBuilder() {
         return UnderflowServer.builder("0.0.0.0", 8080)
-                .addModule(new OpenApiServerModule())
+                .addModule(new OpenApiServerModule()) // Ignore error here. It's only in the sample.
                 .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new RoutingConflict1TestHandler())
                 .addHandler(new RoutingConflict2TestHandler())

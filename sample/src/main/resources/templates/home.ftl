@@ -35,6 +35,7 @@
         <ul>
             <li><a href="/lang?lang=fr">${messages.get("home.languageSelection.french")}</a></li>
             <li><a href="/lang?lang=en">${messages.get("home.languageSelection.english")}</a></li>
+            <li><a href="/lang?lang=cz">${messages.get("home.languageSelection.czech")}</a></li>
             <li><a href="/lang">${messages.get("home.languageSelection.deleteCookie")}</a></li>
         </ul>
         <p>
