@@ -49,6 +49,10 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
 
     @Override
     public void initialize(final String[] args) {
+        for (final String arg : args) {
+            MainSample.logger.info("Starting with argument : {}", arg);
+        }
+
         I18nCookie.setDefaultLocale(Locale.ENGLISH);
         I18nCookie.setCookieName("UnderflowLang");
 

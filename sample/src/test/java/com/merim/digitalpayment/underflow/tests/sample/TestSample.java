@@ -2,6 +2,7 @@ package com.merim.digitalpayment.underflow.tests.sample;
 
 import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.app.Mode;
+import com.merim.digitalpayment.underflow.test.StartupArgs;
 import com.merim.digitalpayment.underflow.test.UnderflowTest;
 import com.merim.digitalpayment.underflow.tests.sample.form.LoginForm;
 import io.restassured.response.ValidatableResponse;
@@ -18,9 +19,13 @@ import static io.restassured.RestAssured.given;
  * @author Pierre Adam
  * @since 24.04.22
  */
-@UnderflowTest(TestAppImpl.class)
+@UnderflowTest(value = TestAppImpl.class,
+        args = @StartupArgs({"-foo", "-bar"}))
 public class TestSample {
 
+    /**
+     * Test.
+     */
     @Test
     public void test() {
         final ValidatableResponse validatableResponse = given()

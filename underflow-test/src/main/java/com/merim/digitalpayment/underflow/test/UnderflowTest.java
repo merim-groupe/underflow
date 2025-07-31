@@ -27,4 +27,11 @@ public @interface UnderflowTest {
      * @return the class
      */
     Class<? extends UnderflowTestApplicationImpl<?>> value();
+
+    /**
+     * Args startup args.
+     *
+     * @return the startup args
+     */
+    StartupArgs args() default @StartupArgs({});
 }

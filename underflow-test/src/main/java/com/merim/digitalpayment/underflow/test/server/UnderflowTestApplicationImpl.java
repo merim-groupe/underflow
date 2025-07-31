@@ -20,11 +20,6 @@ public class UnderflowTestApplicationImpl<A extends UnderflowApplication> implem
     private final Class<A> applicationClass;
 
     /**
-     * The Args.
-     */
-    private final String[] args;
-
-    /**
      * The Application.
      */
     private A application;
@@ -35,19 +30,7 @@ public class UnderflowTestApplicationImpl<A extends UnderflowApplication> implem
      * @param underflowApplicationClass the underflow application class
      */
     public UnderflowTestApplicationImpl(@NonNull final Class<A> underflowApplicationClass) {
-        this(underflowApplicationClass, new String[0]);
-    }
-
-    /**
-     * Instantiates a new Underflow test application.
-     *
-     * @param underflowApplicationClass the underflow application class
-     * @param args                      the args
-     */
-    public UnderflowTestApplicationImpl(@NonNull final Class<A> underflowApplicationClass,
-                                        @NonNull final String[] args) {
         this.applicationClass = underflowApplicationClass;
-        this.args = args;
         this.application = null;
     }
 
@@ -66,15 +49,27 @@ public class UnderflowTestApplicationImpl<A extends UnderflowApplication> implem
     }
 
     /**
+     * Argument provider collection.
+     * You receive as parameter values from @UnderflowStartupArgs
+     *
+     * @param startupArgsFromAnnotation the startup args from annotation
+     * @return the collection
+     */
+    public String[] argumentProvider(final String[] startupArgsFromAnnotation) {
+        return startupArgsFromAnnotation != null ? startupArgsFromAnnotation : new String[0];
+    }
+
+    /**
      * Gets application.
      *
+     * @param startupArgs the startup args
      * @return the application
      */
-    public A getApplication() {
+    public A getApplication(final String[] startupArgs) {
         if (this.application == null) {
             // Lazy load of the application
             this.application = this.createApplication();
-            this.application.initialize(this.args);
+            this.application.initialize(this.argumentProvider(startupArgs));
         }
 
         return this.application;
@@ -82,7 +77,10 @@ public class UnderflowTestApplicationImpl<A extends UnderflowApplication> implem
 
     @Override
     public UnderflowServerBuilder getUnderflowServerBuilder() {
-        return this.getApplication().createServerBuilder();
+        if (this.application == null) {
+            throw new RuntimeException("Invalid life cycle. Please call getApplication first to initialize the application.");
+        }
+        return this.application.createServerBuilder();
     }
 
     @Override
