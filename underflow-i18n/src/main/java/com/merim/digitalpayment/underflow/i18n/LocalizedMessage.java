@@ -1,6 +1,7 @@
 package com.merim.digitalpayment.underflow.i18n;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -31,6 +32,15 @@ public interface LocalizedMessage {
     /**
      * Get string.
      *
+     * @param key  the key
+     * @param args the args
+     * @return the string
+     */
+    String get(final String key, final Map<String, Object> args);
+
+    /**
+     * Get string.
+     *
      * @param key the key
      * @return the string
      */
@@ -44,6 +54,15 @@ public interface LocalizedMessage {
      * @return the string
      */
     Optional<String> getOptional(final String key, final Object... args);
+
+    /**
+     * Gets optional.
+     *
+     * @param key  the key
+     * @param args the args
+     * @return the optional
+     */
+    Optional<String> getOptional(final String key, final Map<String, Object> args);
 
     /**
      * Gets or default.
@@ -63,6 +82,16 @@ public interface LocalizedMessage {
      * @return the or default
      */
     String getOrDefault(final String key, final String defaultValue, final Object... args);
+
+    /**
+     * Gets or default.
+     *
+     * @param key          the key
+     * @param defaultValue the default value
+     * @param args         the args
+     * @return the or default
+     */
+    String getOrDefault(final String key, final String defaultValue, final Map<String, Object> args);
 
     /**
      * Gets locale.

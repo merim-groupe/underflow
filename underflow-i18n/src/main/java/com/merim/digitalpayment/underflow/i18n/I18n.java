@@ -1,10 +1,9 @@
 package com.merim.digitalpayment.underflow.i18n;
 
-import java.text.MessageFormat;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import com.merim.digitalpayment.underflow.i18n.cookie.I18nCookie;
+import com.merim.digitalpayment.underflow.i18n.messageformat.AdvancedMessageFormat;
+
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -26,6 +25,11 @@ public class I18n {
      */
     public I18n() {
         this.i18nSources = new LinkedList<>();
+    }
+
+    public static void setDefaultLocale(final Locale locale) {
+        Locale.setDefault(locale);
+        I18nCookie.setDefaultLocale(locale);
     }
 
     /**
@@ -95,6 +99,18 @@ public class I18n {
     }
 
     /**
+     * Get string.
+     *
+     * @param locale the locale
+     * @param key    the key
+     * @param args   the args
+     * @return the string
+     */
+    public String get(final Locale locale, final String key, final Map<String, Object> args) {
+        return this.getOptional(locale, key, args).orElse(key);
+    }
+
+    /**
      * Gets optional.
      *
      * @param locale the locale
@@ -114,7 +130,19 @@ public class I18n {
      * @return the optional
      */
     public Optional<String> getOptional(final Locale locale, final String key, final Object... args) {
-        return this.getOptional(locale, key).map(message -> MessageFormat.format(message, args));
+        return this.getOptional(locale, key).map(message -> AdvancedMessageFormat.format(message, args));
+    }
+
+    /**
+     * Gets optional.
+     *
+     * @param locale the locale
+     * @param key    the key
+     * @param args   the args
+     * @return the optional
+     */
+    public Optional<String> getOptional(final Locale locale, final String key, final HashMap<String, Object> args) {
+        return this.getOptional(locale, key).map(message -> AdvancedMessageFormat.format(message, args));
     }
 
     /**
@@ -139,6 +167,19 @@ public class I18n {
      * @return the or default
      */
     public String getOrDefault(final Locale locale, final String key, final String defaultValue, final Object... args) {
+        return this.getOptional(locale, key, args).orElse(defaultValue);
+    }
+
+    /**
+     * Gets or default.
+     *
+     * @param locale       the locale
+     * @param key          the key
+     * @param defaultValue the default value
+     * @param args         the args
+     * @return the or default
+     */
+    public String getOrDefault(final Locale locale, final String key, final String defaultValue, final Map<String, Object> args) {
         return this.getOptional(locale, key, args).orElse(defaultValue);
     }
 

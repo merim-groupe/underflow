@@ -1,6 +1,7 @@
 package com.merim.digitalpayment.underflow.i18n;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -43,6 +44,11 @@ public class LocalizedMessageImpl implements LocalizedMessage {
     }
 
     @Override
+    public String get(final String key, final Map<String, Object> args) {
+        return this.i18n.get(this.locale, key, args);
+    }
+
+    @Override
     public Optional<String> getOptional(final String key) {
         return this.i18n.getOptional(this.locale, key);
     }
@@ -53,12 +59,22 @@ public class LocalizedMessageImpl implements LocalizedMessage {
     }
 
     @Override
+    public Optional<String> getOptional(final String key, final Map<String, Object> args) {
+        return this.i18n.getOptional(this.locale, key, args);
+    }
+
+    @Override
     public String getOrDefault(final String key, final String defaultValue) {
         return this.i18n.getOrDefault(this.locale, key, defaultValue);
     }
 
     @Override
     public String getOrDefault(final String key, final String defaultValue, final Object... args) {
+        return this.i18n.getOrDefault(this.locale, key, defaultValue, args);
+    }
+
+    @Override
+    public String getOrDefault(final String key, final String defaultValue, final Map<String, Object> args) {
         return this.i18n.getOrDefault(this.locale, key, defaultValue, args);
     }
 
