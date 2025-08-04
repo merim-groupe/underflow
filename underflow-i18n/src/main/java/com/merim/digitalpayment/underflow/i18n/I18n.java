@@ -141,7 +141,7 @@ public class I18n {
      * @param args   the args
      * @return the optional
      */
-    public Optional<String> getOptional(final Locale locale, final String key, final HashMap<String, Object> args) {
+    public Optional<String> getOptional(final Locale locale, final String key, final Map<String, Object> args) {
         return this.getOptional(locale, key).map(message -> AdvancedMessageFormat.format(message, args));
     }
 
