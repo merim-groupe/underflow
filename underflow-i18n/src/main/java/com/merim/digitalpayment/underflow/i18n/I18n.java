@@ -245,7 +245,7 @@ public class I18n {
      * @return the best locale match
      */
     public Locale getBestLocaleMatch(final Locale askedLocale) {
-        Locale bestMatch = I18n.defaultLocale;
+        Locale bestMatch = null;
 
         final Locale localeFromCache = this.localeBestMapCache.get(askedLocale);
         if (localeFromCache != null) {
@@ -262,6 +262,10 @@ public class I18n {
                     }
                 }
             }
+        }
+
+        if (bestMatch == null) {
+            bestMatch = I18n.defaultLocale;
         }
 
         this.localeBestMapCache.put(askedLocale, bestMatch);
