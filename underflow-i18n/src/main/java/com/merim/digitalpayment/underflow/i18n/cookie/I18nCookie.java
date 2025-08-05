@@ -1,5 +1,6 @@
 package com.merim.digitalpayment.underflow.i18n.cookie;
 
+import com.merim.digitalpayment.underflow.i18n.I18n;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
@@ -27,11 +28,6 @@ public class I18nCookie {
      * The constant cookiePath.
      */
     private static String cookiePath = "/";
-
-    /**
-     * The constant defaultLocale.
-     */
-    private static Locale defaultLocale = null;
 
     /**
      * The Allowed locale.
@@ -84,7 +80,7 @@ public class I18nCookie {
      * @param defaultLocale the default locale
      */
     public static void setDefaultLocale(@NonNull final Locale defaultLocale) {
-        I18nCookie.defaultLocale = defaultLocale;
+        I18n.defaultLocale = defaultLocale;
     }
 
     /**
@@ -115,7 +111,7 @@ public class I18nCookie {
             }
         }
 
-        return I18nCookie.defaultLocale;
+        return I18n.defaultLocale;
     }
 
     /**
@@ -160,7 +156,7 @@ public class I18nCookie {
         }
 
         if (language == null) {
-            language = I18nCookie.defaultLocale;
+            language = I18n.defaultLocale;
 
             if (language != null && setCookie != null) {
                 setCookie.accept(I18nCookie.createCookie(language));

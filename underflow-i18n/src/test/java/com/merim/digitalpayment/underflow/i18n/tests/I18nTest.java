@@ -49,6 +49,7 @@ public class I18nTest {
     public void testLocalizationMessages() {
         assertEquals("Hello", this.i18n.get(Locale.ENGLISH, "greeting"));
         assertEquals("Bonjour", this.i18n.get(Locale.FRENCH, "greeting"));
+        assertEquals("Bonjour", this.i18n.get(new Locale("fr", "MA"), "greeting")); // French / Morocco
     }
 
     /**
