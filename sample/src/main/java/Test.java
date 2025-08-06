@@ -1,6 +1,9 @@
 import com.merim.digitalpayment.underflow.i18n.messageformat.AdvancedMessageFormat;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
+import java.util.Currency;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -19,21 +22,22 @@ public class Test {
      */
     public static void main(final String[] args) {
         Locale.setDefault(Locale.FRANCE);
-        final MessageFormat messageFormat = new MessageFormat("Hello {0} {1,number,currency}");
 
-        final Object[] objects = new Object[2];
-        objects[0] = "John";
-        objects[1] = 123.50;
+        final Locale locale = new Locale("fr", "MA");
 
-        final String formatted = messageFormat.format(objects);//MessageFormat.format("Hello {0} {1,number,currency}", "John", 123.50);
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
+        symbols.setCurrencySymbol("dh");
 
+        DecimalFormat currencyFormat = (DecimalFormat) DecimalFormat.getCurrencyInstance(locale);
+        currencyFormat.setDecimalFormatSymbols(symbols);
 
-        final String formatted2 = AdvancedMessageFormat.format("Hello {name}, the value is {value,number,currency}", new HashMap<String, Object>() {{
-            this.put("name", "John");
-            this.put("value", 123.50);
-        }});
+        MessageFormat messageFormat = new MessageFormat("Hello {0} {1,number,currency}", locale);
+        messageFormat.setFormat(1, currencyFormat);
 
-        System.out.println(formatted2);
+        Object[] objects = {"John", 123.50};
+        System.out.println(messageFormat.format(objects));
+
+        //System.out.println(formatted2);
     }
 
     /**
