@@ -17,6 +17,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * UnderflowServer is a standardized implementation of an Undertow server.
@@ -28,6 +30,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 public class UnderflowServerImpl implements UnderflowServer {
+
+    /**
+     * The Trigger shutdown thread.
+     */
+    private final ReentrantLock triggerShutdownThread = new ReentrantLock();
+
+    /**
+     * The Condition.
+     */
+    private final Condition condition = this.triggerShutdownThread.newCondition();
 
     /**
      * The waiting for stop lock.
@@ -144,6 +156,12 @@ public class UnderflowServerImpl implements UnderflowServer {
         });
     }
 
+    /**
+     * Create handler http handler.
+     *
+     * @param handlersData the handlers data
+     * @return the http handler
+     */
     private static HttpHandler createHandler(final List<HandlerData> handlersData) {
         final RegexRouterHandler regexRouterHandler = new RegexRouterHandler();
 
@@ -237,6 +255,14 @@ public class UnderflowServerImpl implements UnderflowServer {
 
         synchronized (this.shutdownLock) {
             if (this.shutdownThread != null) {
+                this.triggerShutdownThread.lock();
+
+                try {
+                    this.condition.await();
+                } finally {
+                    this.triggerShutdownThread.unlock();
+                }
+
                 this.shutdownThread.join(60_000); // Allow 60s for the hooks to complete
                 if (this.shutdownThread.isAlive()) {
                     this.shutdownThread.interrupt();
@@ -284,6 +310,16 @@ public class UnderflowServerImpl implements UnderflowServer {
             this.shutdownHandler.addShutdownListener(success -> {
                 shutdownSuccessful.set(success);
                 this.shutdownThread.start();
+                try {
+                    Thread.sleep(100);
+                } catch (final InterruptedException ignore) {
+                }
+                try {
+                    this.triggerShutdownThread.lock();
+                    this.condition.signalAll();
+                } finally {
+                    this.triggerShutdownThread.unlock();
+                }
             });
         }
     }

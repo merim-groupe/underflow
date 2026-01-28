@@ -8,6 +8,7 @@ import io.undertow.server.handlers.sse.ServerSentEventHandler;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
+import lombok.Getter;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public class ServerEventTestHandler extends FlowApiHandler {
     /**
      * The SSE handler.
      */
+    @Getter
     private final ServerSentEventHandler sseh;
 
     /**

@@ -16,6 +16,7 @@ import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 
+import java.io.IOException;
 import java.util.Locale;
 
 /**
@@ -71,17 +72,29 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
 
     @Override
     public UnderflowServerBuilder createServerBuilder() {
+        final ServerEventTestHandler serverEventTestHandler = new ServerEventTestHandler();
+
         return UnderflowServer.builder("0.0.0.0", 8080)
                 .addModule(new OpenApiServerModule()) // Ignore error here. It's only in the sample.
                 .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new RoutingConflict1TestHandler())
                 .addHandler(new RoutingConflict2TestHandler())
                 .addHandler(new RouteTestHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addHandler(new ServerEventTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(serverEventTestHandler, UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new ApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new CrudApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new HomeHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addShutdownHook(() -> System.out.println("Shutting down server !"));
+                .addShutdownHook(() -> System.out.println("Shutting down server !"))
+                .addShutdownHook(() -> {
+                    MainSample.logger.error("Number of connections: {}", serverEventTestHandler.getSseh().getConnections().size());
+                    serverEventTestHandler.getSseh().getConnections().forEach(serverSentEventConnection -> {
+                        try {
+                            serverSentEventConnection.close();
+                        } catch (final IOException e) {
+                            MainSample.logger.error("Error closing connection: {}", e.getMessage());
+                        }
+                    });
+                });
     }
 
     @Override
