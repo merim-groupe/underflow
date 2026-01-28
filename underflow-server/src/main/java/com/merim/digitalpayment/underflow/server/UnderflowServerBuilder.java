@@ -27,6 +27,11 @@ public class UnderflowServerBuilder {
     private final Map<String, List<HandlerData>> handlers;
 
     /**
+     * The Pre Shutdown hooks.
+     */
+    private final List<Runnable> preShutdownHooks;
+
+    /**
      * The Shutdown hooks.
      */
     private final List<Runnable> shutdownHooks;
@@ -70,6 +75,7 @@ public class UnderflowServerBuilder {
      */
     UnderflowServerBuilder(@NonNull final String host, final int port) {
         this.handlers = new HashMap<>();
+        this.preShutdownHooks = new ArrayList<>();
         this.shutdownHooks = new ArrayList<>();
         this.modules = new ArrayList<>();
         this.classLoader = null;
@@ -172,6 +178,17 @@ public class UnderflowServerBuilder {
     }
 
     /**
+     * Add pre shutdown hook underflow server builder.
+     *
+     * @param hook the hook
+     * @return the underflow server builder
+     */
+    public UnderflowServerBuilder addPreShutdownHook(@NonNull final Runnable hook) {
+        this.preShutdownHooks.add(hook);
+        return this;
+    }
+
+    /**
      * Add shutdown hook underflow server builder.
      *
      * @param hook the hook
@@ -214,7 +231,7 @@ public class UnderflowServerBuilder {
         }
 
         final UnderflowServerImpl underflowServer = new UnderflowServerImpl(application, this.classLoader,
-                this.host, this.port, this.handlers, this.shutdownHooks, activeModules);
+                this.host, this.port, this.handlers, this.preShutdownHooks, this.shutdownHooks, activeModules);
         activeModules.forEach(module -> module.onServerCreated(underflowServer));
 
         return underflowServer;
@@ -225,6 +242,7 @@ public class UnderflowServerBuilder {
      */
     public void abortBuildAndShutdown() {
         this.aborted = true;
+        this.preShutdownHooks.forEach(Runnable::run);
         this.shutdownHooks.forEach(Runnable::run);
     }
 }

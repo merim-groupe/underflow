@@ -4,7 +4,6 @@ import com.merim.digitalpayment.underflow.app.Application;
 import com.merim.digitalpayment.underflow.i18n.I18n;
 import com.merim.digitalpayment.underflow.i18n.cookie.I18nCookie;
 import com.merim.digitalpayment.underflow.i18n.sources.PropertiesSource;
-import com.merim.digitalpayment.underflow.openapi.OpenApiServerModule;
 import com.merim.digitalpayment.underflow.server.UnderflowApplication;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
@@ -75,7 +74,7 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
         final ServerEventTestHandler serverEventTestHandler = new ServerEventTestHandler();
 
         return UnderflowServer.builder("0.0.0.0", 8080)
-                .addModule(new OpenApiServerModule()) // Ignore error here. It's only in the sample.
+//                .addModule(new OpenApiServerModule()) // Ignore error here. It's only in the sample.
                 .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new RoutingConflict1TestHandler())
                 .addHandler(new RoutingConflict2TestHandler())
@@ -84,9 +83,12 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
                 .addHandler(new ApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new CrudApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new HomeHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
-                .addShutdownHook(() -> System.out.println("Shutting down server !"))
-                .addShutdownHook(() -> {
-                    MainSample.logger.error("Number of connections: {}", serverEventTestHandler.getSseh().getConnections().size());
+                .addPreShutdownHook(() -> {
+                    System.out.println("== Shutting down server ! ==");
+                    System.out.flush();
+                })
+                .addPreShutdownHook(() -> {
+                    MainSample.logger.error("Shutting down SSE. Currently {} connections", serverEventTestHandler.getSseh().getConnections().size());
                     serverEventTestHandler.getSseh().getConnections().forEach(serverSentEventConnection -> {
                         try {
                             serverSentEventConnection.close();
@@ -94,6 +96,10 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
                             MainSample.logger.error("Error closing connection: {}", e.getMessage());
                         }
                     });
+                })
+                .addShutdownHook(() -> {
+                    System.out.println("== Server has been shutdown ! ==");
+                    System.out.flush();
                 });
     }
 

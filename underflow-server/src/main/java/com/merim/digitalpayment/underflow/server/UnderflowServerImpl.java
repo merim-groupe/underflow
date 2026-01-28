@@ -16,7 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,22 +35,12 @@ public class UnderflowServerImpl implements UnderflowServer {
     /**
      * The Trigger shutdown thread.
      */
-    private final ReentrantLock triggerShutdownThread = new ReentrantLock();
+    private final ReentrantLock triggerShutdownLock = new ReentrantLock();
 
     /**
      * The Condition.
      */
-    private final Condition condition = this.triggerShutdownThread.newCondition();
-
-    /**
-     * The waiting for stop lock.
-     */
-    private final Object waitStopLock = new Object();
-
-    /**
-     * The shutdown lock.
-     */
-    private final Object shutdownLock = new Object();
+    private final Condition waitShutdown = this.triggerShutdownLock.newCondition();
 
     /**
      * The Application.
@@ -74,6 +65,11 @@ public class UnderflowServerImpl implements UnderflowServer {
      */
     @Getter
     private final PathHandler pathHandler;
+
+    /**
+     * The Pre shutdown hooks.
+     */
+    private final List<Runnable> preShutdownHooks;
 
     /**
      * The Shutdown hooks.
@@ -126,6 +122,7 @@ public class UnderflowServerImpl implements UnderflowServer {
      * @param host                   the host
      * @param port                   the port
      * @param handlers               the handlers
+     * @param preShutdownHooks       the pre shutdown hooks
      * @param shutdownHooks          the shutdown hooks
      * @param modules                the modules
      */
@@ -134,6 +131,7 @@ public class UnderflowServerImpl implements UnderflowServer {
                         @NonNull final String host,
                         final int port,
                         @NonNull final Map<String, List<HandlerData>> handlers,
+                        @NonNull final List<Runnable> preShutdownHooks,
                         @NonNull final List<Runnable> shutdownHooks,
                         final Collection<UnderflowServerModule> modules) {
         this.application = application;
@@ -143,6 +141,7 @@ public class UnderflowServerImpl implements UnderflowServer {
         this.handlers = handlers;
         this.pathHandler = Handlers.path();
         this.waitingForExit = false;
+        this.preShutdownHooks = preShutdownHooks;
         this.shutdownHooks = shutdownHooks;
         this.modules = modules;
 
@@ -226,101 +225,79 @@ public class UnderflowServerImpl implements UnderflowServer {
 
     @Override
     public void stop() {
-        synchronized (this.waitStopLock) {
+        try {
+            this.triggerShutdownLock.lock();
+
             if (this.waitingForExit) {
                 // Asynchronous way since waitForExit is currently waiting.
                 // Delegate the closure of the server to waiting thread.
-                this.waitStopLock.notifyAll();
+                this.waitShutdown.signalAll();
             } else {
                 // Synchronous closure of the server.
-                this.stopServer();
+                try {
+                    this.stopServer().get();
+                } catch (final InterruptedException | ExecutionException ignore) {
+                }
             }
+        } finally {
+            this.triggerShutdownLock.unlock();
         }
     }
 
     @Override
     public void waitForExit() throws InterruptedException {
-        if (this.server != null) {
-            try {
-                synchronized (this.waitStopLock) {
-                    this.waitingForExit = true;
-                    this.waitStopLock.wait();
-                    this.waitingForExit = false;
-                    UnderflowServerImpl.logger.debug("Stopping server from trigger.");
-                }
-            } finally {
-                this.stopServer();
+        try {
+            this.triggerShutdownLock.lock();
+
+            if (this.server != null) {
+                this.waitingForExit = true;
+                this.waitShutdown.await();
             }
-        }
-
-        synchronized (this.shutdownLock) {
-            if (this.shutdownThread != null) {
-                this.triggerShutdownThread.lock();
-
-                try {
-                    this.condition.await();
-                } finally {
-                    this.triggerShutdownThread.unlock();
-                }
-
-                this.shutdownThread.join(60_000); // Allow 60s for the hooks to complete
-                if (this.shutdownThread.isAlive()) {
-                    this.shutdownThread.interrupt();
-                    this.shutdownThread.join(1_000);
-                    if (this.shutdownThread.isAlive()) {
-                        this.shutdownThread = null;
-                        throw new RuntimeException("Failed to shutdown web server gracefully within the specified time.");
-                    }
-                }
-                this.shutdownThread = null;
+        } finally {
+            this.triggerShutdownLock.unlock();
+            try {
+                this.stopServer().get();
+            } catch (final InterruptedException | ExecutionException ignore) {
             }
         }
     }
 
     /**
-     * Stop server.
+     * Stop server completable future.
+     *
+     * @return the completable future
      */
-    private synchronized void stopServer() {
+    private synchronized CompletableFuture<Void> stopServer() {
         if (this.server == null) {
-            // Server is already stopped.
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
+        final CompletableFuture<Void> onShutdown = new CompletableFuture<>();
         final Undertow serverToClose = this.server;
         this.server = null;
-        final AtomicBoolean shutdownSuccessful = new AtomicBoolean();
 
-        synchronized (this.shutdownLock) {
-            this.shutdownThread = new Thread(() -> {
-                if (shutdownSuccessful.get()) {
-                    serverToClose.stop();
-                    this.shutdownHooks.forEach(runnable -> {
-                        try {
-                            runnable.run();
-                        } catch (final Exception e) {
-                            UnderflowServerImpl.logger.error("An error occurred while running a shutdown hook", e);
-                        }
-                    });
-                } else {
-                    UnderflowServerImpl.logger.error("Failed to shutdown web server !");
+        this.preShutdownHooks.forEach(runnable -> {
+            try {
+                runnable.run();
+            } catch (final Throwable e) {
+                UnderflowServerImpl.logger.error("An error occurred while running a preShutdown hook", e);
+            }
+        });
+
+        this.shutdownHandler.shutdown();
+        this.shutdownHandler.addShutdownListener(success -> {
+            onShutdown.complete(null);
+        });
+
+        return onShutdown.thenAccept((unused) -> {
+            serverToClose.stop();
+            this.shutdownHooks.forEach(runnable -> {
+                try {
+                    runnable.run();
+                } catch (final Throwable e) {
+                    UnderflowServerImpl.logger.error("An error occurred while running a shutdown hook", e);
                 }
             });
-
-            this.shutdownHandler.shutdown();
-            this.shutdownHandler.addShutdownListener(success -> {
-                shutdownSuccessful.set(success);
-                this.shutdownThread.start();
-                try {
-                    Thread.sleep(100);
-                } catch (final InterruptedException ignore) {
-                }
-                try {
-                    this.triggerShutdownThread.lock();
-                    this.condition.signalAll();
-                } finally {
-                    this.triggerShutdownThread.unlock();
-                }
-            });
-        }
+        });
     }
 }

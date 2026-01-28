@@ -33,7 +33,15 @@ public class ServerEventTestHandler extends FlowApiHandler {
      * Instantiates a new Server event handler.
      */
     public ServerEventTestHandler() {
-        this.sseh = new ServerSentEventHandler();
+        this.sseh = new ServerSentEventHandler((serverSentEventConnection, s) -> {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            serverSentEventConnection.send("Welcome !");
+        });
     }
 
     /**
