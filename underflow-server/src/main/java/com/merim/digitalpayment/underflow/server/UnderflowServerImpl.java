@@ -272,7 +272,6 @@ public class UnderflowServerImpl implements UnderflowServer {
             return CompletableFuture.completedFuture(null);
         }
 
-        final CompletableFuture<Void> onShutdown = new CompletableFuture<>();
         final Undertow serverToClose = this.server;
         this.server = null;
 
@@ -284,12 +283,12 @@ public class UnderflowServerImpl implements UnderflowServer {
             }
         });
 
-        this.shutdownHandler.shutdown();
-        this.shutdownHandler.addShutdownListener(success -> {
-            onShutdown.complete(null);
-        });
+        final CompletableFuture<Void> onShutdown = new CompletableFuture<>();
 
-        return onShutdown.thenAccept((unused) -> {
+        this.shutdownHandler.shutdown();
+        this.shutdownHandler.addShutdownListener(success -> onShutdown.complete(null));
+
+        return onShutdown.thenAcceptAsync((unused) -> {
             serverToClose.stop();
             this.shutdownHooks.forEach(runnable -> {
                 try {

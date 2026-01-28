@@ -15,7 +15,6 @@ import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 
-import java.io.IOException;
 import java.util.Locale;
 
 /**
@@ -87,16 +86,7 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
                     System.out.println("== Shutting down server ! ==");
                     System.out.flush();
                 })
-                .addPreShutdownHook(() -> {
-                    MainSample.logger.error("Shutting down SSE. Currently {} connections", serverEventTestHandler.getSseh().getConnections().size());
-                    serverEventTestHandler.getSseh().getConnections().forEach(serverSentEventConnection -> {
-                        try {
-                            serverSentEventConnection.close();
-                        } catch (final IOException e) {
-                            MainSample.logger.error("Error closing connection: {}", e.getMessage());
-                        }
-                    });
-                })
+                .addSSEHShutdown(serverEventTestHandler.getSseh())
                 .addShutdownHook(() -> {
                     System.out.println("== Server has been shutdown ! ==");
                     System.out.flush();
