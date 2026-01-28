@@ -4,11 +4,13 @@ import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
 import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.sse.ServerSentEventHandler;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -185,6 +187,25 @@ public class UnderflowServerBuilder {
      */
     public UnderflowServerBuilder addPreShutdownHook(@NonNull final Runnable hook) {
         this.preShutdownHooks.add(hook);
+        return this;
+    }
+
+    /**
+     * Add sseh shutdown underflow server builder.
+     *
+     * @param sseh the sseh
+     * @return the underflow server builder
+     */
+    public UnderflowServerBuilder addSSEHShutdown(@NonNull final ServerSentEventHandler sseh) {
+        this.preShutdownHooks.add(() ->
+                sseh.getConnections().forEach(serverSentEventConnection -> {
+                    try {
+                        serverSentEventConnection.close();
+                    } catch (final IOException e) {
+                        UnderflowServerBuilder.logger.error("Error closing connection: {}", e.getMessage());
+                    }
+                }));
+
         return this;
     }
 
