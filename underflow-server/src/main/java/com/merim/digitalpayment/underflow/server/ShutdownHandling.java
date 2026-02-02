@@ -1,12 +1,19 @@
 package com.merim.digitalpayment.underflow.server;
 
-import java.util.function.Consumer;
+import sun.misc.Signal;
 
 /**
- * ShutdownHandling.
+ * ShutdownHandlingImpl.
  *
  * @author Pierre Adam
  * @since 22.09.28
  */
-public interface ShutdownHandling extends Consumer<UnderflowServer> {
+@SuppressWarnings("restriction")
+public class ShutdownHandling {
+
+    public static void accept(final UnderflowServer underflowServer) {
+        Signal.handle(new Signal("TERM"), sig -> underflowServer.stop()); // Handle SIGTERM.
+        Signal.handle(new Signal("INT"), sig -> underflowServer.stop()); // Handle SIGINT.
+        Runtime.getRuntime().addShutdownHook(new Thread(underflowServer::stop));
+    }
 }

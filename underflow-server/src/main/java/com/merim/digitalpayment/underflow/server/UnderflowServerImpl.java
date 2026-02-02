@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -110,11 +111,6 @@ public class UnderflowServerImpl implements UnderflowServer {
     private boolean waitingForExit;
 
     /**
-     * The Shutdown thread.
-     */
-    private Thread shutdownThread;
-
-    /**
      * Instantiates a new Underflow server.
      *
      * @param application            the application
@@ -165,11 +161,10 @@ public class UnderflowServerImpl implements UnderflowServer {
         final RegexRouterHandler regexRouterHandler = new RegexRouterHandler();
 
         for (final HandlerData handlerData : handlersData) {
-            if (!(handlerData.getHandler() instanceof FlowHandler)) {
+            if (!(handlerData.getHandler() instanceof final FlowHandler flowHandler)) {
                 throw new RuntimeException("Conflicting routes with HttpHandler not extending FlowHandler is not supported !");
             }
 
-            final FlowHandler flowHandler = (FlowHandler) handlerData.getHandler();
             final HttpHandler finalHandler = UnderflowServerImpl.createHandler(flowHandler.getHandlerInfo().getBasePath(), handlerData);
 
             regexRouterHandler.addPrefixPath(flowHandler.getHandlerInfo().getVariableRegexPath(), finalHandler);
@@ -197,19 +192,10 @@ public class UnderflowServerImpl implements UnderflowServer {
 
     @Override
     public void start() {
-        // Register the shutdown handling using a factory to abstract the version of Java.
-        ShutdownHandlingFactory.get().accept(this);
+        ShutdownHandling.accept(this);
 
         if (this.server == null) {
             // Server doesn't exists yet.
-            if (this.shutdownThread != null) {
-                // If there is a shutdown thread currently running, waiting before starting a new server.
-                try {
-                    this.waitForExit();
-                } catch (final InterruptedException ignore) {
-                }
-            }
-
             this.shutdownHandler = new GracefulShutdownHandler(this.pathHandler);
             this.server = Undertow.builder()
                     .addHttpListener(this.port, this.host)
@@ -230,7 +216,7 @@ public class UnderflowServerImpl implements UnderflowServer {
 
             if (this.waitingForExit) {
                 // Asynchronous way since waitForExit is currently waiting.
-                // Delegate the closure of the server to waiting thread.
+                // Delegate the closure of the server to waiting threads.
                 this.waitShutdown.signalAll();
             } else {
                 // Synchronous closure of the server.
@@ -288,15 +274,30 @@ public class UnderflowServerImpl implements UnderflowServer {
         this.shutdownHandler.shutdown();
         this.shutdownHandler.addShutdownListener(success -> onShutdown.complete(null));
 
-        return onShutdown.thenAcceptAsync((unused) -> {
-            serverToClose.stop();
-            this.shutdownHooks.forEach(runnable -> {
-                try {
-                    runnable.run();
-                } catch (final Throwable e) {
-                    UnderflowServerImpl.logger.error("An error occurred while running a shutdown hook", e);
-                }
-            });
-        });
+        return onShutdown
+                .orTimeout(20, TimeUnit.SECONDS)
+                .exceptionally(throwable -> {
+                    UnderflowServerImpl.logger.error("Timeout: Fail to wait for shutdownHandler. " +
+                            "Please consider closing properly any SSE or connection before shutting down. " +
+                            "If needed, use UnderflowServerBuilder.addPreShutdownHook() to handle resources cleanup before shutdown.");
+                    return null;
+                })
+                .thenCompose(unused -> CompletableFuture // Compose to allow for sequential timeout.
+                        .runAsync(() -> {
+                            serverToClose.stop();
+                            this.shutdownHooks.forEach(runnable -> {
+                                try {
+                                    runnable.run();
+                                } catch (final Throwable e) {
+                                    UnderflowServerImpl.logger.error("An error occurred while running a shutdown hook", e);
+                                }
+                            });
+                        })
+                        .orTimeout(60, TimeUnit.SECONDS)
+                        .exceptionally(throwable -> {
+                            UnderflowServerImpl.logger.error("Timeout: Fail to stop server.");
+                            System.exit(1); // This should not happen, but it's here as safety.
+                            return null;
+                        }));
     }
 }

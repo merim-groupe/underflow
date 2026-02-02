@@ -36,14 +36,14 @@
     <properties>
         <project.version>DEVELOPMENT</project.version>
 
-        <maven.compiler.release>8</maven.compiler.release>
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <maven.install.skip>false</maven.install.skip>
         <maven.deploy.skip>false</maven.deploy.skip>
 
         <!-- https://mvnrepository.com/artifact/io.undertow/undertow-core -->
-        <undertow.version>2.2.37.Final</undertow.version> <!-- Latest compatible with Java 8 -->
+        <undertow.version>2.3.22.Final</undertow.version> <!-- Latest compatible with Java 8 -->
 
         <!-- https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api -->
         <jakarta.rs-api.version>3.0.0</jakarta.rs-api.version>
