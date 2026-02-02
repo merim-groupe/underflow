@@ -74,7 +74,7 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
         final ServerEventTestHandler serverEventTestHandler = new ServerEventTestHandler();
 
         return UnderflowServer.builder("0.0.0.0", 8080)
-                .addModule(new OpenApiServerModule()) // Ignore error here. It's only in the sample.
+                .addModule(new OpenApiServerModule())
                 .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new RoutingConflict1TestHandler())
                 .addHandler(new RoutingConflict2TestHandler())
@@ -87,7 +87,7 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
                     System.out.println("== Shutting down server ! ==");
                     System.out.flush();
                 })
-//                .addSSEHShutdown(serverEventTestHandler.getSseh())
+                .addSSEHShutdown(serverEventTestHandler.getSseh())
                 .addShutdownHook(() -> {
                     System.out.println("== Server has been shutdown ! ==");
                     System.out.flush();
