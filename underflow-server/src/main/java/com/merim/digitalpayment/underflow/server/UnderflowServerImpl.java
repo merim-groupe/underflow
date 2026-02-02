@@ -219,7 +219,7 @@ public class UnderflowServerImpl implements UnderflowServer {
                     .build();
 
             this.server.start();
-            this.modules.forEach(module -> module.onServerCreated(this));
+            this.modules.forEach(module -> module.onServerStart(this));
         }
     }
 

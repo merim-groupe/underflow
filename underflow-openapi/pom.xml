@@ -24,6 +24,10 @@
         </dependency>
         <dependency>
             <groupId>com.merim.digitalpayment.underflow</groupId>
+            <artifactId>underflow-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.merim.digitalpayment.underflow</groupId>
             <artifactId>underflow-openapi-api</artifactId>
         </dependency>
         <dependency>

@@ -99,6 +99,10 @@ public class UnderflowServerBuilder {
             this.addShutdownHook(module.onServerStop());
         }
 
+        if (module.onServerPreStop() != null) {
+            this.addPreShutdownHook(module.onServerPreStop());
+        }
+
         return this;
     }
 

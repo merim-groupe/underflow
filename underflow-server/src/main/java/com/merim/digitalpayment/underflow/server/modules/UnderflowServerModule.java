@@ -46,6 +46,15 @@ public interface UnderflowServerModule {
     }
 
     /**
+     * On server pre-stop.
+     *
+     * @return the runnable
+     */
+    default Runnable onServerPreStop() {
+        return null;
+    }
+
+    /**
      * On server stop.
      *
      * @return the runnable
