@@ -98,4 +98,27 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
     public void onServerCreated(final UnderflowServer server) {
         Application.register(UnderflowServer.class, server);
     }
+
+//    @Override
+//    public UnsupervisedThreadLogic unsupervisedThread() {
+//        return server -> {
+//            int i = 0;
+//            boolean keepGoing = true;
+//
+//            while (keepGoing) {
+//                if (i > 10) {
+//                    keepGoing = false;
+//                }
+//
+//                try {
+//                    MainSample.logger.info("Keep going !");
+//                    Thread.sleep(1000);
+//                } catch (final InterruptedException e) {
+//                    keepGoing = false;
+//                }
+//
+//                i++;
+//            }
+//        };
+//    }
 }

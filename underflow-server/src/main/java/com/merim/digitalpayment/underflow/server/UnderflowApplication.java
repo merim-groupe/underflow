@@ -4,6 +4,12 @@ import com.merim.digitalpayment.underflow.app.Application;
 import lombok.NonNull;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
 /**
  * UnderflowApplication.
  *
@@ -67,20 +73,53 @@ public interface UnderflowApplication {
             return;
         }
 
-        try {
-            final MainThreadLogic mainThreadLogic = application.mainThreadLogic();
-            application.onServerStart(server);
+        ExecutorService executor = null;
 
-            if (mainThreadLogic == null) {
-                server.startAndWait();
-            } else {
-                server.start();
-                mainThreadLogic.accept(server);
+        try {
+            final Consumer<UnderflowServer> unsupervisedThreadLogic = application.unsupervisedThread();
+            application.onServerStart(server);
+            Future<?> unsupervisedThread = null;
+
+            server.start();
+
+            if (unsupervisedThreadLogic != null) {
+                executor = Executors.newSingleThreadExecutor(r -> {
+                    final Thread t = new Thread(r, "underflow-main-logic");
+                    t.setDaemon(false);
+                    return t;
+                });
+
+                unsupervisedThread = executor.submit(() -> {
+                    try {
+                        unsupervisedThreadLogic.accept(server);
+                    } catch (final Exception e) {
+                        LoggerFactory.getLogger(UnderflowApplication.class)
+                                .error("Error in main thread logic", e);
+                        throw new RuntimeException(e);
+                    } finally {
+                        server.stop();
+                    }
+                });
+            }
+
+            server.waitForExit();
+
+            if (unsupervisedThread != null && !unsupervisedThread.isDone()) {
+                unsupervisedThread.cancel(true); // Actually interrupts the thread
+                executor.shutdownNow(); // Force shutdown
+                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    LoggerFactory.getLogger(UnderflowApplication.class)
+                            .warn("Main thread logic did not terminate within timeout");
+                }
             }
         } catch (final Exception e) {
             LoggerFactory.getLogger(UnderflowApplication.class)
                     .error("Stopping underflow server due to exception in the main thread logic...", e);
         } finally {
+            if (executor != null) {
+                executor.shutdown();
+            }
+
             server.stop();
         }
 
@@ -123,28 +162,21 @@ public interface UnderflowApplication {
     }
 
     /**
-     * Provide a main thread logic.
+     * Unsupervised thread consumer.
+     * Provide an unsupervised thread logic.
      * If this method is implemented you must be blocking while the server is running.
      * One way of achieving this is to call UnderflowServer.waitForExit().
      * Exiting the main thread logic will lead to the web server shutting down.
+     * <p>
+     * Implementations should periodically check Thread.currentThread().isInterrupted()
+     * or handle InterruptedException appropriately.
      *
      * @return the consumer
      */
-    default MainThreadLogic mainThreadLogic() {
+    default UnsupervisedThreadLogic unsupervisedThread() {
         return null;
     }
 
-    /**
-     * The interface Main thread logic.
-     */
-    interface MainThreadLogic {
-
-        /**
-         * Accept.
-         *
-         * @param server the server
-         * @throws Exception the exception
-         */
-        void accept(UnderflowServer server) throws Exception;
+    interface UnsupervisedThreadLogic extends Consumer<UnderflowServer> {
     }
 }
