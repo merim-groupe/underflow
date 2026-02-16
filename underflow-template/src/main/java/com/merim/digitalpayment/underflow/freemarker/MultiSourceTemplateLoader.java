@@ -73,6 +73,7 @@ public class MultiSourceTemplateLoader implements TemplateLoader {
     public void closeTemplateSource(final Object templateSource) throws IOException {
         if (templateSource instanceof final MultiSourceTemplateLoader.SourceContainer sourceContainer) {
             sourceContainer.loader.closeTemplateSource(sourceContainer.templateSource);
+            return;
         }
 
         throw new IllegalArgumentException("templateSource must be an instance of SourceContainer");
