@@ -105,6 +105,7 @@
         <module>underflow-openapi</module>
         <module>underflow-openapi-api</module>
         <module>underflow-security</module>
+        <module>underflow-security-jwt</module>
         <module>underflow-server</module>
         <module>underflow-template</module>
         <module>underflow-test</module>
@@ -196,6 +197,11 @@
             <dependency>
                 <groupId>com.merim.digitalpayment.underflow</groupId>
                 <artifactId>underflow-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.merim.digitalpayment.underflow</groupId>
+                <artifactId>underflow-security-jwt</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

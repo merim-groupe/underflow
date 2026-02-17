@@ -97,6 +97,6 @@ public abstract class CookieSecurity<T, U extends Annotation> extends AFlowSecur
      * @return the cookie
      */
     public Cookie newCookie(final T userRepresentation) {
-        return this.serialize(userRepresentation, new CookieImpl(this.cookieName));
+        return this.serialize(userRepresentation, new CookieImpl(this.cookieName).setPath("/"));
     }
 }

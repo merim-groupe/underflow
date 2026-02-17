@@ -8,7 +8,7 @@ import com.merim.digitalpayment.underflow.results.Result;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.tests.sample.dto.SampleDTOWrapperBuilder;
 import com.merim.digitalpayment.underflow.tests.sample.form.LoginForm;
-import com.merim.digitalpayment.underflow.tests.sample.security.MyCookieSecurity;
+import com.merim.digitalpayment.underflow.tests.sample.security.MySecurity;
 import com.merim.digitalpayment.underflow.tests.sample.security.MySecurityScope;
 import com.merim.digitalpayment.underflow.tests.sample.security.MyUserRepresentation;
 import com.merim.digitalpayment.underflow.web.forms.WebForm;
@@ -43,7 +43,7 @@ public class HomeHandler extends FlowDTOWrapperTemplateHandler implements WebFor
      * Instantiates a new Test handler.
      */
     public HomeHandler() {
-        super("/templates", new MyCookieSecurity(), new SampleDTOWrapperBuilder());
+        super("/templates", new MySecurity(), new SampleDTOWrapperBuilder());
     }
 
     /**
@@ -63,7 +63,7 @@ public class HomeHandler extends FlowDTOWrapperTemplateHandler implements WebFor
     public Result home(@Context final HttpServerExchange exchange,
                        @CookieParam("UnderflowLang") final String langCookie, // Only for display purpose
                        @Context final MyUserRepresentation user,
-                       @Context final MyCookieSecurity security) {
+                       @Context final MySecurity security) {
         final Map<String, Object> dataModel = new HashMap<>();
         final Template template = this.getTemplate("home.ftl");
 
@@ -131,7 +131,7 @@ public class HomeHandler extends FlowDTOWrapperTemplateHandler implements WebFor
     @GET
     @Path("/login")
     public Result login(@Context final MyUserRepresentation user,
-                        @Context final MyCookieSecurity security,
+                        @Context final MySecurity security,
                         @QueryParam("name") @DefaultValue("John Dummer") final String name,
                         @QueryParam("scope") @QueryParamList(String.class) @DefaultValue("web") final List<String> scopes) {
         if (user == null) {
@@ -157,7 +157,7 @@ public class HomeHandler extends FlowDTOWrapperTemplateHandler implements WebFor
     @Path("/login")
     public Result login(@Context final HttpServerExchange exchange,
                         @Context final MyUserRepresentation user,
-                        @Context final MyCookieSecurity security) {
+                        @Context final MySecurity security) {
         final Function<LoginForm, Result> successLogic = loginForm -> {
             final MyUserRepresentation newUser = new MyUserRepresentation(loginForm.getName(), loginForm.getScopes());
             return this.redirect("/")
