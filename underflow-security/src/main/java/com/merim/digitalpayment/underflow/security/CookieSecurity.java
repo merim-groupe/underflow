@@ -4,6 +4,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
 import java.sql.Date;
@@ -18,6 +19,7 @@ import java.util.Optional;
  * @author Pierre Adam
  * @since 22.07.19
  */
+@Slf4j
 public abstract class CookieSecurity<T, U extends Annotation> extends AFlowSecurity<T, U> {
 
     /**
@@ -53,6 +55,7 @@ public abstract class CookieSecurity<T, U extends Annotation> extends AFlowSecur
             return optionalUser;
         } catch (final Exception e) {
             // In case of error, clean the cookie.
+            CookieSecurity.logger.debug("An error occurred while deserializing the user representation", e);
             sessionCookie.setExpires(Date.from(Instant.EPOCH));
             exchange.setResponseCookie(sessionCookie);
         }

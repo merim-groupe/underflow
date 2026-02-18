@@ -10,25 +10,25 @@ import java.util.Optional;
  * @author Pierre Adam
  * @since 22.07.19
  */
-public class MyBearerSecurity extends HeaderSecurity<MyUserRepresentation, MySecurityScope> {
+public class MyBearerSecurity extends HeaderSecurity<MyBearerUserRepresentation, MySecurityScope> {
 
     /**
      * Instantiates a new My bearer security.
      */
     public MyBearerSecurity() {
-        super(MyUserRepresentation.class, MySecurityScope.class);
+        super(MyBearerUserRepresentation.class, MySecurityScope.class);
     }
 
     @Override
-    protected Optional<MyUserRepresentation> isLogged(final String value) {
+    protected Optional<MyBearerUserRepresentation> isLogged(final String value) {
         if (value.length() > 3) {
-            return Optional.of(new MyUserRepresentation(value));
+            return Optional.of(new MyBearerUserRepresentation(value));
         }
         return Optional.empty();
     }
 
     @Override
-    public boolean isAccessible(final MyUserRepresentation userRepresentation, final MySecurityScope scope) {
+    public boolean isAccessible(final MyBearerUserRepresentation userRepresentation, final MySecurityScope scope) {
         return true;
     }
 

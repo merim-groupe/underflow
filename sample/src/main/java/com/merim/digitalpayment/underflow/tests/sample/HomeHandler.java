@@ -72,7 +72,7 @@ public class HomeHandler extends FlowDTOWrapperTemplateHandler implements WebFor
 
         dataModel.put("langCookie", langCookie);
         dataModel.put("currentDate", dtf.format(now));
-        dataModel.put("user", user);
+        dataModel.put("user", user == null ? null : user.getData());
 
         return this.ok(template, dataModel);
     }
