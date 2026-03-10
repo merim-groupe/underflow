@@ -96,10 +96,6 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
         return results;
     }
 
-//    public <T> void addInjectable(final Class<T> tClass, final Function<HttpServerExchange, T> supplier) {
-//        this.
-//    }
-
     @Override
     public void handleRequest(final HttpServerExchange exchange) {
         try (final MDCServerContext ignored = MDCInterceptor.getInstance().withMDCServerContext(exchange)) {

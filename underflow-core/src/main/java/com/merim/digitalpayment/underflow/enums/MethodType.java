@@ -4,6 +4,7 @@ import com.merim.digitalpayment.underflow.results.Result;
 import org.wildfly.common.annotation.NotNull;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * MethodType.
@@ -26,7 +27,12 @@ public enum MethodType {
     /**
      * Result method type.
      */
-    RESULT(Result.class);
+    RESULT(Result.class),
+
+    /**
+     * Completable future method type.
+     */
+    COMPLETABLE_FUTURE(CompletableFuture.class);
 
     /**
      * The Expected return type.

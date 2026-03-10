@@ -26,8 +26,9 @@
         </p>
         <ul>
             <li><a href="/exception">${messages.get("home.exceptionTestPages.java")}</a></li>
-            <li><a href="/exception">${messages.get("home.exceptionTestPages.ftl")}</a></li>
-            <li><a href="/exception">${messages.get("home.exceptionTestPages.javaInFtl")}</a></li>
+            <li><a href="/ftl-exception-1">${messages.get("home.exceptionTestPages.ftl")}</a></li>
+            <li><a href="/ftl-exception-2">${messages.get("home.exceptionTestPages.javaInFtl")}</a></li>
+            <li><a href="/api/exception">${messages.get("home.exceptionTestPages.apiException")}</a></li>
         </ul>
         <p>
             <b>${messages.get("home.languageSelection")}</b>

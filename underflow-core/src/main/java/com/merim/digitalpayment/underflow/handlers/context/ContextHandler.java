@@ -4,6 +4,7 @@ import com.merim.digitalpayment.underflow.annotation.AnnotationResolver;
 import com.merim.digitalpayment.underflow.annotation.routing.Converter;
 import com.merim.digitalpayment.underflow.annotation.routing.QueryParamList;
 import com.merim.digitalpayment.underflow.app.Application;
+import com.merim.digitalpayment.underflow.attachments.UnderflowKeys;
 import com.merim.digitalpayment.underflow.converters.Converters;
 import com.merim.digitalpayment.underflow.converters.IConverter;
 import com.merim.digitalpayment.underflow.enums.MethodType;
@@ -33,6 +34,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -60,6 +65,17 @@ public class ContextHandler implements MDCContext {
      * The Exchange.
      */
     private final HttpServerExchange exchange;
+
+
+    /**
+     * The Worker executor.
+     */
+    private final ExecutorService workerExecutor;
+
+    /**
+     * The Response executor.
+     */
+    private final ExecutorService responseExecutor;
 
     /**
      * The Controller injectable.
@@ -98,6 +114,10 @@ public class ContextHandler implements MDCContext {
         this.handlerLogger = LoggerFactory.getLogger(handler.getClass());
         this.handler = handler;
         this.exchange = exchange;
+        final ExecutorService worker = exchange.getAttachment(UnderflowKeys.WORKER_EXECUTOR_KEY);
+        this.workerExecutor = worker != null ? worker : ForkJoinPool.commonPool();
+        final ExecutorService response = exchange.getAttachment(UnderflowKeys.RESPONSE_EXECUTOR_KEY);
+        this.responseExecutor = response != null ? response : ForkJoinPool.commonPool();
         this.methodType = MethodType.UNSUPPORTED;
         this.method = null;
         this.pathMatcher = null;
@@ -339,25 +359,89 @@ public class ContextHandler implements MDCContext {
      * @param methodArgs the method args
      */
     private void executeMethod(final List<Object> methodArgs) {
-        try {
-            if (this.methodType == MethodType.RESULT) {
-                final Result result = (Result) this.method.invoke(this.handler, methodArgs.toArray());
-                result.process(this.exchange, this.method);
-            } else if (this.methodType == MethodType.STRING) {
-                final SimpleStringResult result = new SimpleStringResult((String) this.method.invoke(this.handler, methodArgs.toArray()));
-                result.process(this.exchange, this.method);
+        final CompletableFuture<Result> completableFuture = this.toCompletableFuture(methodArgs);
+        completableFuture.whenCompleteAsync((result, throwable) -> {
+            if (throwable != null) {
+                Throwable cause = throwable;
+                if (cause instanceof final CompletionException e) {
+                    cause = e.getCause();
+                }
+
+                if (cause instanceof final EncapsulatedException e) {
+                    cause = e.getCause();
+                }
+
+                if (cause instanceof final InvocationTargetException e) {
+                    cause = e.getCause();
+                }
+
+                ContextHandler.logger.error("Controller uncaught exception.", cause);
+                try {
+                    this.handler.onException(cause).process(this.exchange, null);
+                } catch (final Exception e) {
+                    ContextHandler.logger.error("Unable to send error response.", e);
+                }
+            } else {
+                this.safeHttpExecute(() -> result.process(this.exchange, this.method));
             }
-        } catch (final Throwable e) {
-            Throwable cause = e;
-            if (e instanceof InvocationTargetException) {
-                cause = e.getCause();
+            ContextHandler.logger.info("COMPLETED !");
+        }, this.responseExecutor);
+
+        // Possible improvement, adding handling for the closure of the socket on the client side.
+        // Could be implemented by having a monitoring on the connection. Example:
+        /*
+        ScheduledFuture<?> monitor = connectionMonitor.scheduleAtFixedRate(() -> {
+            if (!this.exchange.getConnection().isOpen()) {
+                ContextHandler.logger.info("Connection closed detected by monitor");
+                future.cancel(true);
             }
-            ContextHandler.logger.error("Controller uncaught exception.", cause);
-            try {
-                this.handler.onException(cause).process(this.exchange, null);
-            } catch (final Exception e2) {
-                throw new RuntimeException(e2);
-            }
+        }, 0, 500, TimeUnit.MILLISECONDS); // Check every 500ms
+        */
+    }
+
+    /**
+     * To completable future.
+     *
+     * @param methodArgs the method args
+     * @return the completable future
+     */
+    private CompletableFuture<Result> toCompletableFuture(final List<Object> methodArgs) {
+        if (this.methodType == MethodType.RESULT) {
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    return (Result) this.method.invoke(this.handler, methodArgs.toArray());
+                } catch (final IllegalAccessException | InvocationTargetException e) {
+                    throw new EncapsulatedException(e);
+                }
+            }, this.workerExecutor);
+        } else if (this.methodType == MethodType.STRING) {
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    return new SimpleStringResult((String) this.method.invoke(this.handler, methodArgs.toArray()));
+                } catch (final IllegalAccessException | InvocationTargetException e) {
+                    throw new EncapsulatedException(e);
+                }
+            }, this.workerExecutor);
+        } else if (this.methodType == MethodType.COMPLETABLE_FUTURE) {
+            return CompletableFuture.supplyAsync(() -> {
+                        try {
+                            return (CompletableFuture<?>) this.method.invoke(this.handler, methodArgs.toArray());
+                        } catch (final IllegalAccessException | InvocationTargetException e) {
+                            throw new EncapsulatedException(e);
+                        }
+                    }, this.workerExecutor)
+                    .thenComposeAsync(future -> future, this.responseExecutor)
+                    .thenApply(o -> {
+                        if (o instanceof final String stringResult) {
+                            return new SimpleStringResult(stringResult);
+                        } else if (o instanceof final Result result) {
+                            return result;
+                        } else {
+                            throw new RuntimeException("Unsupported return type. Please return a String or a Result");
+                        }
+                    });
+        } else {
+            throw new RuntimeException("Unsupported return type. Please return a String, a Result, a CompletableFuture<String> or a CompletableFuture<Result>");
         }
     }
 
@@ -443,5 +527,19 @@ public class ContextHandler implements MDCContext {
      */
     public void addInjectableUnsafe(final Class<?> tClass, final Object value) {
         this.controllerInjectable.put(tClass, (e) -> value);
+    }
+
+    /**
+     * The type Encapsulated exception.
+     */
+    public static class EncapsulatedException extends RuntimeException {
+        /**
+         * Instantiates a new Encapsulated exception.
+         *
+         * @param cause the cause
+         */
+        public EncapsulatedException(final Throwable cause) {
+            super(cause);
+        }
     }
 }

@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -60,21 +61,29 @@ public class HomeHandler extends FlowDTOWrapperTemplateHandler implements WebFor
     @GET
     @Path("")
     // AppLanguage.Converter.class can be set at the application level using: Converters.addConverter(new AppLanguage.Converter());
-    public Result home(@Context final HttpServerExchange exchange,
-                       @CookieParam("UnderflowLang") final String langCookie, // Only for display purpose
-                       @Context final MyUserRepresentation user,
-                       @Context final MySecurity security) {
-        final Map<String, Object> dataModel = new HashMap<>();
-        final Template template = this.getTemplate("home.ftl");
+    public CompletableFuture<Result> home(@Context final HttpServerExchange exchange,
+                                          @CookieParam("UnderflowLang") final String langCookie, // Only for display purpose
+                                          @Context final MyUserRepresentation user,
+                                          @Context final MySecurity security) {
+        this.logger.info("Handler functional logic");
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (final InterruptedException ignore) {
+            }
+            this.logger.info("Handler completable future logic");
+            final Map<String, Object> dataModel = new HashMap<>();
+            final Template template = this.getTemplate("home.ftl");
 
-        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-        final LocalDateTime now = LocalDateTime.now();
+            final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            final LocalDateTime now = LocalDateTime.now();
 
-        dataModel.put("langCookie", langCookie);
-        dataModel.put("currentDate", dtf.format(now));
-        dataModel.put("user", user == null ? null : user.getData());
+            dataModel.put("langCookie", langCookie);
+            dataModel.put("currentDate", dtf.format(now));
+            dataModel.put("user", user == null ? null : user.getData());
 
-        return this.ok(template, dataModel);
+            return this.ok(template, dataModel);
+        });
     }
 
     /**

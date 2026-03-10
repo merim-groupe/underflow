@@ -75,6 +75,12 @@ public class ApiTestHandler extends FlowApiHandler {
 
         return this.ok(this.toJsonNode(list));
     }
+
+    @GET
+    @Path("/exception")
+    public Result exception() {
+        throw new RuntimeException("Sample Exception");
+    }
 //
 //    /**
 //     * Api home result.

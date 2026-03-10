@@ -73,6 +73,7 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
     public UnderflowServerBuilder createServerBuilder() {
         final ServerEventTestHandler serverEventTestHandler = new ServerEventTestHandler();
 
+        final ResourceIntensiveHandler resourceIntensiveHandler = new ResourceIntensiveHandler();
         return UnderflowServer.builder("0.0.0.0", 8080)
                 .addModule(new OpenApiServerModule())
                 .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
@@ -83,11 +84,13 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
                 .addHandler(new ApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new CrudApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new HomeHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(resourceIntensiveHandler, UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addPreShutdownHook(() -> {
                     System.out.println("== Shutting down server ! ==");
                     System.out.flush();
                 })
                 .addSSEHShutdown(serverEventTestHandler.getSseh())
+                .addShutdownHook(() -> resourceIntensiveHandler.getCustomExecutor().shutdown())
                 .addShutdownHook(() -> {
                     System.out.println("== Server has been shutdown ! ==");
                     System.out.flush();
@@ -99,7 +102,12 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
         Application.register(UnderflowServer.class, server);
     }
 
-//    @Override
+    @Override
+    public void onServerStart(final UnderflowServer server) {
+        MainSample.logger.info("Access me at http://localhost:" + server.getPort());
+    }
+
+    //    @Override
 //    public UnsupervisedThreadLogic unsupervisedThread() {
 //        return server -> {
 //            int i = 0;

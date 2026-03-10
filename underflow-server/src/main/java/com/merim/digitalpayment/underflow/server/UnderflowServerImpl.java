@@ -1,11 +1,15 @@
 package com.merim.digitalpayment.underflow.server;
 
+import com.merim.digitalpayment.underflow.attachments.UnderflowKeys;
+import com.merim.digitalpayment.underflow.executors.UnderflowExecutorContext;
+import com.merim.digitalpayment.underflow.handlers.ExchangeActionsHandler;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.routing.RegexRouterHandler;
 import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
 import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.UndertowOptions;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.GracefulShutdownHandler;
 import io.undertow.server.handlers.PathHandler;
@@ -13,6 +17,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +53,11 @@ public class UnderflowServerImpl implements UnderflowServer {
      */
     @Getter
     private final UnderflowApplication application;
+
+    /**
+     * The Executor context.
+     */
+    private final UnderflowExecutorContext executorContext;
 
     /**
      * The Class loader.
@@ -131,6 +141,7 @@ public class UnderflowServerImpl implements UnderflowServer {
                         @NonNull final List<Runnable> shutdownHooks,
                         final Collection<UnderflowServerModule> modules) {
         this.application = application;
+        this.executorContext = new UnderflowExecutorContext();
         this.applicationClassLoader = applicationClassLoader != null ? applicationClassLoader : Thread.currentThread().getContextClassLoader();
         this.host = host;
         this.port = port;
@@ -144,9 +155,9 @@ public class UnderflowServerImpl implements UnderflowServer {
         // Process the handlers.
         handlers.forEach((path, handlersData) -> {
             if (handlersData.size() == 1) {
-                this.pathHandler.addPrefixPath(path, UnderflowServerImpl.createHandler(path, handlersData.get(0)));
+                this.pathHandler.addPrefixPath(path, this.addStandardAttachments(UnderflowServerImpl.createHandler(path, handlersData.get(0))));
             } else if (handlersData.size() > 1) {
-                this.pathHandler.addPrefixPath(path, UnderflowServerImpl.createHandler(handlersData));
+                this.pathHandler.addPrefixPath(path, this.addStandardAttachments(UnderflowServerImpl.createHandler(handlersData)));
             }
         });
     }
@@ -190,6 +201,21 @@ public class UnderflowServerImpl implements UnderflowServer {
         return handler;
     }
 
+    /**
+     * Add attachments http handler.
+     *
+     * @param handler the handler
+     * @return the http handler
+     */
+    private HttpHandler addStandardAttachments(final HttpHandler handler) {
+        final ExchangeActionsHandler exchangeActionsHandler = new ExchangeActionsHandler(handler);
+
+        exchangeActionsHandler.addAttachment(UnderflowKeys.RESPONSE_EXECUTOR_KEY, this.executorContext.getResponseExecutor());
+        exchangeActionsHandler.addAttachment(UnderflowKeys.WORKER_EXECUTOR_KEY, this.executorContext.getWorkerExecutor());
+
+        return exchangeActionsHandler;
+    }
+
     @Override
     public void start() {
         ShutdownHandling.accept(this);
@@ -198,9 +224,10 @@ public class UnderflowServerImpl implements UnderflowServer {
             // Server doesn't exists yet.
             this.shutdownHandler = new GracefulShutdownHandler(this.pathHandler);
             this.server = Undertow.builder()
+                    .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
                     .addHttpListener(this.port, this.host)
                     .setIoThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2, 2))
-                    .setWorkerThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2 * 8, 16))
+                    .setWorkerThreads(Math.max(Runtime.getRuntime().availableProcessors() * 4, 16))
                     .setHandler(this.shutdownHandler)
                     .build();
 
@@ -292,6 +319,10 @@ public class UnderflowServerImpl implements UnderflowServer {
                                     UnderflowServerImpl.logger.error("An error occurred while running a shutdown hook", e);
                                 }
                             });
+                            try {
+                                this.executorContext.close();
+                            } catch (final IOException ignore) {
+                            }
                         })
                         .orTimeout(60, TimeUnit.SECONDS)
                         .exceptionally(throwable -> {
