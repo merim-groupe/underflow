@@ -384,7 +384,6 @@ public class ContextHandler implements MDCContext {
             } else {
                 this.safeHttpExecute(() -> result.process(this.exchange, this.method));
             }
-            ContextHandler.logger.info("COMPLETED !");
         }, this.responseExecutor);
 
         // Possible improvement, adding handling for the closure of the socket on the client side.
