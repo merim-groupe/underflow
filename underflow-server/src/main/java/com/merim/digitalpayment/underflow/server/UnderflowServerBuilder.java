@@ -3,15 +3,18 @@ package com.merim.digitalpayment.underflow.server;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowHandler;
 import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
 import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
+import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.sse.ServerSentEventHandler;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.xnio.Option;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +45,11 @@ public class UnderflowServerBuilder {
      * The Modules.
      */
     private final List<UnderflowServerModule> modules;
+
+    /**
+     * The Undertow builder hook.
+     */
+    private final List<Consumer<Undertow.Builder>> undertowBuilderHook;
 
     /**
      * The Class loader.
@@ -80,6 +88,7 @@ public class UnderflowServerBuilder {
         this.preShutdownHooks = new ArrayList<>();
         this.shutdownHooks = new ArrayList<>();
         this.modules = new ArrayList<>();
+        this.undertowBuilderHook = new ArrayList<>();
         this.classLoader = null;
         this.port = port;
         this.host = host;
@@ -244,6 +253,45 @@ public class UnderflowServerBuilder {
     }
 
     /**
+     * Sets server option.
+     *
+     * @param <T>    the type parameter
+     * @param option the option
+     * @param value  the value
+     * @return the server option
+     */
+    public <T> UnderflowServerBuilder setServerOption(final Option<T> option, final T value) {
+        this.undertowBuilderHook.add(builder -> builder.setServerOption(option, value));
+        return this;
+    }
+
+    /**
+     * Sets socket option.
+     *
+     * @param <T>    the type parameter
+     * @param option the option
+     * @param value  the value
+     * @return the socket option
+     */
+    public <T> UnderflowServerBuilder setSocketOption(final Option<T> option, final T value) {
+        this.undertowBuilderHook.add(builder -> builder.setSocketOption(option, value));
+        return this;
+    }
+
+    /**
+     * Sets worker option.
+     *
+     * @param <T>    the type parameter
+     * @param option the option
+     * @param value  the value
+     * @return the worker option
+     */
+    public <T> UnderflowServerBuilder setWorkerOption(final Option<T> option, final T value) {
+        this.undertowBuilderHook.add(builder -> builder.setWorkerOption(option, value));
+        return this;
+    }
+
+    /**
      * Build underflow server.
      *
      * @param application the application
@@ -258,7 +306,7 @@ public class UnderflowServerBuilder {
             throw new IllegalStateException("Underflow server build has been previously aborted");
         }
 
-        final UnderflowServerImpl underflowServer = new UnderflowServerImpl(application, this.classLoader,
+        final UnderflowServerImpl underflowServer = new UnderflowServerImpl(application, this.classLoader, this.undertowBuilderHook,
                 this.host, this.port, this.handlers, this.preShutdownHooks, this.shutdownHooks, activeModules);
         activeModules.forEach(module -> module.onServerCreated(underflowServer));
 

@@ -10,6 +10,7 @@ import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
 import com.merim.digitalpayment.underflow.server.options.UnderflowCORSOption;
 import com.merim.digitalpayment.underflow.server.options.UnderflowLoggerOption;
+import io.undertow.UndertowOptions;
 import jakarta.ws.rs.ApplicationPath;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
@@ -94,7 +95,10 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
                 .addShutdownHook(() -> {
                     System.out.println("== Server has been shutdown ! ==");
                     System.out.flush();
-                });
+                })
+                .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+                .setServerOption(UndertowOptions.MAX_ENTITY_SIZE, 1024 * 1024 * 10L)
+                .setServerOption(UndertowOptions.MULTIPART_MAX_ENTITY_SIZE, 1024 * 1024 * 10L);
     }
 
     @Override

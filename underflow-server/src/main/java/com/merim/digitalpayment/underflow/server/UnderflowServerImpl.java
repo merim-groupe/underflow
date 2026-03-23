@@ -9,7 +9,6 @@ import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
 import com.merim.digitalpayment.underflow.server.options.UnderflowOption;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
-import io.undertow.UndertowOptions;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.GracefulShutdownHandler;
 import io.undertow.server.handlers.PathHandler;
@@ -26,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 /**
  * UnderflowServer is a standardized implementation of an Undertow server.
@@ -64,6 +64,8 @@ public class UnderflowServerImpl implements UnderflowServer {
      */
     @Getter
     private final ClassLoader applicationClassLoader;
+
+    private final List<Consumer<Undertow.Builder>> undertowBuilderHook;
 
     /**
      * The Handlers.
@@ -125,6 +127,7 @@ public class UnderflowServerImpl implements UnderflowServer {
      *
      * @param application            the application
      * @param applicationClassLoader the class loader
+     * @param undertowBuilderHook
      * @param host                   the host
      * @param port                   the port
      * @param handlers               the handlers
@@ -134,6 +137,7 @@ public class UnderflowServerImpl implements UnderflowServer {
      */
     UnderflowServerImpl(@NonNull final UnderflowApplication application,
                         final ClassLoader applicationClassLoader,
+                        final List<Consumer<Undertow.Builder>> undertowBuilderHook,
                         @NonNull final String host,
                         final int port,
                         @NonNull final Map<String, List<HandlerData>> handlers,
@@ -143,6 +147,7 @@ public class UnderflowServerImpl implements UnderflowServer {
         this.application = application;
         this.executorContext = new UnderflowExecutorContext();
         this.applicationClassLoader = applicationClassLoader != null ? applicationClassLoader : Thread.currentThread().getContextClassLoader();
+        this.undertowBuilderHook = undertowBuilderHook;
         this.host = host;
         this.port = port;
         this.handlers = handlers;
@@ -223,8 +228,9 @@ public class UnderflowServerImpl implements UnderflowServer {
         if (this.server == null) {
             // Server doesn't exists yet.
             this.shutdownHandler = new GracefulShutdownHandler(this.pathHandler);
-            this.server = Undertow.builder()
-                    .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+            final Undertow.Builder builder = Undertow.builder();
+            this.undertowBuilderHook.forEach(consumer -> consumer.accept(builder));
+            this.server = builder
                     .addHttpListener(this.port, this.host)
                     .setIoThreads(Math.max(Runtime.getRuntime().availableProcessors() * 2, 2))
                     .setWorkerThreads(Math.max(Runtime.getRuntime().availableProcessors() * 4, 16))
