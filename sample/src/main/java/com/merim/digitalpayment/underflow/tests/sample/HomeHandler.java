@@ -329,6 +329,16 @@ public class HomeHandler extends FlowDTOWrapperTemplateHandler implements WebFor
         return this.ok("Server is shutting down !");
     }
 
+    @Override
+    public void onPreShutdown() {
+        this.logger.info("onPreShutdown from HomeHandler");
+    }
+
+    @Override
+    public void onShutdown() {
+        this.logger.info("onShutdown from HomeHandler");
+    }
+
     /**
      * The type Bad data model.
      */

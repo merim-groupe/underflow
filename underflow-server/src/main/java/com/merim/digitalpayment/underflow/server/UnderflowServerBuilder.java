@@ -142,6 +142,9 @@ public class UnderflowServerBuilder {
      */
     public UnderflowServerBuilder addHandler(@NonNull final FlowHandler flowHandler,
                                              final UnderflowOption... options) {
+        this.addPreShutdownHook(flowHandler::onPreShutdown);
+        this.addShutdownHook(flowHandler::onShutdown);
+
         return this.internalAddHandler(flowHandler.getHandlerInfo().getNonVariablePath(), new HandlerData(flowHandler, options));
     }
 

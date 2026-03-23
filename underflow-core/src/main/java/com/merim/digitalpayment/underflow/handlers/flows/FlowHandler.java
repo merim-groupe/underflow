@@ -184,4 +184,16 @@ public class FlowHandler implements HttpHandler, MDCContext, SenderResults, Stan
     public Result onException(final Throwable exception) {
         return this.internalServerError("Internal Server Error");
     }
+
+    /**
+     * On pre shutdown.
+     */
+    public void onPreShutdown() {
+    }
+
+    /**
+     * On shutdown.
+     */
+    public void onShutdown() {
+    }
 }
