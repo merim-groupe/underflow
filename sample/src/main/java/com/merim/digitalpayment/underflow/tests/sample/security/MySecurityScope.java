@@ -1,6 +1,7 @@
 package com.merim.digitalpayment.underflow.tests.sample.security;
 
 import com.merim.digitalpayment.underflow.security.annotations.Secured;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -16,6 +17,7 @@ import java.lang.annotation.Target;
 @Secured
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@SecurityRequirement(name = Security.SECURITY_REQUIREMENT)
 public @interface MySecurityScope {
     /**
      * Value string.

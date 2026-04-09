@@ -10,12 +10,13 @@ import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
 import com.merim.digitalpayment.underflow.server.UnderflowServerImpl;
 import com.merim.digitalpayment.underflow.server.modules.UnderflowServerModule;
 import io.smallrye.config.PropertiesConfigSource;
+import io.smallrye.config.SmallRyeConfig;
 import io.smallrye.config.SmallRyeConfigBuilder;
 import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
-import io.smallrye.openapi.api.util.FilterUtil;
+import io.smallrye.openapi.api.SmallRyeOpenAPI;
+import io.smallrye.openapi.model.BaseModel;
 import io.smallrye.openapi.runtime.scanner.FilteredIndexView;
-import io.smallrye.openapi.runtime.scanner.OpenApiAnnotationScanner;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.OASConfig;
@@ -216,7 +217,7 @@ public class OpenApiServerModule implements UnderflowServerModule {
      * @return the open api
      */
     private OpenAPI createOpenAPI(final UnderflowServerImpl server) {
-        final OpenApiConfig config = new OpenApiConfigImpl(new SmallRyeConfigBuilder().addDefaultSources().build());
+        final SmallRyeConfig config = new SmallRyeConfigBuilder().addDefaultSources().build();
         final IndexView indexView;
 
         try {
@@ -232,8 +233,12 @@ public class OpenApiServerModule implements UnderflowServerModule {
         }
 
         final FilteredIndexView filteredIndexView = this.createFilteredIndexView(indexView, server);
-        final OpenApiAnnotationScanner scanner = new OpenApiAnnotationScanner(config, filteredIndexView, new ArrayList<>());
-        final OpenAPI openAPI = scanner.scan();
+//        final OpenApiAnnotationScanner scanner = new OpenApiAnnotationScanner(config, filteredIndexView, new ArrayList<>());
+        final OpenAPI openAPI = SmallRyeOpenAPI.builder()
+                .withConfig(config)
+                .withIndex(filteredIndexView)
+                .build()
+                .model();
 
         this.runFilters(openAPI, server, indexView);
 
@@ -255,7 +260,13 @@ public class OpenApiServerModule implements UnderflowServerModule {
             if (filter instanceof JandexAwareOASFilter) {
                 ((JandexAwareOASFilter) filter).register(indexView);
             }
-            FilterUtil.applyFilter(filter, openAPI);
+
+            if (openAPI instanceof final BaseModel<?> model) {
+                model.filter(filter, new IdentityHashMap<>());
+            }
+//            ((BaseModel<?>) openAPI).filter(filter, new IdentityHashMap<>());
+//            filter.filterOpenAPI(openAPI);
+//            FilterUtil.applyFilter(filter, openAPI);
         }
     }
 

@@ -8,6 +8,7 @@ import com.merim.digitalpayment.underflow.api.forms.FormError;
 import com.merim.digitalpayment.underflow.entities.ServerError;
 import com.merim.digitalpayment.underflow.handlers.flows.FlowApiHandler;
 import com.merim.digitalpayment.underflow.results.Result;
+import com.merim.digitalpayment.underflow.tests.sample.security.MySecurityScope;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -18,7 +19,6 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBodySchema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -85,6 +85,35 @@ public class CrudApiTestHandler extends FlowApiHandler {
     @GET
     @Path("/{id}")
     public Result getKey(@PathParam("id") final Integer id) {
+        if (this.storage.containsKey(id)) {
+            return this.ok(this.toJsonNode(this.storage.get(id)));
+        }
+
+        return this.notFound(this.toJsonNode(new ServerError("Not Found", String.format("No entry with the id %d were found.", id))));
+    }
+
+    @Operation(
+            summary = "Read an entry",
+            description = "Get the entry representation for the given id if it exists."
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Success, returns the object",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = TestStorageEntity.class))),
+            @APIResponse(
+                    responseCode = "404",
+                    description = "Not found",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = ServerError.class))
+            )
+    })
+    @MySecurityScope("api")
+    @Produces(MediaType.APPLICATION_JSON)
+    @GET
+    @Path("/{id}/secure")
+    public Result getKeyProtected(@PathParam("id") final Integer id) {
         if (this.storage.containsKey(id)) {
             return this.ok(this.toJsonNode(this.storage.get(id)));
         }

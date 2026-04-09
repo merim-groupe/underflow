@@ -1,11 +1,7 @@
 package com.merim.digitalpayment.underflow.openapi.filters;
 
-import io.smallrye.openapi.api.models.ComponentsImpl;
-import io.smallrye.openapi.api.models.media.ContentImpl;
-import io.smallrye.openapi.api.models.media.MediaTypeImpl;
-import io.smallrye.openapi.api.models.media.SchemaImpl;
-import io.smallrye.openapi.api.models.responses.APIResponseImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.openapi.OASFactory;
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -57,7 +53,7 @@ public class SecurityResponseInjectorFilter implements OASFilter {
     /**
      * The Api responses.
      */
-    private final Map<String, APIResponseImpl> apiResponses;
+    private final Map<String, APIResponse> apiResponses;
 
     /**
      * Instantiates a new Secured response filter.
@@ -75,9 +71,9 @@ public class SecurityResponseInjectorFilter implements OASFilter {
      * @return the standard error content
      */
     public static Content getStandardErrorContent() {
-        return new ContentImpl()
-                .addMediaType("application/json", new MediaTypeImpl()
-                        .schema(new SchemaImpl()
+        return OASFactory.createContent()
+                .addMediaType("application/json", OASFactory.createMediaType()
+                        .schema(OASFactory.createSchema()
                                 .ref("#/components/schemas/" + SecurityResponseInjectorFilter.ERROR_SCHEMA)));
     }
 
@@ -88,10 +84,10 @@ public class SecurityResponseInjectorFilter implements OASFilter {
      * @param description  the description
      * @return the standard error response
      */
-    public static APIResponseImpl getStandardErrorResponse(final String responseCode, final String description) {
-        final APIResponseImpl apiResponse = new APIResponseImpl();
+    public static APIResponse getStandardErrorResponse(final String responseCode, final String description) {
+        final APIResponse apiResponse = OASFactory.createAPIResponse();
 
-        apiResponse.setResponseCode(responseCode);
+//        apiResponse.setResponseCode(responseCode);
         apiResponse.setDescription(description);
         apiResponse.setContent(SecurityResponseInjectorFilter.getStandardErrorContent());
 
@@ -105,7 +101,7 @@ public class SecurityResponseInjectorFilter implements OASFilter {
      * @param response the response
      * @return the secured response filter
      */
-    public SecurityResponseInjectorFilter addResponse(final String name, final APIResponseImpl response) {
+    public SecurityResponseInjectorFilter addResponse(final String name, final APIResponse response) {
         this.apiResponses.put(name, response);
         return this;
     }
@@ -113,12 +109,12 @@ public class SecurityResponseInjectorFilter implements OASFilter {
     @Override
     public void filterOpenAPI(final OpenAPI openAPI) {
         if (openAPI.getComponents() == null) {
-            openAPI.setComponents(new ComponentsImpl());
+            openAPI.setComponents(OASFactory.createComponents());
         }
 
         final Map<String, APIResponse> responses = openAPI.getComponents().getResponses() == null ? new HashMap<>() : new HashMap<>(openAPI.getComponents().getResponses());
 
-        for (final Map.Entry<String, APIResponseImpl> entry : this.apiResponses.entrySet()) {
+        for (final Map.Entry<String, APIResponse> entry : this.apiResponses.entrySet()) {
             if (!responses.containsKey(entry.getKey())) {
                 final APIResponse apiResponse = entry.getValue();
 
@@ -153,11 +149,12 @@ public class SecurityResponseInjectorFilter implements OASFilter {
             if (securityRequirement.getScheme(this.scheme) != null) {
                 final APIResponses apiResponses = operation.getResponses();
 
-                for (final Map.Entry<String, APIResponseImpl> entry : this.apiResponses.entrySet()) {
-                    final APIResponseImpl apiResponse = entry.getValue();
-                    if (apiResponses.getAPIResponse(apiResponse.getResponseCode()) == null) {
-                        apiResponses.addAPIResponse(apiResponse.getResponseCode(), new APIResponseImpl().ref("#/components/responses/" + entry.getKey()));
-                    }
+                for (final Map.Entry<String, APIResponse> entry : this.apiResponses.entrySet()) {
+                    final APIResponse apiResponse = entry.getValue();
+                    // TODO : UPDATE
+//                    if (apiResponses.getAPIResponse(apiResponse.getResponseCode()) == null) {
+//                        apiResponses.addAPIResponse(apiResponse.getResponseCode(), new APIResponseImpl().ref("#/components/responses/" + entry.getKey()));
+//                    }
                 }
             }
         }

@@ -1,7 +1,6 @@
 package com.merim.digitalpayment.underflow.openapi.filters;
 
-import io.smallrye.openapi.api.models.OperationImpl;
-import io.smallrye.openapi.api.models.parameters.ParameterImpl;
+import io.smallrye.openapi.model.Extensions;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.jboss.jandex.IndexView;
@@ -34,12 +33,8 @@ public interface JandexAwareOASFilter extends RegistrableOASFilter<IndexView> {
      * @return the operation detail
      */
     default OperationDetail extractOperationDetail(final Operation operation) {
-        if (!(operation instanceof OperationImpl)) {
-            throw new IllegalArgumentException("Operation is not an OperationImpl");
-        }
-
-        final OperationImpl operationImpl = (OperationImpl) operation;
-        final Matcher matcher = JandexAwareOASFilter.METHOD_REF_PATTERN.matcher(operationImpl.getMethodRef());
+        final String methodRef = Extensions.getMethodRef(operation);
+        final Matcher matcher = JandexAwareOASFilter.METHOD_REF_PATTERN.matcher(methodRef);
 
         if (!matcher.matches()) {
             throw new IllegalStateException("Invalid method reference");
@@ -56,12 +51,7 @@ public interface JandexAwareOASFilter extends RegistrableOASFilter<IndexView> {
      * @return the parameter detail
      */
     default ParameterDetail extractParameterDetail(final Parameter parameter) {
-        if (!(parameter instanceof ParameterImpl)) {
-            throw new IllegalArgumentException("Parameter is not an ParameterImpl");
-        }
-
-        final ParameterImpl parameterImpl = (ParameterImpl) parameter;
-        final Matcher matcher = JandexAwareOASFilter.PARAMETER_REF_PATTERN.matcher(parameterImpl.getParamRef());
+        final Matcher matcher = JandexAwareOASFilter.PARAMETER_REF_PATTERN.matcher(parameter.getRef());
 
         if (!matcher.matches()) {
             throw new IllegalStateException("Invalid method reference");

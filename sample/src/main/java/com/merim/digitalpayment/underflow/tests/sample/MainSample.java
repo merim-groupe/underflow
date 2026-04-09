@@ -5,11 +5,13 @@ import com.merim.digitalpayment.underflow.i18n.I18n;
 import com.merim.digitalpayment.underflow.i18n.cookie.I18nCookie;
 import com.merim.digitalpayment.underflow.i18n.sources.PropertiesSource;
 import com.merim.digitalpayment.underflow.openapi.OpenApiServerModule;
+import com.merim.digitalpayment.underflow.openapi.OpenApiUiFlavor;
 import com.merim.digitalpayment.underflow.server.UnderflowApplication;
 import com.merim.digitalpayment.underflow.server.UnderflowServer;
 import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
 import com.merim.digitalpayment.underflow.server.options.UnderflowCORSOption;
 import com.merim.digitalpayment.underflow.server.options.UnderflowLoggerOption;
+import com.merim.digitalpayment.underflow.tests.sample.openapi.TestFilter;
 import io.undertow.UndertowOptions;
 import jakarta.ws.rs.ApplicationPath;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +78,7 @@ public class MainSample extends jakarta.ws.rs.core.Application implements Underf
 
         final ResourceIntensiveHandler resourceIntensiveHandler = new ResourceIntensiveHandler();
         return UnderflowServer.builder("0.0.0.0", 8080)
-                .addModule(new OpenApiServerModule())
+                .addModule(new OpenApiServerModule(OpenApiUiFlavor.STOPLIGHT, new TestFilter()))
                 .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
                 .addHandler(new RoutingConflict1TestHandler())
                 .addHandler(new RoutingConflict2TestHandler())
