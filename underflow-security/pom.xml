@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.merim.digitalpayment.underflow</groupId>
         <artifactId>underflow-bom</artifactId>
-        <version>${project.version}</version>
+        <version>0.0.0-dev</version>
     </parent>
 
     <artifactId>underflow-security</artifactId>
@@ -18,6 +18,5 @@
     </properties>
 
     <dependencies>
-
     </dependencies>
 </project>

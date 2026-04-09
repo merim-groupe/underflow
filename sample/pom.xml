@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.merim.digitalpayment.underflow</groupId>
         <artifactId>underflow-bom</artifactId>
-        <version>${project.version}</version>
+        <version>0.0.0-dev</version>
     </parent>
 
     <groupId>com.merim.digitalpayment.underflow</groupId>
@@ -48,19 +48,6 @@
             <artifactId>underflow-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.9.3</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher -->
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>1.9.3</version>
-            <scope>test</scope>
-        </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.undertow/undertow-core -->
         <dependency>
@@ -94,7 +81,7 @@
             <plugin>
                 <groupId>io.smallrye</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>${jandex.version}</version>
                 <executions>
                     <execution>
                         <id>make-index</id>
