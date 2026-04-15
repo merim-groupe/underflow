@@ -226,6 +226,7 @@ public class ContextHandler implements MDCContext {
             final Optional<PathParam> oPathParam = AnnotationResolver.nestedAnnotation(parameter, PathParam.class);
             final Optional<QueryParam> oQueryParam = AnnotationResolver.nestedAnnotation(parameter, QueryParam.class);
             final Optional<CookieParam> oCookieParam = AnnotationResolver.nestedAnnotation(parameter, CookieParam.class);
+            final Optional<HeaderParam> oHeaderParam = AnnotationResolver.nestedAnnotation(parameter, HeaderParam.class);
             final Optional<?> appInject = Application.getInstanceOptional(pClass);
 
             if (oPathParam.isPresent()) {
@@ -254,16 +255,6 @@ public class ContextHandler implements MDCContext {
                         methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, values.getFirst()));
                     }
                 }
-            } else if (oCookieParam.isPresent()) {
-                final Cookie requestCookie = this.exchange.getRequestCookie(oCookieParam.get().value());
-
-                if (requestCookie == null) {
-                    methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, null));
-                } else if (pClass.isAssignableFrom(Cookie.class)) {
-                    methodArgs.add(requestCookie);
-                } else {
-                    methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, requestCookie.getValue()));
-                }
             } else if (oContext.isPresent()) {
                 if (this.controllerInjectable.containsKey(pClass)) {
                     methodArgs.add(this.controllerInjectable.get(pClass).apply(this.exchange));
@@ -275,10 +266,27 @@ public class ContextHandler implements MDCContext {
                             parameter.getName(), pClass.getSimpleName(), this.handler.getClass().getSimpleName(), this.method.getName());
                     methodArgs.add(null);
                 }
+            } else if (oCookieParam.isPresent()) {
+                final Cookie requestCookie = this.exchange.getRequestCookie(oCookieParam.get().value());
+
+                if (requestCookie == null) {
+                    methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, null));
+                } else if (pClass.isAssignableFrom(Cookie.class)) {
+                    methodArgs.add(requestCookie);
+                } else {
+                    methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, requestCookie.getValue()));
+                }
+            } else if (oHeaderParam.isPresent()) {
+                final String headerValue = this.exchange.getRequestHeaders().getFirst(oHeaderParam.get().value());
+                if (headerValue == null) {
+                    methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, null));
+                } else {
+                    methodArgs.add(this.queryConvert(oConverter.orElse(null), pClass, headerValue));
+                }
             } else {
                 // TODO : Allow for automatic form resolution here.
                 this.handlerLogger.warn("Unable to resolve the argument <{}@{}> for the method {}.{}. " +
-                                "Please use the annotation @PathParam, @QueryParam, @Context to specify how to resolve this argument.",
+                                "Please use the annotation @PathParam, @QueryParam, @CookieParam, @HeaderParam, @Context to specify how to resolve this argument.",
                         parameter.getName(), pClass.getSimpleName(), this.handler.getClass().getSimpleName(), this.method.getName());
                 methodArgs.add(null);
             }

@@ -4,9 +4,7 @@ import com.merim.digitalpayment.underflow.annotation.AnnotationResolver;
 import com.merim.digitalpayment.underflow.enums.MethodType;
 import com.merim.digitalpayment.underflow.handlers.flows.exceptions.InvalidMethodException;
 import com.merim.digitalpayment.underflow.routing.RouteResolver;
-import jakarta.ws.rs.HttpMethod;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -86,12 +84,14 @@ public class FlowMethodInfo {
                 .filter(parameter ->
                         !parameter.isAnnotationPresent(Context.class) &&
                                 !parameter.isAnnotationPresent(QueryParam.class) &&
-                                !parameter.isAnnotationPresent(PathParam.class)
+                                !parameter.isAnnotationPresent(PathParam.class) &&
+                                !parameter.isAnnotationPresent(CookieParam.class) &&
+                                !parameter.isAnnotationPresent(HeaderParam.class)
                 )
                 .forEach(parameter -> LoggerFactory
                         .getLogger(this.method.getDeclaringClass())
                         .warn("Unable to resolve the argument <{}@{}> for the method {}.{}. " +
-                                        "Please use the annotation @PathParam, @QueryParam, @Context to specify how to resolve this argument.",
+                                        "Please use the annotation @PathParam, @QueryParam, @CookieParam, @HeaderParam, @Context to specify how to resolve this argument.",
                                 parameter.getName(), parameter.getType().getSimpleName(),
                                 this.method.getDeclaringClass().getSimpleName(), this.method.getName()));
     }
