@@ -264,9 +264,6 @@ public class OpenApiServerModule implements UnderflowServerModule {
             if (openAPI instanceof final BaseModel<?> model) {
                 model.filter(filter, new IdentityHashMap<>());
             }
-//            ((BaseModel<?>) openAPI).filter(filter, new IdentityHashMap<>());
-//            filter.filterOpenAPI(openAPI);
-//            FilterUtil.applyFilter(filter, openAPI);
         }
     }
 
@@ -293,7 +290,7 @@ public class OpenApiServerModule implements UnderflowServerModule {
                         return true;
                     }
 
-                    return index.getAllKnownImplementors(classInfo.name())
+                    return index.getAllKnownImplementations(classInfo.name())
                             .stream()
                             .anyMatch(cInfo -> !Modifier.isAbstract(cInfo.flags()) && !cInfo.isSynthetic());
                 })
@@ -315,7 +312,7 @@ public class OpenApiServerModule implements UnderflowServerModule {
                 .map(handlerData -> handlerData.getHandler().getClass())
                 .filter(aClass -> !aClass.isAnnotationPresent(OpenAPIHiddenClass.class))
                 .map(Class::getName)
-                .collect(Collectors.toList());
+                .toList();
 
         final String exclude = this.getAnnotatedClass(indexView).stream()
                 .filter(classInfo -> !serverActiveHandlers.contains(classInfo.name().toString()))

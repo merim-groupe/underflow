@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 /**
  * QueryString.
  *
- * @author Lucas Stadelmann
+ * @author Pierre Adam
  * @since 21.04.28
  */
 public class QueryString {
@@ -80,7 +80,7 @@ public class QueryString {
     }
 
     /**
-     * Check if the query parameters contains the given parameter.
+     * Check if the query parameters contain the given parameter.
      *
      * @param parameterName the parameter name
      * @return the boolean

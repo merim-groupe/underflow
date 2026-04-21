@@ -495,7 +495,7 @@
                                     <goal>copy-dependencies</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.build.directory}/</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>

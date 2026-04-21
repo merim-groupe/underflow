@@ -27,7 +27,7 @@ public interface JandexAwareOASFilter extends RegistrableOASFilter<IndexView> {
     Pattern PARAMETER_REF_PATTERN = Pattern.compile("^p(?<classHashCode>[-]?\\d+)_(?<methodHashCode>[-]?\\d+)_(?<parameterPosition>[-]?\\d+)$");
 
     /**
-     * Extract operation detail operation detail.
+     * Extract operation detail.
      *
      * @param operation the operation
      * @return the operation detail
@@ -45,7 +45,7 @@ public interface JandexAwareOASFilter extends RegistrableOASFilter<IndexView> {
     }
 
     /**
-     * Extract parameter detail parameter detail.
+     * Extract parameter detail.
      *
      * @param parameter the parameter
      * @return the parameter detail

@@ -119,7 +119,7 @@ public class RouteResolver {
      */
     public static String compileRoute(final String route,
                                       final Function<String, String> patternExtractor) {
-        final StringBuffer compiledRoute = new StringBuffer();
+        final StringBuilder compiledRoute = new StringBuilder();
         final Matcher matcher = RouteResolver.ROUTE_ARGUMENT_PATTERN.matcher(route);
 
         while (matcher.find()) {

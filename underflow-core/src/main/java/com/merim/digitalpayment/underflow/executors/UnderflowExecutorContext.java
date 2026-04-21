@@ -34,13 +34,13 @@ public class UnderflowExecutorContext implements Closeable {
         final AtomicInteger workerThreadCounter = new AtomicInteger(0);
         final AtomicInteger responseThreadCounter = new AtomicInteger(0);
 
-        this.workerExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors(), 16), runnable -> {
+        this.workerExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() * 2, 16), runnable -> {
             final Thread thread = new Thread(runnable);
             thread.setName("Underflow-Worker-" + workerThreadCounter.incrementAndGet());
             return thread;
         });
 
-        this.responseExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors(), 16), runnable -> {
+        this.responseExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() * 2, 16), runnable -> {
             final Thread thread = new Thread(runnable);
             thread.setName("Underflow-RespW-" + responseThreadCounter.incrementAndGet());
             return thread;

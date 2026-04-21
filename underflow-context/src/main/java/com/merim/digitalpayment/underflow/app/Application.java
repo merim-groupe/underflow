@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -29,6 +30,9 @@ public class Application {
      */
     private static Mode mode;
 
+    /**
+     * The constant modeInitialized.
+     */
     private static boolean modeInitialized = false;
 
     static {
@@ -90,12 +94,12 @@ public class Application {
     /**
      * Run from a jar.
      *
-     * @param aClass the a class
+     * @param aClass the class
      * @return true if running from a jar.
      */
     public static boolean runFromJar(final Class<?> aClass) {
         final String className = aClass.getName().replace('.', '/');
-        final String classJar = aClass.getResource("/" + className + ".class").toString();
+        final String classJar = Objects.requireNonNull(aClass.getResource("/" + className + ".class")).toString();
 
         return classJar.startsWith("jar:");
     }

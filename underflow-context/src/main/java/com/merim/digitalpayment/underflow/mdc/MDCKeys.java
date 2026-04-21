@@ -3,42 +3,14 @@ package com.merim.digitalpayment.underflow.mdc;
 import java.util.Optional;
 
 /**
- * MDCKeys.
+ * The MDCKeys interface provides standardized keys for interacting with the
+ * Mapped Diagnostic Context (MDC). These keys are used to store and retrieve
+ * contextual information for logging and diagnostic purposes.
  *
  * @author Pierre Adam
  * @since 21.09.28
  */
 public interface MDCKeys {
-
-    /**
-     * The interface Queryable mdc key.
-     */
-    interface QueryableMDCKey extends MDCContext {
-        /**
-         * Gets key.
-         *
-         * @return the key
-         */
-        String getKey();
-
-        /**
-         * Gets from mdc.
-         *
-         * @return the from mdc
-         */
-        default Optional<String> getFromMDC() {
-            return MDCContext.getInstance().getMDC(this.getKey());
-        }
-
-        /**
-         * Put to mdc.
-         *
-         * @param value the value
-         */
-        default void putToMDC(final String value) {
-            MDCContext.getInstance().putMDC(this.getKey(), value);
-        }
-    }
 
     /**
      * The enum Connection.
@@ -123,6 +95,36 @@ public interface MDCKeys {
         @Override
         public String getKey() {
             return this.key;
+        }
+    }
+
+    /**
+     * The interface Queryable mdc key.
+     */
+    interface QueryableMDCKey extends MDCContext {
+        /**
+         * Gets key.
+         *
+         * @return the key
+         */
+        String getKey();
+
+        /**
+         * Gets from mdc.
+         *
+         * @return the from mdc
+         */
+        default Optional<String> getFromMDC() {
+            return MDCContext.getInstance().getMDC(this.getKey());
+        }
+
+        /**
+         * Put to mdc.
+         *
+         * @param value the value
+         */
+        default void putToMDC(final String value) {
+            MDCContext.getInstance().putMDC(this.getKey(), value);
         }
     }
 }

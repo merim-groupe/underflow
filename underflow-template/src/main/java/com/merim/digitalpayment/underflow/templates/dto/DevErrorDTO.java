@@ -7,7 +7,6 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * DevErrorDTO.
@@ -88,7 +87,7 @@ public class DevErrorDTO {
             this.detail.add(cause.getMessage() == null ? "" : cause.getMessage());
             this.detail.addAll(Arrays.stream(e.getStackTrace())
                     .map(StackTraceElement::toString)
-                    .collect(Collectors.toList()));
+                    .toList());
             if (cause.getCause() != null) {
                 this.detail.add("--  caused by  --");
             }

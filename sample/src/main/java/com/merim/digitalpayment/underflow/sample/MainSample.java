@@ -1,0 +1,141 @@
+package com.merim.digitalpayment.underflow.sample;
+
+import com.merim.digitalpayment.underflow.app.Application;
+import com.merim.digitalpayment.underflow.i18n.I18n;
+import com.merim.digitalpayment.underflow.i18n.cookie.I18nCookie;
+import com.merim.digitalpayment.underflow.i18n.sources.PropertiesSource;
+import com.merim.digitalpayment.underflow.openapi.OpenApiServerModule;
+import com.merim.digitalpayment.underflow.openapi.OpenApiUiFlavor;
+import com.merim.digitalpayment.underflow.openapi.filters.OpenApiAutoResolveVersionFilter;
+import com.merim.digitalpayment.underflow.sample.openapi.StandardApiSecurityFilter;
+import com.merim.digitalpayment.underflow.sample.openapi.TestFilter;
+import com.merim.digitalpayment.underflow.server.UnderflowApplication;
+import com.merim.digitalpayment.underflow.server.UnderflowServer;
+import com.merim.digitalpayment.underflow.server.UnderflowServerBuilder;
+import com.merim.digitalpayment.underflow.server.options.UnderflowCORSOption;
+import com.merim.digitalpayment.underflow.server.options.UnderflowLoggerOption;
+import io.undertow.UndertowOptions;
+import jakarta.ws.rs.ApplicationPath;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
+import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
+import org.eclipse.microprofile.openapi.annotations.info.Info;
+
+import java.util.Locale;
+
+/**
+ * The type Main sample.
+ */
+@Slf4j
+// TODO : Check how to handle ApplicationPath in the routing.
+@ApplicationPath("/") // This is only used for OpenAPI ! The server itself wont use it for now.
+@OpenAPIDefinition(info = @Info(title = "Underflow sample", version = "1.0", description = "GTFO",
+        termsOfService = "Dafuk you expect ??? it's a fucking sample ! Fuck off mate...",
+        extensions = {
+                @Extension(name = "GNARF", value = "FOO BAR"),
+                @Extension(name = "object", value = "{\"foo\": \"bar\", \"foo2\": \"bar2\"}", parseValue = true),
+                @Extension(name = "array", value = "[1, 2, 3, 4, \"foobar\"]", parseValue = true),
+                @Extension(name = "parsedNumber", value = "1", parseValue = true),
+                @Extension(name = "parsedBoolean", value = "true", parseValue = true),
+                @Extension(name = "nonParsedNumber", value = "1", parseValue = false),
+                @Extension(name = "nonParsedBoolean", value = "true", parseValue = false)
+        }
+))
+public class MainSample extends jakarta.ws.rs.core.Application implements UnderflowApplication {
+
+    /**
+     * Main.
+     *
+     * @param args the args
+     */
+    public static void main(final String[] args) {
+        UnderflowApplication.run(MainSample.class, args);
+    }
+
+    @Override
+    public void initialize(final String[] args) {
+        for (final String arg : args) {
+            MainSample.logger.info("Starting with argument : {}", arg);
+        }
+
+        I18nCookie.setDefaultLocale(Locale.ENGLISH);
+        I18nCookie.setCookieName("UnderflowLang");
+
+        Application.register(I18n.class, new I18n()
+                .addI18nSource(PropertiesSource.builder()
+                        .addLocale(Locale.FRENCH,
+                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "sample.fr.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.fr.properties")))
+                        .addLocale(Locale.ENGLISH,
+                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "sample.en.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.en.properties")))
+                        .addLocale(new Locale("cz"),
+                                PropertiesSource.loadPropertiesFromResource(MainSample.class, "sample.cz.properties").orElseThrow(() -> new RuntimeException("Unable to find sample.cz.properties")))
+                        .build()
+                )
+        );
+    }
+
+    @Override
+    public UnderflowServerBuilder createServerBuilder() {
+        final ServerEventTestHandler serverEventTestHandler = new ServerEventTestHandler();
+
+        final ResourceIntensiveHandler resourceIntensiveHandler = new ResourceIntensiveHandler();
+        return UnderflowServer.builder("0.0.0.0", 8080)
+                .addModule(new OpenApiServerModule(OpenApiUiFlavor.STOPLIGHT,
+                        new TestFilter(), new StandardApiSecurityFilter(), new OpenApiAutoResolveVersionFilter()))
+                .addHandler(new SampleAssetHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new RoutingConflict1TestHandler())
+                .addHandler(new RoutingConflict2TestHandler())
+                .addHandler(new RouteTestHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(serverEventTestHandler, UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new ApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new CrudApiTestHandler(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(new HomeHandler(), UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addHandler(resourceIntensiveHandler, UnderflowCORSOption.enableEasyCORS(), UnderflowLoggerOption.LOG_ALL_QUERY)
+                .addPreShutdownHook(() -> {
+                    System.out.println("== Shutting down server ! ==");
+                    System.out.flush();
+                })
+                .addSSEHShutdown(serverEventTestHandler.getSseh())
+                .addShutdownHook(() -> resourceIntensiveHandler.getCustomExecutor().shutdown())
+                .addShutdownHook(() -> {
+                    System.out.println("== Server has been shutdown ! ==");
+                    System.out.flush();
+                })
+                .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+                .setServerOption(UndertowOptions.MAX_ENTITY_SIZE, 1024 * 1024 * 10L)
+                .setServerOption(UndertowOptions.MULTIPART_MAX_ENTITY_SIZE, 1024 * 1024 * 10L);
+    }
+
+    @Override
+    public void onServerCreated(final UnderflowServer server) {
+        Application.register(UnderflowServer.class, server);
+    }
+
+    @Override
+    public void onServerStart(final UnderflowServer server) {
+        MainSample.logger.info("Access me at http://localhost:" + server.getPort());
+    }
+
+    //    @Override
+//    public UnsupervisedThreadLogic unsupervisedThread() {
+//        return server -> {
+//            int i = 0;
+//            boolean keepGoing = true;
+//
+//            while (keepGoing) {
+//                if (i > 10) {
+//                    keepGoing = false;
+//                }
+//
+//                try {
+//                    MainSample.logger.info("Keep going !");
+//                    Thread.sleep(1000);
+//                } catch (final InterruptedException e) {
+//                    keepGoing = false;
+//                }
+//
+//                i++;
+//            }
+//        };
+//    }
+}

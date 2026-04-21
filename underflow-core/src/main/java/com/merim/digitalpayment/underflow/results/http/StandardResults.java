@@ -138,7 +138,7 @@ public interface StandardResults {
      * @param ioCallback the io callback
      * @return the result
      */
-    default HttpResult created(final ByteBuffer data[], final IoCallback ioCallback) {
+    default HttpResult created(final ByteBuffer[] data, final IoCallback ioCallback) {
         return this.result(StatusCodes.CREATED, data, ioCallback);
     }
 

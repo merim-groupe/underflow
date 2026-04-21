@@ -38,7 +38,7 @@ public class CORSHandler extends HeaderHandler {
             this.put("Access-Control-Allow-Origin", accessControlAllowOrigin);
             this.put("Access-Control-Allow-Methods", accessControlAllowMethods);
             this.put("Access-Control-Allow-Headers", accessControlAllowHeaders);
-            this.put("Access-Control-Allow-Credentials", accessControlAllowCredentials ? "true" : "false");
+            this.put("Access-Control-Allow-Credentials", Boolean.toString(accessControlAllowCredentials));
             this.put("Access-Control-Max-Age", "3600");
         }});
     }

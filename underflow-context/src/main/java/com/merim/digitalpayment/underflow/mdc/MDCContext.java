@@ -6,12 +6,43 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * MDCServer.
+ * The MDCContext interface provides utility methods to interact with the
+ * Mapped Diagnostic Context (MDC), which is commonly used for managing
+ * context-specific logging information across different execution threads.
+ * <p>
+ * Implementations of this interface allow safe manipulation and access
+ * to MDC data, ensuring that context consistency is maintained throughout
+ * method execution.
  *
  * @author Pierre Adam
  * @since 21.09.28
  */
 public interface MDCContext {
+
+    /**
+     * Dump mdc string.
+     *
+     * @return the string
+     */
+    static String dumpMDC() {
+        final StringBuilder data = new StringBuilder();
+        data.append("== MDC ==\n");
+        for (final Map.Entry<String, String> entry : MDC.getCopyOfContextMap().entrySet()) {
+            data.append(String.format("%s=%s\n", entry.getKey(), entry.getValue()));
+        }
+        data.append("=========");
+        return data.toString();
+    }
+
+    /**
+     * Gets instance.
+     *
+     * @return the instance
+     */
+    static MDCContext getInstance() {
+        return new MDCContext() {
+        };
+    }
 
     /**
      * Extract and clear mdc map.
@@ -91,30 +122,5 @@ public interface MDCContext {
      */
     default void putMDC(final MDCKeys.QueryableMDCKey key, final String value) {
         this.putMDC(key.getKey(), value);
-    }
-
-    /**
-     * Dump mdc string.
-     *
-     * @return the string
-     */
-    static String dumpMDC() {
-        final StringBuilder data = new StringBuilder();
-        data.append("== MDC ==\n");
-        for (final Map.Entry<String, String> entry : MDC.getCopyOfContextMap().entrySet()) {
-            data.append(String.format("%s=%s\n", entry.getKey(), entry.getValue()));
-        }
-        data.append("=========");
-        return data.toString();
-    }
-
-    /**
-     * Gets instance.
-     *
-     * @return the instance
-     */
-    static MDCContext getInstance() {
-        return new MDCContext() {
-        };
     }
 }

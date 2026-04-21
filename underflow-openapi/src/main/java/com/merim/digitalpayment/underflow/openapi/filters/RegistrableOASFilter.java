@@ -13,7 +13,7 @@ interface RegistrableOASFilter<T> extends OASFilter {
 
     /**
      * Dynamically register the given type on this filter.
-     * This will be called right before call any of the OASFilter methods.
+     * This will be called right before calling any of the OASFilter methods.
      *
      * @param instance the instance
      */

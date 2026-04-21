@@ -65,6 +65,9 @@ public class UnderflowServerImpl implements UnderflowServer {
     @Getter
     private final ClassLoader applicationClassLoader;
 
+    /**
+     * The Undertow builder hook.
+     */
     private final List<Consumer<Undertow.Builder>> undertowBuilderHook;
 
     /**
@@ -127,7 +130,7 @@ public class UnderflowServerImpl implements UnderflowServer {
      *
      * @param application            the application
      * @param applicationClassLoader the class loader
-     * @param undertowBuilderHook
+     * @param undertowBuilderHook    the undertow builder hook
      * @param host                   the host
      * @param port                   the port
      * @param handlers               the handlers

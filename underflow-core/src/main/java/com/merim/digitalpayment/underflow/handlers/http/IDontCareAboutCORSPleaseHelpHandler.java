@@ -30,7 +30,7 @@ public class IDontCareAboutCORSPleaseHelpHandler extends HeaderHandler {
      * Instantiates a new Cors handler.
      *
      * @param underlying                    the underlying
-     * @param accessControlAllowCredentials the access control allow credentials
+     * @param accessControlAllowCredentials the access control allows credentials
      */
     public IDontCareAboutCORSPleaseHelpHandler(final HttpHandler underlying,
                                                final boolean accessControlAllowCredentials) {
@@ -38,7 +38,7 @@ public class IDontCareAboutCORSPleaseHelpHandler extends HeaderHandler {
             this.put("Access-Control-Allow-Origin", "*");
             this.put("Access-Control-Allow-Methods", "*");
             this.put("Access-Control-Allow-Headers", "*");
-            this.put("Access-Control-Allow-Credentials", accessControlAllowCredentials ? "true" : "false");
+            this.put("Access-Control-Allow-Credentials", Boolean.toString(accessControlAllowCredentials));
             this.put("Access-Control-Max-Age", "3600");
         }});
     }

@@ -1,11 +1,16 @@
 package com.merim.digitalpayment.underflow.api.forms;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * FormError.
  *
  * @author Pierre Adam
  * @since 22.08.02
  */
+@Getter
+@Setter
 public class FormError {
 
     /**
@@ -32,42 +37,6 @@ public class FormError {
      */
     public FormError(final String field, final String message) {
         this.field = field;
-        this.message = message;
-    }
-
-    /**
-     * Gets field.
-     *
-     * @return the field
-     */
-    public String getField() {
-        return this.field;
-    }
-
-    /**
-     * Sets field.
-     *
-     * @param field the field
-     */
-    public void setField(final String field) {
-        this.field = field;
-    }
-
-    /**
-     * Gets message.
-     *
-     * @return the message
-     */
-    public String getMessage() {
-        return this.message;
-    }
-
-    /**
-     * Sets message.
-     *
-     * @param message the message
-     */
-    public void setMessage(final String message) {
         this.message = message;
     }
 }

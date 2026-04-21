@@ -30,10 +30,12 @@ public abstract class BaseHttpResult implements HttpResult {
      * The Cookies.
      */
     private final List<Cookie> cookies;
+
     /**
      * The Http code.
      */
     private final int httpCode;
+
     /**
      * The Clear cookies.
      */

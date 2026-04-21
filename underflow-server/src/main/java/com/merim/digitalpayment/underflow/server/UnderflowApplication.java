@@ -117,7 +117,26 @@ public interface UnderflowApplication {
                     .error("Stopping underflow server due to exception in the main thread logic...", e);
         } finally {
             if (executor != null) {
-                executor.shutdown();
+                // This logic can be removed after going to Java 19 minimum and putting the executor as a resource on the try.
+                // In Java 19, ExecutorService becomes an AutoCloseable and can be used as a resource in the try().
+                boolean terminated = executor.isTerminated();
+                if (!terminated) {
+                    executor.shutdown();
+                    boolean interrupted = false;
+                    while (!terminated) {
+                        try {
+                            terminated = executor.awaitTermination(1L, TimeUnit.DAYS);
+                        } catch (final InterruptedException e) {
+                            if (!interrupted) {
+                                executor.shutdownNow();
+                                interrupted = true;
+                            }
+                        }
+                    }
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
 
             server.stop();

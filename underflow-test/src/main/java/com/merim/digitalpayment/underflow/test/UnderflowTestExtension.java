@@ -55,7 +55,7 @@ public class UnderflowTestExtension implements BeforeAllCallback, AfterAllCallba
     }
 
     @Override
-    public void beforeAll(final ExtensionContext extensionContext) throws Exception {
+    public void beforeAll(final @NonNull ExtensionContext extensionContext) throws Exception {
         this.getServer(extensionContext).ifPresent(server -> {
             this.testApplication.onServerStart(server);
             server.start();
@@ -63,7 +63,7 @@ public class UnderflowTestExtension implements BeforeAllCallback, AfterAllCallba
     }
 
     @Override
-    public void afterAll(final ExtensionContext extensionContext) throws Exception {
+    public void afterAll(final @NonNull ExtensionContext extensionContext) throws Exception {
         this.getServer(extensionContext).ifPresent(server -> {
             try {
                 this.testApplication.onServerStop(server);

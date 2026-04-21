@@ -11,7 +11,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
- * MDCInterceptor.
+ * The MDCInterceptor class is responsible for managing and applying
+ * Mapped Diagnostic Context (MDC) operations for HTTP server exchanges.
+ * It facilitates capturing and propagating context information across requests
+ * for use in diagnostics and logging purposes.
  *
  * @author Pierre Adam
  * @since 21.09.29
@@ -86,7 +89,7 @@ public class MDCInterceptor {
      * @return the mdc server context
      */
     public MDCServerContext withMDCServerContext(final HttpServerExchange exchange) {
-        if (MDC.getMDCAdapter() != null && !this.mdcContext.getMDC(MDCKeys.Request.UID).isPresent()) {
+        if (MDC.getMDCAdapter() != null && this.mdcContext.getMDC(MDCKeys.Request.UID).isEmpty()) {
             this.mdcContext.putMDC(MDCKeys.Request.UID, UUID.randomUUID().toString());
             this.mdcRequestConsumers.forEach(consumer -> consumer.accept(exchange, this.mdcContext));
 

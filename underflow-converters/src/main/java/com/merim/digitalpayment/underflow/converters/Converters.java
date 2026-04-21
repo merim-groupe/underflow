@@ -9,7 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * FlowConverter.
+ * The Converters class provides utilities for converting string values to corresponding objects
+ * based on the type provided. It supports predefined converters for specific types as well as
+ * allows runtime registration of custom converters for extensibility.
  *
  * @author Pierre Adam
  * @since 21.04.27
@@ -149,7 +151,7 @@ public class Converters {
     }
 
     /**
-     * Register runtime converter.
+     * Register a runtime converter.
      *
      * @param converter the converter
      */

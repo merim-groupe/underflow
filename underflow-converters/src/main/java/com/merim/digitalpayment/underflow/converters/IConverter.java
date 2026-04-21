@@ -1,9 +1,10 @@
 package com.merim.digitalpayment.underflow.converters;
 
 /**
- * FlowConverter.
+ * An interface for converting objects of type T to and from their String representations.
+ * This enables bidirectional transformation between a String representation and the backed type.
  *
- * @param <T> the type parameter
+ * @param <T> The type of object this converter handles.
  * @author Pierre Adam
  * @since 21.04.27
  */

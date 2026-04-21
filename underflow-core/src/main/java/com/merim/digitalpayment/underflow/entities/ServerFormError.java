@@ -1,6 +1,7 @@
 package com.merim.digitalpayment.underflow.entities;
 
 import com.merim.digitalpayment.underflow.api.forms.FormError;
+import lombok.Getter;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * @author Pierre Adam
  * @since 22.08.02
  */
+@Getter
 public class ServerFormError extends ServerError {
 
     /**
@@ -25,14 +27,5 @@ public class ServerFormError extends ServerError {
     public ServerFormError(final List<FormError> formErrors) {
         super("Bad request", "Invalid form", "The form contains errors.");
         this.formErrors = formErrors;
-    }
-
-    /**
-     * Gets form errors.
-     *
-     * @return the form errors
-     */
-    public List<FormError> getFormErrors() {
-        return this.formErrors;
     }
 }

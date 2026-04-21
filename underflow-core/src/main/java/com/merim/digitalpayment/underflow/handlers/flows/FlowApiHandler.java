@@ -137,7 +137,7 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
             final Function<T, Result> logic) {
         return this.getJsonBody(mapper, bodyInputStream, tClass, form -> {
             final List<FormError> errors = form.isValid();
-            if (errors != null && errors.size() > 0) {
+            if (errors != null && !errors.isEmpty()) {
                 return this.badRequest(this.toJsonNode(new ServerFormError(errors)));
             } else {
                 return logic.apply(form);
@@ -215,7 +215,7 @@ public class FlowApiHandler extends FlowHandler implements JsonResults {
             final Function<T, Result> logic) {
         return this.getJsonBody(mapper, bodyInputStream, tClass, form -> {
             final List<FormError> errors = form.isValid(payload);
-            if (errors != null && errors.size() > 0) {
+            if (errors != null && !errors.isEmpty()) {
                 return this.badRequest(this.toJsonNode(new ServerFormError(errors)));
             } else {
                 return logic.apply(form);

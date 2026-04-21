@@ -21,7 +21,7 @@ public class UnderflowVersionUtils {
     protected static String defaultVersion = "0.0";
 
     /**
-     * Instantiates a new Version utils.
+     * Instantiates a new VersionUtils.
      */
     private UnderflowVersionUtils() {
     }
@@ -30,7 +30,6 @@ public class UnderflowVersionUtils {
      * Load version.
      *
      * @param cls the class
-     * @return the underflow version utils
      */
     public static void loadVersion(final Class<?> cls) {
         UnderflowVersionUtils.version = cls.getPackage().getImplementationVersion();
@@ -40,7 +39,6 @@ public class UnderflowVersionUtils {
      * Load version.
      *
      * @param object the object
-     * @return the underflow version utils
      */
     public static void loadVersion(final Object object) {
         UnderflowVersionUtils.version = object.getClass().getPackage().getImplementationVersion();

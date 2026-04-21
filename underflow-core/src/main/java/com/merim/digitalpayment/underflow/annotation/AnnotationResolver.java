@@ -1,5 +1,7 @@
 package com.merim.digitalpayment.underflow.annotation;
 
+import org.wildfly.common.annotation.NotNull;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
 import java.lang.reflect.AnnotatedElement;
@@ -21,10 +23,10 @@ public class AnnotationResolver {
      * @param annotationClass  the annotation class
      * @return the annotation
      */
-    public static <T extends Annotation> Optional<T> annotation(final AnnotatedElement annotatedElement,
-                                                                final Class<T> annotationClass) {
+    public static <T extends Annotation> Optional<T> annotation(@NotNull final AnnotatedElement annotatedElement,
+                                                                @NotNull final Class<T> annotationClass) {
         if (annotationClass.isAnnotationPresent(Inherited.class)) {
-            return AnnotationResolver.nested(annotatedElement, annotationClass, 0);
+            return AnnotationResolver.nestedAnnotation(annotatedElement, annotationClass);
         } else {
             return Optional.ofNullable(annotatedElement.getAnnotation(annotationClass));
         }
@@ -38,8 +40,8 @@ public class AnnotationResolver {
      * @param annotationClass  the annotation class
      * @return the nested annotation
      */
-    public static <T extends Annotation> Optional<T> nestedAnnotation(final AnnotatedElement annotatedElement,
-                                                                      final Class<T> annotationClass) {
+    public static <T extends Annotation> Optional<T> nestedAnnotation(@NotNull final AnnotatedElement annotatedElement,
+                                                                      @NotNull final Class<T> annotationClass) {
         return AnnotationResolver.nested(annotatedElement, annotationClass, 0);
     }
 
@@ -52,11 +54,11 @@ public class AnnotationResolver {
      * @param depth            the depth
      * @return the optional
      */
-    private static <T extends Annotation> Optional<T> nested(final AnnotatedElement annotatedElement,
-                                                             final Class<T> annotationClass,
-                                                             final int depth) {
-        if (depth > 5) { // Why 5 ? Because why not ... If you need more, you fucked up somewhere !
-            // Not too deep step annotation !
+    private static <T extends Annotation> Optional<T> nested(@NotNull final AnnotatedElement annotatedElement,
+                                                             @NotNull final Class<T> annotationClass,
+                                                             @NotNull final int depth) {
+        if (depth > 10) { // Why 10? Because why not ... If you need more, you fucked up somewhere!
+            // Not too deep step annotation!
             return Optional.empty();
         }
 

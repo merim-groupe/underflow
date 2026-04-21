@@ -53,7 +53,7 @@ public class SecurityResponseInjectorFilter implements OASFilter {
     /**
      * The Api responses.
      */
-    private final Map<String, APIResponse> apiResponses;
+    private final Map<String, ResponseWithCode> apiResponses;
 
     /**
      * Instantiates a new Secured response filter.
@@ -70,7 +70,7 @@ public class SecurityResponseInjectorFilter implements OASFilter {
      *
      * @return the standard error content
      */
-    public static Content getStandardErrorContent() {
+    public static Content getStandardJsonErrorContent() {
         return OASFactory.createContent()
                 .addMediaType("application/json", OASFactory.createMediaType()
                         .schema(OASFactory.createSchema()
@@ -80,16 +80,14 @@ public class SecurityResponseInjectorFilter implements OASFilter {
     /**
      * Gets standard error response.
      *
-     * @param responseCode the response code
-     * @param description  the description
+     * @param description the description
      * @return the standard error response
      */
-    public static APIResponse getStandardErrorResponse(final String responseCode, final String description) {
+    public static APIResponse getStandardJsonErrorResponse(final String description) {
         final APIResponse apiResponse = OASFactory.createAPIResponse();
 
-//        apiResponse.setResponseCode(responseCode);
         apiResponse.setDescription(description);
-        apiResponse.setContent(SecurityResponseInjectorFilter.getStandardErrorContent());
+        apiResponse.setContent(SecurityResponseInjectorFilter.getStandardJsonErrorContent());
 
         return apiResponse;
     }
@@ -98,11 +96,13 @@ public class SecurityResponseInjectorFilter implements OASFilter {
      * Add response secured response filter.
      *
      * @param name     the name
+     * @param code     the code
      * @param response the response
      * @return the secured response filter
      */
-    public SecurityResponseInjectorFilter addResponse(final String name, final APIResponse response) {
-        this.apiResponses.put(name, response);
+    public SecurityResponseInjectorFilter addResponse(final String name, final int code, final APIResponse response) {
+        final APIResponse referenceResponse = OASFactory.createAPIResponse().ref("#/components/responses/" + name);
+        this.apiResponses.put(name, new ResponseWithCode(code, response, referenceResponse));
         return this;
     }
 
@@ -114,9 +114,9 @@ public class SecurityResponseInjectorFilter implements OASFilter {
 
         final Map<String, APIResponse> responses = openAPI.getComponents().getResponses() == null ? new HashMap<>() : new HashMap<>(openAPI.getComponents().getResponses());
 
-        for (final Map.Entry<String, APIResponse> entry : this.apiResponses.entrySet()) {
+        for (final Map.Entry<String, ResponseWithCode> entry : this.apiResponses.entrySet()) {
             if (!responses.containsKey(entry.getKey())) {
-                final APIResponse apiResponse = entry.getValue();
+                final APIResponse apiResponse = entry.getValue().apiResponse();
 
                 responses.put(entry.getKey(), apiResponse);
 
@@ -147,18 +147,23 @@ public class SecurityResponseInjectorFilter implements OASFilter {
 
         for (final SecurityRequirement securityRequirement : operation.getSecurity()) {
             if (securityRequirement.getScheme(this.scheme) != null) {
-                final APIResponses apiResponses = operation.getResponses();
+                final APIResponses endpointResponses = operation.getResponses();
 
-                for (final Map.Entry<String, APIResponse> entry : this.apiResponses.entrySet()) {
-                    final APIResponse apiResponse = entry.getValue();
-                    // TODO : UPDATE
-//                    if (apiResponses.getAPIResponse(apiResponse.getResponseCode()) == null) {
-//                        apiResponses.addAPIResponse(apiResponse.getResponseCode(), new APIResponseImpl().ref("#/components/responses/" + entry.getKey()));
-//                    }
+                for (final Map.Entry<String, ResponseWithCode> entry : this.apiResponses.entrySet()) {
+                    final String code = Integer.toString(entry.getValue().code());
+                    if (!endpointResponses.getAPIResponses().containsKey(code)) {
+                        endpointResponses.addAPIResponse(code, entry.getValue().referenceResponse());
+                    }
                 }
             }
         }
 
         return operation;
+    }
+
+    /**
+     * The type Response with code.
+     */
+    private record ResponseWithCode(int code, APIResponse apiResponse, APIResponse referenceResponse) {
     }
 }

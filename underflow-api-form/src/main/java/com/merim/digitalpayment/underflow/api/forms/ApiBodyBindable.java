@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public interface ApiBodyBindable {
 
     /**
-     * With valid sub form optional.
+     * With a valid sub form optional.
      *
      * @param prefix the prefix
      * @param form   the form
@@ -31,7 +31,7 @@ public interface ApiBodyBindable {
     }
 
     /**
-     * With valid sub form list.
+     * With a valid sub form list.
      *
      * @param <T>     the type parameter
      * @param prefix  the prefix
