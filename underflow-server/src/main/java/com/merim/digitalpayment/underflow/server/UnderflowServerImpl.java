@@ -220,6 +220,7 @@ public class UnderflowServerImpl implements UnderflowServer {
 
         exchangeActionsHandler.addAttachment(UnderflowKeys.RESPONSE_EXECUTOR_KEY, this.executorContext.getResponseExecutor());
         exchangeActionsHandler.addAttachment(UnderflowKeys.WORKER_EXECUTOR_KEY, this.executorContext.getWorkerExecutor());
+        exchangeActionsHandler.addAttachment(UnderflowKeys.AFTER_RESPONSE_EXECUTOR_KEY, this.executorContext.getAfterResponseExecutor());
 
         return exchangeActionsHandler;
     }

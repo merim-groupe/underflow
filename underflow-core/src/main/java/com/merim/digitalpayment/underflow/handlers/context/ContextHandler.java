@@ -39,6 +39,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -76,6 +77,11 @@ public class ContextHandler implements MDCContext {
      * The Response executor.
      */
     private final ExecutorService responseExecutor;
+
+    /**
+     * The After response executor.
+     */
+    private final ExecutorService afterResponseExecutor;
 
     /**
      * The Controller injectable.
@@ -118,6 +124,8 @@ public class ContextHandler implements MDCContext {
         this.workerExecutor = worker != null ? worker : ForkJoinPool.commonPool();
         final ExecutorService response = exchange.getAttachment(UnderflowKeys.RESPONSE_EXECUTOR_KEY);
         this.responseExecutor = response != null ? response : ForkJoinPool.commonPool();
+        final ExecutorService afterResponse = exchange.getAttachment(UnderflowKeys.AFTER_RESPONSE_EXECUTOR_KEY);
+        this.afterResponseExecutor = afterResponse != null ? afterResponse : ForkJoinPool.commonPool();
         this.methodType = MethodType.UNSUPPORTED;
         this.method = null;
         this.pathMatcher = null;
@@ -391,6 +399,19 @@ public class ContextHandler implements MDCContext {
                 }
             } else {
                 this.safeHttpExecute(() -> result.process(this.exchange, this.method));
+
+                result.andThen()
+                        .ifPresent(runnable -> CompletableFuture
+                                .runAsync(runnable, this.afterResponseExecutor)
+                                .exceptionally(throwable1 -> {
+                                    Throwable cause = throwable1;
+                                    if (cause instanceof final CompletionException e) {
+                                        cause = e.getCause();
+                                    }
+
+                                    ContextHandler.logger.error("Error while running andThen() from {}", result.getClass().getSimpleName(), cause);
+                                    return null;
+                                }));
             }
         }, this.responseExecutor);
 

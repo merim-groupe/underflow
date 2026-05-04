@@ -49,6 +49,7 @@ public class ResourceIntensiveHandler extends FlowDTOWrapperTemplateHandler {
     public void handleRequest(final HttpServerExchange exchange) {
         exchange.putAttachment(UnderflowKeys.WORKER_EXECUTOR_KEY, this.customExecutor);
         exchange.putAttachment(UnderflowKeys.RESPONSE_EXECUTOR_KEY, this.customExecutor);
+        exchange.putAttachment(UnderflowKeys.AFTER_RESPONSE_EXECUTOR_KEY, this.customExecutor);
 
         super.handleRequest(exchange);
     }

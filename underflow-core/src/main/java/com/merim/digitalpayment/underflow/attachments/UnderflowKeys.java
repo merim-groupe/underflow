@@ -23,4 +23,10 @@ public class UnderflowKeys {
      */
     public static final AttachmentKey<ExecutorService> RESPONSE_EXECUTOR_KEY =
             AttachmentKey.create(ExecutorService.class);
+
+    /**
+     * The constant AFTER_RESPONSE_EXECUTOR_KEY.
+     */
+    public static final AttachmentKey<ExecutorService> AFTER_RESPONSE_EXECUTOR_KEY =
+            AttachmentKey.create(ExecutorService.class);
 }

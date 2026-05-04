@@ -4,6 +4,9 @@ import io.undertow.server.HttpServerExchange;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 /**
  * Result.
@@ -22,4 +25,13 @@ public interface Result {
      * @param method   the method
      */
     void process(final HttpServerExchange exchange, final Method method);
+
+    /**
+     * And then optional.
+     *
+     * @return the optional
+     */
+    default Optional<Runnable> andThen() {
+        return Optional.empty();
+    }
 }

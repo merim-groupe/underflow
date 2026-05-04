@@ -28,6 +28,11 @@ public class UnderflowExecutorContext implements Closeable {
     private final ExecutorService responseExecutor;
 
     /**
+     * The Response executor.
+     */
+    private final ExecutorService afterResponseExecutor;
+
+    /**
      * Instantiates a new Underflow executor context.
      */
     public UnderflowExecutorContext() {
@@ -45,8 +50,13 @@ public class UnderflowExecutorContext implements Closeable {
             thread.setName("Underflow-RespW-" + responseThreadCounter.incrementAndGet());
             return thread;
         });
-    }
 
+        this.afterResponseExecutor = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() * 2, 16), runnable -> {
+            final Thread thread = new Thread(runnable);
+            thread.setName("Underflow-AftRespW-" + responseThreadCounter.incrementAndGet());
+            return thread;
+        });
+    }
 
     @Override
     public void close() throws IOException {
