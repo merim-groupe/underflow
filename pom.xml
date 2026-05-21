@@ -41,7 +41,7 @@
         <maven.deploy.skip>false</maven.deploy.skip>
 
         <!-- https://mvnrepository.com/artifact/io.undertow/undertow-core -->
-        <undertow.version>2.4.0.RC4</undertow.version>
+        <undertow.version>2.4.1.Final</undertow.version>
 
         <!-- https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api -->
         <jakarta.rs-api.version>4.0.0</jakarta.rs-api.version>

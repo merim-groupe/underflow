@@ -27,6 +27,7 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${apache-commons-io.version}</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>
