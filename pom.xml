@@ -16,6 +16,10 @@
 
     <repositories>
         <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
             <id>gitlab-bk</id>
             <!-- 151 is gitlab project ID of bkpackages-->
             <url>https://gitlab.reboot-qsr.com/api/v4/projects/152/packages/maven</url>
@@ -47,7 +51,7 @@
         <jakarta.rs-api.version>4.0.0</jakarta.rs-api.version>
 
         <!-- https://mvnrepository.com/artifact/io.smallrye/jandex -->
-        <jandex.version>3.5.3</jandex.version>
+        <jandex.version>3.6.0</jandex.version>
 
         <!-- https://mvnrepository.com/artifact/org.eclipse.microprofile.openapi/microprofile-openapi-api -->
         <!-- Must match the version used by smallrye.openapi.version -->
@@ -60,8 +64,8 @@
 
         <!-- Common -->
 
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-        <jackson.version>2.21.2</jackson.version>
+        <!-- https://mvnrepository.com/artifact/tools.jackson.core/jackson-core -->
+        <jackson.version>3.2.0</jackson.version>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <apache-commons-io.version>2.21.0</apache-commons-io.version>
         <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
@@ -226,6 +230,14 @@
                 <groupId>com.merim.digitalpayment.underflow</groupId>
                 <artifactId>underflow-utils</artifactId>
                 <version>0.0.0-dev</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/tools.jackson/jackson-bom -->
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <!-- External declaration -->
             <dependency>

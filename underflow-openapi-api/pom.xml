@@ -23,7 +23,6 @@
             <groupId>org.eclipse.microprofile.openapi</groupId>
             <artifactId>microprofile-openapi-api</artifactId>
             <version>${microprofile.openapi.version}</version>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>
