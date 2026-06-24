@@ -3,6 +3,7 @@ package com.merim.digitalpayment.underflow.templates;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
+import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.io.IOException;
  * @author Pierre Adam
  * @since 22.07.12
  */
+@Getter
 public class TemplateEngine {
 
     /**
@@ -66,15 +68,6 @@ public class TemplateEngine {
         this.configuration.setLogTemplateExceptions(false);
         this.configuration.setWrapUncheckedExceptions(true);
         this.configuration.setFallbackOnNullLoopVariable(false);
-    }
-
-    /**
-     * Gets configuration.
-     *
-     * @return the configuration
-     */
-    public Configuration getConfiguration() {
-        return this.configuration;
     }
 
     /**

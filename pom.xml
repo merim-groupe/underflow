@@ -231,14 +231,6 @@
                 <artifactId>underflow-utils</artifactId>
                 <version>0.0.0-dev</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/tools.jackson/jackson-bom -->
-            <dependency>
-                <groupId>tools.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <!-- External declaration -->
             <dependency>
                 <groupId>io.undertow</groupId>
@@ -250,6 +242,17 @@
 
     <build>
         <finalName>${project.name}</finalName>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>io.smallrye</groupId>
+                    <artifactId>jandex-maven-plugin</artifactId>
+                    <version>${jandex.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

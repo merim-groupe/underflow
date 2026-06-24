@@ -1,11 +1,11 @@
 package com.merim.digitalpayment.underflow.results.http;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.merim.digitalpayment.underflow.app.Application;
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
 import io.undertow.util.StatusCodes;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
 import java.util.function.Consumer;
 
@@ -209,7 +209,7 @@ public interface JsonResults {
             final String data = Application.getMapper().writeValueAsString(jsonContent);
             return this.result(code, sender -> sender.send(data, ioCallback))
                     .withContentType("application/json");
-        } catch (final JsonProcessingException e) {
+        } catch (final JacksonException e) {
             throw new RuntimeException(e);
         }
     }

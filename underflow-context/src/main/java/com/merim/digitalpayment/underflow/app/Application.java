@@ -1,6 +1,7 @@
 package com.merim.digitalpayment.underflow.app;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,10 +37,11 @@ public class Application {
     private static boolean modeInitialized = false;
 
     static {
-        mapper = new ObjectMapper();
+        mapper = JsonMapper.builder()
+                .findAndAddModules()
+                .build();
         instances = new HashMap<>();
 
-        Application.mapper.findAndRegisterModules();
         Application.mode = Mode.PROD;
     }
 
