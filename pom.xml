@@ -89,7 +89,7 @@
         <!-- Testing -->
 
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
-        <junit.version>6.0.3</junit.version>
+        <junit.version>6.1.0</junit.version>
         <!-- https://mvnrepository.com/artifact/io.rest-assured/rest-assured -->
         <rest-assured.version>6.0.0</rest-assured.version>
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
@@ -314,6 +314,12 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.6</version>
             </plugin>
             <!-- Flatten pom.xml files (replace variable with their values) -->
             <plugin>
