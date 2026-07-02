@@ -19,8 +19,8 @@
     </properties>
 
     <dependencyManagement>
-        <!-- Source: https://mvnrepository.com/artifact/tools.jackson/jackson-bom -->
         <dependencies>
+            <!-- Source: https://mvnrepository.com/artifact/tools.jackson/jackson-bom -->
             <dependency>
                 <groupId>tools.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback-classic.version}</version> <!-- MAXIMUM Java 1.8 Version -->
+            <version>${logback-classic.version}</version>
         </dependency>
     </dependencies>
 
